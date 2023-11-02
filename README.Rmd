@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{css, echo=FALSE}
+```{css, include = FALSE, echo=FALSE}
 p.caption {
   font-size: 0.7em;
 }

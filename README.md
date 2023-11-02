@@ -2,11 +2,6 @@ genepi.utils
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<style type="text/css">
-p.caption {
-  font-size: 0.7em;
-}
-</style>
 <!-- badges: start -->
 <!-- badges: end -->
 
