@@ -6,7 +6,9 @@ genepi.utils
 <!-- badges: end -->
 
 The `genepi.utils` package is a collection of utility functions for
-working with genetic epidemiology data.
+working with genetic epidemiology data. The only function at the minute
+is `chrpos_to_rsid()`, a helper to map chromosome and position data (+/-
+alleles) to over 1 billion dbSNP rsIDs (for the 156 build).
 
 ## Installation
 
@@ -59,7 +61,13 @@ install.packages("https://cran.r-project.org/src/contrib/fst_0.9.8.tar.gz", type
 ## Download the dbSNP data repository
 
 Until this is hosted you will need to ask
-<nicholas.sunderland@bristol.ac.uk> for the data files.
+<nicholas.sunderland@bristol.ac.uk> for the data files. Once you have
+the directory you will need to set this in the package - this only needs
+to be done once.
+
+``` r
+set_dbsnp_directory("/path_to_directory/dbsnp")
+```
 
 ## A basic example
 
@@ -107,7 +115,7 @@ machine. To monitor progress we have to use the form below. First we set
 up the parallel processing plan with the number of workers - this should
 be \<= the number of cores on your machine, which can be queried with
 `parallel::detectCores()`. Then to monitor progress in the console we
-need to wrap the function in `progressr::with_progress({ fn() }`.
+need to wrap the function in `progressr::with_progress({  })`.
 
 ``` r
 future::plan(future::multisession, workers = 6)
@@ -195,15 +203,16 @@ str(gwas_with_rsids)
 
 ## Evaluation speed
 
-The choice of parameters will impact computation speed. Since the dbSNP
-data is stored as `.fst` binary files and only the desired rows /
-columns are ever read into memory, the more data that is requested the
-slower the computation. That said, it is still much faster / feasible
-than trying to read in the entire dbSNP database (over 1 billion rsIDs).
+The choice of parameters will a small impact computation speed. Since
+the dbSNP data is stored as `.fst` binary files and only the desired
+rows / columns are ever read into memory, the more data that is
+requested the slower the computation. That said, it is still much faster
+/ feasible than trying to read in the entire dbSNP database (over 1
+billion rsIDs).
 
 <div class="figure" style="text-align: center">
 
-<img src="vignettes/figures/microbenchmark_chrpos_to_rsid.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried against ~1 billion dbSNP156 RSIDs" width="70%" />
+<img src="vignettes/figures/microbenchmark_chrpos_to_rsid.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried against ~1 billion dbSNP156 RSIDs" width="100%" />
 <p class="caption">
 Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried
 against ~1 billion dbSNP156 RSIDs

@@ -104,7 +104,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
 process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
 
   # silence RMDcheck warning
-  i.RSID = baseRSID = NULL
+  i.RSID = baseRSID = ..dbSNP_key = NULL
 
   # increment progress bar #1
   p()
