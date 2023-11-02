@@ -14,3 +14,9 @@ progressr::with_progress({
                                          build="b37_dbsnp156", alt_rsids=FALSE, flip="report")
 })
 
+
+set.seed(123)
+
+rand_idx = sample(1:nrow(result), size=10, replace = FALSE)
+
+result[rand_idx, c("RSID","CHR","POS","EFFECT_ALLELE","OTHER_ALLELE")]
