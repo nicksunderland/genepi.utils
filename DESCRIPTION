@@ -15,3 +15,7 @@ Imports:
     furrr,
     progressr,
     yaml
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

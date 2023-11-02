@@ -2,6 +2,8 @@
 
 export(chrpos_to_rsid)
 export(set_dbsnp_directory)
+export(which_dbsnp_builds)
+export(which_dbsnp_directory)
 importFrom(data.table,":=")
 importFrom(data.table,.BY)
 importFrom(data.table,.EACHI)

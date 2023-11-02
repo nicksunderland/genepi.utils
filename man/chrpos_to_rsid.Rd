@@ -10,8 +10,10 @@ chrpos_to_rsid(
   pos_col,
   ea_col = NULL,
   nea_col = NULL,
-  build = "GRCh37",
-  flip = "report"
+  build = "b37_dbsnp156",
+  flip = "no_flip",
+  alt_rsids = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,12 +27,16 @@ chrpos_to_rsid(
 
 \item{nea_col}{a string column name; non effect allele}
 
-\item{build}{a string, options: "GRCh37"}
+\item{build}{a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)}
 
 \item{flip}{a string, options: "report", "allow", "no_flip"}
+
+\item{alt_rsids}{a logical, whether to return additional alternate RSIDs}
+
+\item{verbose}{a logical, runtime reporting}
 }
 \value{
-a data.table with an RSID column
+a data.table with an RSID column (or a list: 1-data.table; 2-list of alternate rsids IDs)
 }
 \description{
 chrpos_to_rsid

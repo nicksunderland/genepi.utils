@@ -5,141 +5,248 @@
 #' @param pos_col a string column name; base position
 #' @param ea_col a string column name; effect allele
 #' @param nea_col a string column name; non effect allele
-#' @param build a string, options: "GRCh37"
+#' @param build a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)
 #' @param flip a string, options: "report", "allow", "no_flip"
+#' @param alt_rsids a logical, whether to return additional alternate RSIDs
+#' @param verbose a logical, runtime reporting
 #'
-#' @return a data.table with an RSID column
+#' @return a data.table with an RSID column (or a list: 1-data.table; 2-list of alternate rsids IDs)
 #' @export
 #' @importFrom data.table setkey setkeyv
 #' @importFrom progressr progressor
 #' @importFrom furrr future_map
 #' @importFrom fst fst read_fst
 #'
-chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, build="GRCh37", flip="report") {
+chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, build="b37_dbsnp156", flip="no_flip", alt_rsids=FALSE, verbose=TRUE) {
 
   # checks
   stopifnot("`dt` must be a data.table" = inherits(dt, "data.table"))
   stopifnot("`chr_col` must be a column name in `dt`" = chr_col %in% colnames(dt))
   stopifnot("`pos_col` must be a column name in `dt`" = pos_col %in% colnames(dt))
-  stopifnot("`ea_col` must be a column name in `dt`" = ea_col %in% colnames(dt))
-  stopifnot("`nea_col` must be a column name in `dt`" = nea_col %in% colnames(dt))
-  stopifnot("`chr_col` column must be character type" = is.character(dt[,get(chr_col)]))
   stopifnot("`pos_col` must be numeric/integer type" = is.numeric(dt[,get(pos_col)]))
-  stopifnot("`ea_col` column must be character type" = is.character(dt[,get(ea_col)]))
-  stopifnot("`nea_col` column must be character type" = is.character(dt[,get(nea_col)]))
-
-  build <- match.arg(build, c("GRCh37"))
-  build <- match.arg(flip, c("report", "allow", "no_flip"))
-
-  # data adjustment
-  if(any(grepl("(?i)^chr", dt[,get(chr_col)]))) {
-
-    # (?i) case-insensitive
-    # ^ at the beginning of the string
-    # (?:chr)? non-capture group, matches "chr" 0-1 times
-    # ([0-9XYMT]+) capture group //1, matches 1 or more occurances of group [0-9XYMT]
-    # \\1 replace with string found in capture group 1
-    dt[, "chr_col_orig" := get(chr_col)]
-    dt[, (chr_col) := sub("(?i)^(?:chr)?([0-9XYMT]+)", "\\1", get(chr_col))]
-
+  stopifnot("`ea_col` and `nea_col` must be either both provided or both NULL" = sum(c(is.null(nea_col),is.null(ea_col)))%in%c(0,2))
+  if(all(!c(is.null(ea_col), is.null(nea_col)))) {
+    stopifnot("`ea_col` must be a column name in `dt`" = ea_col %in% colnames(dt))
+    stopifnot("`nea_col` must be a column name in `dt`" = nea_col %in% colnames(dt))
+    stopifnot("`ea_col` column must be character type" = is.character(dt[,get(ea_col)]))
+    stopifnot("`nea_col` column must be character type" = is.character(dt[,get(nea_col)]))
+  }
+  stopifnot("`chr_col` column must be character, integer, or numeric type" = is.character(dt[,get(chr_col)]) |
+                                                                             is.integer(dt[,get(chr_col)]) |
+                                                                             is.numeric(dt[,get(chr_col)]))
+  if(is.numeric(dt[,get(chr_col)])) {
+    stopifnot("`chr_col`, if numeric, must be whole numbers" = all(dt[,get(chr_col)] %% 1 == 0))
   }
 
-  # split the dt into chromosomes
+  build <- match.arg(build, c("b37_dbsnp156"))
+  flip  <- match.arg(flip, c("report", "allow", "no_flip"))
+
+  # data adjustment
+  # (?i) case-insensitive
+  # ^ at the beginning of the string
+  # (?:chr)? non-capture group, matches "chr" 0-1 times
+  # ([0-9XYMT]+) capture group //1, matches 1 or more occurances of group [0-9XYMT]
+  # \\1 replace with string found in capture group 1
+  chr_col_orig = "chr_col_orig"
+  dt[, (chr_col_orig) := get(chr_col)]
+  dt[, (chr_col) := sub("(?i)^(?:chr)?([0-9XY]+)", toupper("\\1"), toupper(get(chr_col)))]
+  # replace X[23] and Y[24]
+  dt[, (chr_col) := ifelse(get(chr_col)=="X","23",ifelse(get(chr_col)=="Y","24",get(chr_col)))]
+
+  # split the dt into a list of data.tables, by chromosome
   dts <- split(dt, by=chr_col)
 
+  if(verbose) {
+    message(paste("Chromosomes to process: ", paste0(names(dts), collapse=", ")))
+    # message(paste("Available cores: ", parallel::detectCores()))
+    # message("Full fst, fstcore & data.table parallelisation only available on MacOS if packages compiled with -fopenmp flags")
+  }
+
   # set up progress bar
-  p <- progressr::progressor(steps = 6*length(dts)) # going to update 5 times in the function
+  p <- progressr::progressor(steps = 7*length(dts)) # going to update 7 times in the function
 
-  # set up parallel
-  furrr::future_map(dts, ~{
-    # the datatable is accessed as `.x`
+  # set up parallel processing and process each chromosome independently
+  out <- furrr::future_map(.x = dts,
+                           .f = process_chromosome,
+                           chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, flip=flip, alt_rsids=alt_rsids, p=p,
+                           .options=furrr::furrr_options(seed=TRUE))
 
-    # the chromosome to process
-    chrom <- .x[[1, chr_col]]
+  # deal with alternative RSIDs if requested
+  if(alt_rsids) {
 
-    # the dbSNP file for this chromosome
-    # system.file(...., package=Utils)
-    dbSNP_path <- paste0("/Users/xx20081/Documents/local_data/genome_reference/rsid_b37_dbsnp155/chr", chrom, ".fst")
+    out_data <- data.table::rbindlist( lapply(out, `[[`, 1) )
+    out_alts <- data.table::rbindlist( lapply(out, `[[`, 2) )
 
-    # read just the dbSNP position data (reduce amount of data read in)
-    dbSNP_pos <- fst::read_fst(dbSNP_path, "BP", as.data.table=TRUE)
+  } else {
+    out_data <- data.table::rbindlist(out)
+  }
 
-    # increment progress bar #1
-    p()
+  # put back the original chromosome column and remove the temporary one
+  out_data[, (chr_col) := chr_col_orig]
+  out_data[, chr_col_orig := NULL]
 
-    # set as keys
-    data.table::setkey(dbSNP_pos, "BP")
-    data.table::setkeyv(.x, pos_col)
+  # return
+  if(alt_rsids) {
 
-    # get the indices of the positions that are needed / also found in the input data
-    dbSNP_pos[.x, "found" := get(pos_col)]
-    row_idxs <- which(!is.na(dbSNP_pos[["found"]]))
-    rm(dbSNP_pos)
+    return(list("data" = out_data, "alt_rsids" = out_alts))
 
-    # increment progress bar #2
+  } else {
+
+    return(out_data)
+
+  }
+}
+
+
+# this function could be defined in the above function. However I took it out to avoid
+# the gwas data.table being captured in each futures environment. See this discussion
+# for the details: https://furrr.futureverse.org/articles/gotchas.html#function-environments-and-large-objects
+process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
+
+  # silence RMDcheck warning
+  i.RSID = baseRSID = NULL
+
+  # increment progress bar #1
+  p()
+
+  # the chromosome to process, a string value e.g. "1"
+  chrom <- chrom_dt[[1, chr_col]]
+
+  # the dbSNP `.fst` file for this chromosome
+  dbSNP_dir  <- genepi.utils::which_dbsnp_builds(build=build)
+  dbSNP_path <- file.path(dbSNP_dir, paste0("chr", chrom, ".fst"))
+
+  # read just the dbSNP position data (an integer vector) (reduce amount of data read in)
+  dbSNP_pos <- fst::read_fst(dbSNP_path, "BP", as.data.table=TRUE)
+
+  # increment progress bar #2
+  p()
+
+  # set as keys
+  data.table::setkey(dbSNP_pos, "BP")
+  data.table::setkeyv(chrom_dt, pos_col)
+
+  # get the indices of the positions that are needed / also found in the input data
+  dbSNP_pos[chrom_dt, "found" := get(pos_col)]
+  row_idxs <- which(!is.na(dbSNP_pos[["found"]]))
+  rm(dbSNP_pos)
+
+  # define whether to work with alleles, or just CHR:POS
+  alleles <- !(is.null(nea_col) & is.null(ea_col))
+
+  # define the key depending on which columns are provided
+  if(alleles) {
+    dbSNP_key     <- c("CHR","BP","REF","ALT")
+    dbSNP_keyflip <- c("CHR","BP","ALT","REF")
+    data_key      <- c(chr_col, pos_col, nea_col, ea_col)
+  } else {
+    dbSNP_key <- c("CHR","BP")
+    data_key  <- c(chr_col, pos_col)
+  }
+
+  # if matches found
+  if(length(row_idxs)>0) {
+
+    # increment progress bar #3
     p()
 
     # create a fst object which allows row access without reading the whole file
     dbSNP_fst <- fst::fst(dbSNP_path)
 
     # read the needed rows
-    dbSNP_data <- dbSNP_fst[row_idxs, ] |> data.table::as.data.table()
-
-    # increment progress bar #3
-    p()
-
-    # split the ALT column which can be a comma separate vector of alternative alleles
-    dbSNP_data[, ALT := lapply(.SD, strsplit, split=','), .SDcols="ALT"]
-
-    # make data.table longer, one allele combination per row
-    dbSNP_data <- dbSNP_data[, lapply(.SD, unlist), by=1:nrow(dbSNP_data)]
-    dbSNP_data[, nrow := NULL]
+    dbSNP_data <- dbSNP_fst[row_idxs, c("RSID", dbSNP_key)] |> data.table::as.data.table()
 
     # increment progress bar #4
     p()
 
-    # get the alt rsids (some rsids code for the same position, chr, alt, and ref...)
-    alt_rsids  <- dbSNP_data[duplicated(dbSNP_data[, c("CHR","BP","REF","ALT")]),]
+    if(alleles) {
+      # split the ALT column which can be a comma separate vector of alternative alleles
+      dbSNP_data[, "ALT" := lapply(.SD, strsplit, split=','), .SDcols="ALT"]
+
+      # make data.table longer, one allele combination per row
+      dbSNP_data <- dbSNP_data[, lapply(.SD, unlist), by=1:nrow(dbSNP_data)]
+      dbSNP_data[, nrow := NULL]
+    }
+
+    # increment progress bar #5
+    p()
+
+    if(alt_rsids) {
+      # get the alt rsids (some rsids code for the same position, chr, alt, and ref...)
+      alt_rsid_data  <- dbSNP_data[duplicated(dbSNP_data[, ..dbSNP_key]),]
+    }
 
     # take unique (first rsid occurance)
-    dbSNP_data <- dbSNP_data[!duplicated(dbSNP_data[, c("CHR","BP","REF","ALT")]),]
+    dbSNP_data <- dbSNP_data[!duplicated(dbSNP_data[, ..dbSNP_key]),]
 
     # set the keys to match expected way round
-    data.table::setkeyv(dbSNP_data, c("CHR","BP","REF","ALT"))
-    data.table::setkeyv(.x, c(chr_col, pos_col, nea_col, ea_col))
-    .x[dbSNP_data, RSID := i.RSID]
+    data.table::setkeyv(dbSNP_data, dbSNP_key)
+    data.table::setkeyv(chrom_dt, data_key)
+    chrom_dt[dbSNP_data, "RSID" := i.RSID]
 
-    # increment progress bar # 5
+    if(alt_rsids) {
+      # set key
+      data.table::setkeyv(alt_rsid_data, dbSNP_key)
+
+      # map the chosen RSID to the alternative RSIDS
+      alt_rsid_data[chrom_dt, "baseRSID" := i.RSID]
+    }
+
+    # increment progress bar #6
     p()
 
     # flip the alleles
-    if(flip!="no_flip") {
+    if(flip!="no_flip" & alleles) {
 
       # set the keys to flipped alleles
-      data.table::setkey(dbSNP_data,"CHR","BP","ALT","REF")
+      data.table::setkeyv(dbSNP_data, dbSNP_keyflip)
 
       if(flip=="report") {
 
         # add in flipped matches and a logical flag
-        .x[dbSNP_data, c("RSID", "flip_match") := .(i.RSID, TRUE)]
+        chrom_dt[dbSNP_data, c("RSID", "flip_match") := list(i.RSID, TRUE)]
 
       } else if(flip=="allow") {
 
         # add in flipped matches
-        .x[dbSNP_data, RSID := i.RSID]
+        chrom_dt[dbSNP_data, "RSID" := i.RSID]
 
       } else {
         stop("internal code problem with `flip` argument")
       }
 
+      if(alt_rsids) {
+        # get any alt rsids that match flipped
+        data.table::setkeyv(alt_rsid_data, dbSNP_keyflip)
+        alt_rsid_data[chrom_dt, "baseRSID" := i.RSID]
+      }
+
     }
 
-    # increment progress bar # 6
+  # no matches found. skip all the processing but add the columns
+  } else {
     p()
+    p()
+    p()
+    p()
+    chrom_dt[["RSID"]] <- NA_character_
+    if(alt_rsids) alt_rsid_data <- data.table::copy(chrom_dt)
+    if(flip=="report" & alleles) chrom_dt[, "flip_match" := NA_character_]
+    if(alt_rsids) {
+      alt_rsid_data[, "baseRSID" := NA_character_]
+      alt_rsid_data <- alt_rsid_data[!is.na(baseRSID), ]
+    }
+  }
 
-    # return
-    return(.x)
+  # increment progress bar #7
+  p()
 
-  }, future.seed=100) |> data.table::rbindlist()
+  # return
+  if(alt_rsids) {
+    alt_rsid_data <- alt_rsid_data[is.na(baseRSID), ]
+    return(list("data"=chrom_dt, "alt_rsids"=alt_rsid_data))
+  } else {
+    return(chrom_dt)
+  }
 
 }

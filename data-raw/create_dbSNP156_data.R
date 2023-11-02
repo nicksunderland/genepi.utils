@@ -9,6 +9,7 @@
 # then do install.packages("path/to/source.tar", type="source", repos=NULL)
 #
 # The Data:
+# https://www.ncbi.nlm.nih.gov/projects/SNP/docs/dbSNP_VCF_Submission.pdf
 # download:
 #     https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
 # extract just the columns we want:
