@@ -104,7 +104,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
 process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
 
   # silence RMDcheck warning
-  i.RSID = baseRSID = ..dbSNP_key = NULL
+  i.RSID = baseRSID = NULL
 
   # increment progress bar #1
   p()
@@ -173,11 +173,11 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsid
 
     if(alt_rsids) {
       # get the alt rsids (some rsids code for the same position, chr, alt, and ref...)
-      alt_rsid_data  <- dbSNP_data[duplicated(dbSNP_data[, ..dbSNP_key]),]
+      alt_rsid_data  <- dbSNP_data[duplicated(dbSNP_data[, dbSNP_key, with = FALSE]),]
     }
 
     # take unique (first rsid occurance)
-    dbSNP_data <- dbSNP_data[!duplicated(dbSNP_data[, ..dbSNP_key]),]
+    dbSNP_data <- dbSNP_data[!duplicated(dbSNP_data[, dbSNP_key, with = FALSE]),]
 
     # set the keys to match expected way round
     data.table::setkeyv(dbSNP_data, dbSNP_key)

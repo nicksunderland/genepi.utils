@@ -203,9 +203,9 @@ str(gwas_with_rsids)
 
 ## Evaluation speed
 
-The choice of parameters will a small impact computation speed. Since
-the dbSNP data is stored as `.fst` binary files and only the desired
-rows / columns are ever read into memory, the more data that is
+The choice of parameters will have a small impact computation speed.
+Since the dbSNP data is stored as `.fst` binary files and only the
+desired rows / columns are ever read into memory, the more data that is
 requested the slower the computation. That said, it is still much faster
 / feasible than trying to read in the entire dbSNP database (over 1
 billion rsIDs).
