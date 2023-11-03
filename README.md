@@ -61,9 +61,11 @@ install.packages("https://cran.r-project.org/src/contrib/fst_0.9.8.tar.gz", type
 ## Download the dbSNP data repository
 
 Until this is hosted you will need to ask
-<nicholas.sunderland@bristol.ac.uk> for the data files. Once you have
-the directory you will need to set this in the package - this only needs
-to be done once.
+<nicholas.sunderland@bristol.ac.uk> for the data files. If you are
+working at the Bristol IEU the package should work on BC4. If not, ask
+for the location of the dbSNP `.fst` file directory. If you use a custom
+location for the dbSNP directory you will need to set this in the
+package - this only needs to be done once per package install.
 
 ``` r
 set_dbsnp_directory("/path_to_directory/dbsnp")
