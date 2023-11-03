@@ -212,7 +212,7 @@ billion rsIDs).
 
 <div class="figure" style="text-align: center">
 
-<img src="vignettes/figures/microbenchmark_chrpos_to_rsid.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried against ~1 billion dbSNP156 RSIDs" width="100%" />
+<img src="man/figures/microbenchmark_chrpos_to_rsid.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried against ~1 billion dbSNP156 RSIDs" width="100%" />
 <p class="caption">
 Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried
 against ~1 billion dbSNP156 RSIDs
