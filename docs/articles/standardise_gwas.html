@@ -107,7 +107,7 @@ features in this package.</p>
 </h2>
 <p>We provide a number of column mapping options for standard GWAS
 formats through the <code><a href="../reference/ColumnMapping.html">ColumnMapping()</a></code> class. The available
-formats can we queried like so:</p>
+formats can be queried like so:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># column mapping object</span></span>
 <span><span class="va">map_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMapping.html">ColumnMapping</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -115,46 +115,12 @@ formats can we queried like so:</p>
 <span><span class="co"># available formats</span></span>
 <span><span class="fu"><a href="../reference/input_formats.html">input_formats</a></span><span class="op">(</span><span class="va">map_obj</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "default" "metal"   "ieu_ukb" "ns_map"</span></span></code></pre></div>
-<p>An appropriate mapping format can be chosen like this. Note this step
-is not necessary as the <code>input_format</code> argument can just
-directly be provided to the <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> function, as
-shown below.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_map.html">get_map</a></span><span class="op">(</span><span class="va">map_obj</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">mapping</span></span>
-<span><span class="co">#&gt; $SNP</span></span>
-<span><span class="co">#&gt; [1] "MARKER"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $CHR</span></span>
-<span><span class="co">#&gt; [1] "CHR"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $BP</span></span>
-<span><span class="co">#&gt; [1] "POS"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $EA</span></span>
-<span><span class="co">#&gt; [1] "A1"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $OA</span></span>
-<span><span class="co">#&gt; [1] "A2"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $BETA</span></span>
-<span><span class="co">#&gt; [1] "BETA"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $SE</span></span>
-<span><span class="co">#&gt; [1] "SE"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $EAF</span></span>
-<span><span class="co">#&gt; [1] "EAF"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $P</span></span>
-<span><span class="co">#&gt; [1] "P"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="standardise-gwas">Standardise GWAS<a class="anchor" aria-label="anchor" href="#standardise-gwas"></a>
 </h2>
 <p>A GWAS can then be standardised like so:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">gwas</span></span>
@@ -186,10 +152,44 @@ shown below.</p>
 <div class="section level2">
 <h2 id="custom-mapping">Custom mapping<a class="anchor" aria-label="anchor" href="#custom-mapping"></a>
 </h2>
-<p>The <code>input_format</code> input can either be a pre-defined
-mapping (as shown above), or you can provide your own custom mapping in
+<p>The provided mapping formats can be inspected with
+<code><a href="../reference/get_map.html">get_map()</a></code>. The <code>input_format</code> input of
+<code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> can either be one of the pre-defined
+mappings (as shown above), or you can provide your own custom mapping in
 the form of a named list. In this case the list should contain a minimum
 of the names SNP, CHR, BP, EA, OA, BETA, SE, P, and EAF.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">map_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMapping.html">ColumnMapping</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">standard_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_map.html">get_map</a></span><span class="op">(</span><span class="va">map_obj</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">standard_mapping</span></span>
+<span><span class="co">#&gt; $SNP</span></span>
+<span><span class="co">#&gt; [1] "MARKER"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $CHR</span></span>
+<span><span class="co">#&gt; [1] "CHR"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $BP</span></span>
+<span><span class="co">#&gt; [1] "POS"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $EA</span></span>
+<span><span class="co">#&gt; [1] "A1"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $OA</span></span>
+<span><span class="co">#&gt; [1] "A2"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $BETA</span></span>
+<span><span class="co">#&gt; [1] "BETA"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $SE</span></span>
+<span><span class="co">#&gt; [1] "SE"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $EAF</span></span>
+<span><span class="co">#&gt; [1] "EAF"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $P</span></span>
+<span><span class="co">#&gt; [1] "P"</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">custom_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SNP  <span class="op">=</span> <span class="st">"snp_marker"</span>, </span>
 <span>                   CHR  <span class="op">=</span> <span class="st">"chrom"</span>, </span>
@@ -199,7 +199,10 @@ of the names SNP, CHR, BP, EA, OA, BETA, SE, P, and EAF.</p>
 <span>                   BETA <span class="op">=</span> <span class="st">"beta"</span>, </span>
 <span>                   SE   <span class="op">=</span> <span class="st">"std_error"</span>, </span>
 <span>                   P    <span class="op">=</span> <span class="st">"pval"</span>, </span>
-<span>                   EAF  <span class="op">=</span> <span class="st">"frq"</span><span class="op">)</span></span></code></pre></div>
+<span>                   EAF  <span class="op">=</span> <span class="st">"frq"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># not run</span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="va">custom_map</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span></code></pre></div>
 </div>
   </div>
 

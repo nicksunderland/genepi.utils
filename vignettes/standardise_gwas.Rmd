@@ -26,7 +26,7 @@ gwas
 
 ## Column mapping
 
-We provide a number of column mapping options for standard GWAS formats through the `ColumnMapping()` class. The available formats can we queried like so: 
+We provide a number of column mapping options for standard GWAS formats through the `ColumnMapping()` class. The available formats can be queried like so: 
 
 ```{r mapping}
 # column mapping object
