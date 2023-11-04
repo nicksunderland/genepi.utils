@@ -81,27 +81,28 @@ change_column_names <- function(gwas, columns = list(), opposite_mapping = FALSE
 }
 
 
-
-
-
-
-
-
-
-
+#' @title filter_incomplete_rows
+#' @description
+#' Remove rows where "CHR","BP","EA","OA","EAF" are all missing.
+#' @param gwas a data.table
+#' @return a filtered data.table
+#' @noRd
+#'
 filter_incomplete_rows <- function(gwas) {
-  filtered_gwas <- gwas[!is.na(gwas$EAF) & !is.null(gwas$EAF) &
-                          !is.na(gwas$OA) & !is.null(gwas$OA) &
-                          !is.na(gwas$EA) & !is.null(gwas$EA) &
-                          !is.na(gwas$CHR) & !is.null(gwas$CHR) &
-                          !is.na(gwas$BP) & !is.null(gwas$BP),
-  ]
-  filtered_rows <- nrow(gwas) - nrow(filtered_gwas)
-  if (filtered_rows > 0) {
-    print(paste("WARNING: Filtering out ", nrow(gwas) - nrow(filtered_gwas), "rows due to NULLs and NAs"))
+
+  check_na <- c("CHR","BP","EA","OA","EAF")
+
+  empty_row_idx <- gwas[, rowSums(is.na(.SD))==length(check_na), .SDcols=check_na]
+
+  if (length(empty_row_idx) > 0) {
+    warning(paste0("Filtering out ", length(empty_row_idx), " rows due to NAs"))
   }
-  return(filtered_gwas)
+
+  return(gwas[!empty_row_idx, ])
 }
+
+
+
 
 
 
