@@ -4,12 +4,12 @@
 \name{genepi.utils-package}
 \alias{genepi.utils}
 \alias{genepi.utils-package}
-\title{genepi.utils: What the Package Does (One Line, Title Case)}
+\title{genepi.utils: GenEpi Utility Functions.}
 \description{
-What the package does (one paragraph).
+The `genepi.utils` package is a collection of utility functions for working with genetic epidemiology data.
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Nicholas Sunderland \email{nicholas.sunderland@bristol.ac.uk} (\href{https://orcid.org/0000-0003-3625-630X}{ORCID})
 
 }
 \keyword{internal}

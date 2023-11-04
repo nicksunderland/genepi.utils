@@ -2,6 +2,7 @@
 
 export(chrpos_to_rsid)
 export(set_dbsnp_directory)
+export(standardise_gwas)
 export(which_dbsnp_builds)
 export(which_dbsnp_directory)
 importFrom(data.table,":=")
