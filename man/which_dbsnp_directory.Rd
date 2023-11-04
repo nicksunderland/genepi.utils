@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{which_dbsnp_directory}
 \alias{which_dbsnp_directory}
-\title{which_dbsnp_directory}
+\title{Get dbSNP directory}
 \usage{
 which_dbsnp_directory()
 }
@@ -10,5 +10,5 @@ which_dbsnp_directory()
 a string file path, the currently set dbSNP directory path
 }
 \description{
-which_dbsnp_directory
+Get dbSNP directory
 }

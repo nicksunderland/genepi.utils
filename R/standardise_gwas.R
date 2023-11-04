@@ -1,16 +1,23 @@
 # silence R CMD checks for data.table columns
-BETA = BP = CHR = OR = OR_LB = OR_SE = OR_UB = P = SE = SNP = NULL
+BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = SE = SNP = NULL
 
-#' @title standardise_gwas
+#' @title Standardise GWAS format
 #' @description
 #' Standardises a GWAS with appropriate column names and data checks.
 #' @param gwas a string file path, or data.frame like object
 #' @param input_format a string or list()
-#' @param populate_rsid a logical
+#' @param build a string, one of GRCh37 or GRCh38
+#' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
 #' @return a standardised data.table
 #' @export
 #'
-standardise_gwas <- function(gwas, input_format="default", populate_rsid=FALSE) {
+standardise_gwas <- function(gwas, input_format="default", build="GRCh37", populate_rsid=FALSE) {
+
+  # validate inputs
+  build <- match.arg(build, c("GRCh37", "GRCh38"))
+  if(populate_rsid!=FALSE) {
+    populate_rsid <- match.arg(populate_rsid, names(genepi.utils::which_dbsnp_builds()))
+  }
 
   # define the column mapping
   if(is.character(input_format)) {
@@ -48,18 +55,17 @@ standardise_gwas <- function(gwas, input_format="default", populate_rsid=FALSE) 
   gwas <- gwas |>
     change_column_names(mapping) |>
     filter_incomplete_rows() |>
-    standardise_columns()
-  #|>
-    # standardise_alleles() |>
-    # health_check() |>
-    # populate_rsid_from_1000_genomes(populate_rsid)
+    standardise_columns() |>
+    standardise_alleles() |>
+    health_check() |>
+    populate_rsid(populate_rsid)
 
   # return the standardised gwas
   return(gwas)
 }
 
 
-#' @title change_column_names
+#' @title Change column names
 #' @description
 #' Change_column_names: private function that takes a named list of column names
 #' and changes the supplied data frame's column names accordingly.
@@ -85,7 +91,7 @@ change_column_names <- function(gwas, columns = list(), opposite_mapping = FALSE
 }
 
 
-#' @title filter_incomplete_rows
+#' @title Filter incomplete rows
 #' @description
 #' Remove rows where "CHR","BP","EA","OA","EAF" are all missing.
 #' @param gwas a data.table
@@ -106,7 +112,7 @@ filter_incomplete_rows <- function(gwas) {
 }
 
 
-#' @title standardise_columns
+#' @title Standardise column data
 #' @description
 #' Adjust columns to meeting minimum column specification, including conversion of odds ratio to
 #' beta and standard error
@@ -158,7 +164,7 @@ standardise_columns <- function(gwas) {
 }
 
 
-#' @title convert_or_to_beta
+#' @title Convert odds ratio to beta
 #' @description
 #' Given an OR and lower and upper bounds, calculates the BETA, and SE.
 #' Based on this answer: https://stats.stackexchange.com/a/327684
@@ -182,127 +188,168 @@ convert_or_to_beta <- function(gwas) {
   return(gwas)
 }
 
+
+#' @title Standardise alleles
+#' @description
+#' Standardise alleles to upper
+#' @param gwas a data.table
+#' @return a data.table
+#' @noRd
 #'
+standardise_alleles <- function(gwas, build) {
+
+  # make uppercase
+  gwas[, EA := toupper(EA)]
+  gwas[, OA := toupper(OA)]
+
+  # define valid allele formats (could include 'D' and 'I' here, chosen not to for now)
+  valid_alleles <- ((grepl("^[AGCT]+$", gwas[["EA"]]) | is.na(EA)) & grepl("^[AGCT]+$", gwas[["OA"]])) |
+                   ((grepl("^[AGCT]+$", gwas[["OA"]]) | is.na(OA)) & grepl("^[AGCT]+$", gwas[["EA"]]))
+
+  # report invalid
+  if(any(!valid_alleles)) {
+
+    example_invalid <- paste0(gwas[[which(!valid_alleles)[[1]], "EA"]], "/", gwas[[which(!valid_alleles)[[1]], "EA"]])
+    warning(paste0("filtering out ", sum(!valid_alleles), " invalid alleles, for example: `", example_invalid, "`"))
+
+  }
+
+  # filter out invalid
+  gwas <- gwas[valid_alleles, ]
+
+  # generate the SNP string; plink2 format e.g. "1:100000[b37]REF,ALT"
+  if(build == "GRCh37") {
+
+    gwas[, SNP := paste0(CHR,":",BP,"[b37]",OA,",",EA)]
+
+  } else if (build == "GRCh38") {
+
+    gwas[, SNP := paste0(CHR,":",BP,"[b38]",OA,",",EA)]
+
+  }
+
+  # nice column ordering
+  cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
+  data.table::setcolorder(gwas, c(cols, names(gwas)[!names(gwas) %in% cols]))
+
+  return(gwas)
+}
+
+
+#' @title Populate RSID column
+#' @description
+#' Populates an RSID field from CHR, POS, EA and OA information.
+#' @param gwas a data.table
+#' @param populate_rsid either FALSE (doesn't run), or a valid genome and dbSNP `build` argument for chrpos_to_rsid()
+#' @return a data.table
+#' @noRd
 #'
-#' #' @title standardise_alleles
-#' #' @description
-#' #' Standardise alleles to upper
-#' #' @param gwas a data.table
-#' #' @return a data.table
-#' #' @noRd
-#' #'
-#' standardise_alleles <- function(gwas) {
+populate_rsid <- function(gwas, populate_rsid=FALSE) {
+
+  if (populate_rsid == FALSE) return(gwas)
+
+  if("RSID" %in% names(gwas)) {
+    warning("GWAS already has an RSID field, this will not be overwritten")
+    return(gwas)
+  }
+
+  # get the RSIDs
+  gwas <- chrpos_to_rsid(gwas,
+                         chr_col   = "CHR",
+                         pos_col   = "BP",
+                         ea_col    = "EA",
+                         nea_col   = "OA",
+                         build     = populate_rsid,
+                         flip      = "report",
+                         alt_rsids = FALSE,
+                         verbose   = TRUE)
+
+  # RSIDs at the front
+  cols <- c("RSID", "rsid_flip_match")
+  data.table::setcolorder(gwas, c(cols, names(gwas)[!names(gwas) %in% cols]))
+
+  return(gwas)
+}
+
+
+#' @title GWAS data health check
+#' @description
+#' Perform several health checks on the data
+#' @param gwas a data.table
+#' @return a data.table
+#' @noRd
 #'
+health_check <- function(gwas) {
+
+  invalid_pvals <- gwas[["P"]] <= 0 | gwas[["P"]] > 1
+  if (sum(invalid_pvals) > 0) {
+    cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
+    warning(paste0("GWAS has ", sum(invalid_pvals), " P value(s) outside accepted range, for example:"))
+    print(gwas[which(invalid_pvals)[1], cols, with=FALSE])
+    stop("invalid GWAS P value(s)")
+  }
+
+  invalid_eaf <- gwas[["EAF"]] < 0 | gwas[["EAF"]] > 1
+  if (sum(invalid_eaf) > 0) {
+    cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
+    warning(paste0("GWAS has ", sum(invalid_eaf), " EAF value(s) outside accepted range, for example:"))
+    print(gwas[which(invalid_eaf)[1], cols, with=FALSE])
+    stop("invalid GWAS EAF value(s)")
+  }
+
+  return(gwas)
+}
+
+
+#' @title Harmonise multiple GWAS
+#' @description
+#' This takes a list of gwases, gets the SNPs in common across all datasets
+#' and arranges them to be in the same order.
+#' @param ... ellipses of gwas data.tables
+#' @return list of harmonised gwases
+#' @export
 #'
-#'   # TODO - ask AE about flips
-#'
-#'   gwas$EA <- toupper(gwas$EA)
-#'   gwas$OA <- toupper(gwas$OA)
-#'
-#'   to_flip <- gwas$EA > gwas$OA
-#'   gwas$EAF[to_flip] <- 1 - gwas$EAF[to_flip]
-#'   gwas$BETA[to_flip] <- -1 * gwas$BETA[to_flip]
-#'
-#'   temp <- gwas$OA[to_flip]
-#'   gwas$OA[to_flip] <- gwas$EA[to_flip]
-#'   gwas$EA[to_flip] <- temp
-#'
-#'   gwas$SNP <- toupper(paste0(gwas$CHR, ":", format(gwas$BP, scientific = F, trim = T), "_", gwas$EA, "_", gwas$OA))
-#'   gwas %>% dplyr::select(SNP, CHR, BP, EA, OA, EAF, BETA, SE, P, everything())
-#'
-#'   return(gwas)
-#' }
-#'
-#'
-#'
-#'
-#'
-#'
-#' format_gwas_output <- function(file_gwas, output_file, output_format="default") {
-#'   gwas <- vroom::vroom(file_gwas) %>%
-#'     change_column_names(column_map[[output_format]], opposite_mapping = T)
-#'
-#'   vroom:vroom_write(gwas, output_file, delim="\t")
-#' }
-#'
-#'
-#'
-#'
-#'
-#'
-#'
-#'
-#' health_check <- function(gwas) {
-#'   if (nrow(gwas[gwas$P <= 0 | gwas$P > 1, ]) > 0) {
-#'     stop("GWAS has some P values outside accepted range")
-#'   }
-#'   if (nrow(gwas[gwas$EAF < 0 | gwas$EAF > 1, ]) > 0) {
-#'     stop("GWAS has some EAF values outside accepted range")
-#'   }
-#'   #if ("OR" %in% colnames(gwas) & nrow(gwas[gwas$OR < 0, ]) > 0) {
-#'   #  stop("GWAS has some OR values outside accepted range")
-#'   #}
-#'   return(gwas)
-#' }
-#'
-#'
-#'
-#'
-#'
-#'
-#' #' harmonise_gwases: takes a list of gwases, get the SNPs in common
-#' #' across all datasets arranged to be in the same order
-#' #'
-#' #' @param: elipses of gwases
-#' #' @return: list of harmonised gwases
-#' #'
-#' harmonise_gwases <- function(...) {
-#'   gwases <- list(...)
-#'
-#'   snpids <- Reduce(intersect, lapply(gwases, function(gwas) gwas$SNP))
-#'   print(paste("Number of shared SNPs after harmonisation:", length(snpids)))
-#'
-#'   gwases <- lapply(gwases, function(gwas) {
-#'     gwas %>%
-#'       dplyr::filter(SNP %in% snpids) %>%
-#'       dplyr::arrange(SNP)
-#'   })
-#'
-#'   return(gwases)
-#' }
-#'
-#' populate_snp_from_rsid <- function(gwas) {
-#'   start <- Sys.time()
-#'   marker_to_rsid_file <- paste0(thousand_genomes_dir, "marker_to_rsid_full.tsv.gz")
-#'   marker_to_rsid <- vroom::vroom(marker_to_rsid_file, col_select=c("HG37", "RSID"))
-#'   print(paste("loaded file: ", Sys.time()-start))
-#'
-#'   matching <- match(gwas$RSID, marker_to_rsid$RSID)
-#'   gwas$CHRBP<- marker_to_rsid$HG37[matching]
-#'   gwas <- tidyr::separate(data = gwas, col = "CHRBP", into = c("CHR", "BP"), sep = ":")
-#'   print(paste("mapped and returned: ", Sys.time()-start))
-#'
-#'   return(gwas)
-#' }
-#'
-#' populate_rsid_from_1000_genomes <- function(gwas, populate_rsid=F) {
-#'   if (populate_rsid == F) return(gwas)
-#'
-#'   #if (populate_rsid == "full") {
-#'   #  marker_to_rsid_file <- paste0(thousand_genomes_dir, "marker_to_rsid_full.tsv.gz")
-#'   #}
-#'   #else {
-#'   #  marker_to_rsid_file <- paste0(thousand_genomes_dir, "marker_to_rsid.tsv.gz")
-#'   #}
-#'
-#'   if(column_map$default$RSID %in% colnames(gwas)) {
-#'     print("GWAS already has an RSID field, will not overwrite")
-#'     return(gwas)
-#'   }
-#'   print("populating RSID...")
-#'   marker_to_rsid_file <- paste0(genome_data_dir, "marker_to_rsid.tsv.gz")
-#'   chrpos_to_rsid <- vroom::vroom(marker_to_rsid_file, col_select=c("HG37", "RSID"))
-#'   gwas$RSID <- chrpos_to_rsid$RSID[match(gwas$SNP, chrpos_to_rsid$HG37)]
-#'
-#'   return(gwas)
-#' }
+harmonise_gwases <- function(...) {
+
+  # to a list
+  gwases <- list(...)
+
+  # intersection of SNP ids
+  snpids <- Reduce(intersect, lapply(gwases, function(gwas) gwas[["SNP"]]))
+
+  # report
+  message(paste("Number of shared SNPs after harmonisation:", length(snpids)))
+
+  # apply filtering and order
+  gwases <- lapply(gwases, function(gwas) {
+    gwas <- gwas[SNP %in% snpids, ]
+    data.table::setkey(gwas, "SNP")
+  })
+
+  return(gwases)
+}
+
+
+# TODO:
+# populate_snp_from_rsid <- function(gwas) {
+#   start <- Sys.time()
+#   marker_to_rsid_file <- paste0(thousand_genomes_dir, "marker_to_rsid_full.tsv.gz")
+#   marker_to_rsid <- vroom::vroom(marker_to_rsid_file, col_select=c("HG37", "RSID"))
+#   print(paste("loaded file: ", Sys.time()-start))
+#
+#   matching <- match(gwas$RSID, marker_to_rsid$RSID)
+#   gwas$CHRBP<- marker_to_rsid$HG37[matching]
+#   gwas <- tidyr::separate(data = gwas, col = "CHRBP", into = c("CHR", "BP"), sep = ":")
+#   print(paste("mapped and returned: ", Sys.time()-start))
+#
+#   return(gwas)
+# }
+
+# TODO:
+# format_gwas_output <- function(file_gwas, output_file, output_format="default") {
+#   gwas <- vroom::vroom(file_gwas) %>%
+#     change_column_names(column_map[[output_format]], opposite_mapping = T)
+#
+#   vroom:vroom_write(gwas, output_file, delim="\t")
+# }
+

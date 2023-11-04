@@ -1,4 +1,4 @@
-#' chrpos_to_rsid
+#' @title Chromosome & position data to variant RSID
 #'
 #' @param dt a data.table with at least columns (chrom<chr>, pos<int>, ea<chr>, nea<chr>)
 #' @param chr_col a string column name; chromosome position
@@ -204,7 +204,7 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsid
       if(flip=="report") {
 
         # add in flipped matches and a logical flag
-        chrom_dt[dbSNP_data, c("RSID", "flip_match") := list(i.RSID, TRUE)]
+        chrom_dt[dbSNP_data, c("RSID", "rsid_flip_match") := list(i.RSID, TRUE)]
 
       } else if(flip=="allow") {
 
@@ -231,7 +231,7 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsid
     p()
     chrom_dt[["RSID"]] <- NA_character_
     if(alt_rsids) alt_rsid_data <- data.table::copy(chrom_dt)
-    if(flip=="report" & alleles) chrom_dt[, "flip_match" := NA_character_]
+    if(flip=="report" & alleles) chrom_dt[, "rsid_flip_match" := NA_character_]
     if(alt_rsids) {
       alt_rsid_data[, "baseRSID" := NA_character_]
       alt_rsid_data <- alt_rsid_data[!is.na(baseRSID), ]

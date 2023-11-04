@@ -1,7 +1,5 @@
-#' set_dbsnp_directory
-#'
+#' @title Set dbSNP directory
 #' @param path path to the `dbsnp` directory
-#'
 #' @return NULL, updated config file
 #' @export
 #' @importFrom yaml read_yaml write_yaml
@@ -26,8 +24,7 @@ set_dbsnp_directory <- function(path) {
   invisible(path)
 }
 
-#' which_dbsnp_directory
-#'
+#' @title Get dbSNP directory
 #' @return a string file path, the currently set dbSNP directory path
 #' @export
 #'
@@ -41,10 +38,8 @@ which_dbsnp_directory <- function() {
 }
 
 
-#' which_dbsnp_builds
-#'
+#' @title Get available dbSNP builds
 #' @param build a dbSNP build
-#'
 #' @return a list of available dbSNP builds - name(dbSNP build): value(directory_path)
 #' @export
 #'

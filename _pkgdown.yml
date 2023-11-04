@@ -4,6 +4,7 @@ reference:
     Functions for standardising GWAS inputs
   contents:
   - standardise_gwas
+  - harmonise_gwases
 - title: "RSID mapping"
   desc: "Functions for mapping chromosome and position data to variant RSIDs."
   contents:

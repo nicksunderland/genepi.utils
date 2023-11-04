@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{which_dbsnp_builds}
 \alias{which_dbsnp_builds}
-\title{which_dbsnp_builds}
+\title{Get available dbSNP builds}
 \usage{
 which_dbsnp_builds(build = NULL)
 }
@@ -13,5 +13,5 @@ which_dbsnp_builds(build = NULL)
 a list of available dbSNP builds - name(dbSNP build): value(directory_path)
 }
 \description{
-which_dbsnp_builds
+Get available dbSNP builds
 }

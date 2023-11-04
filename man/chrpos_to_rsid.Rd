@@ -2,7 +2,7 @@
 % Please edit documentation in R/chrpos_to_rsid.R
 \name{chrpos_to_rsid}
 \alias{chrpos_to_rsid}
-\title{chrpos_to_rsid}
+\title{Chromosome & position data to variant RSID}
 \usage{
 chrpos_to_rsid(
   dt,
@@ -39,5 +39,5 @@ chrpos_to_rsid(
 a data.table with an RSID column (or a list: 1-data.table; 2-list of alternate rsids IDs)
 }
 \description{
-chrpos_to_rsid
+Chromosome & position data to variant RSID
 }

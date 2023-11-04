@@ -2,16 +2,23 @@
 % Please edit documentation in R/standardise_gwas.R
 \name{standardise_gwas}
 \alias{standardise_gwas}
-\title{standardise_gwas}
+\title{Standardise GWAS format}
 \usage{
-standardise_gwas(gwas, input_format = "default", populate_rsid = FALSE)
+standardise_gwas(
+  gwas,
+  input_format = "default",
+  build = "GRCh37",
+  populate_rsid = FALSE
+)
 }
 \arguments{
 \item{gwas}{a string file path, or data.frame like object}
 
 \item{input_format}{a string or list()}
 
-\item{populate_rsid}{a logical}
+\item{build}{a string, one of GRCh37 or GRCh38}
+
+\item{populate_rsid}{either FALSE or a valid argument for chrpos_to_rsid \code{build}, e.g. b37_dbsnp156}
 }
 \value{
 a standardised data.table

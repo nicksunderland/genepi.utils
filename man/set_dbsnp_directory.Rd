@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{set_dbsnp_directory}
 \alias{set_dbsnp_directory}
-\title{set_dbsnp_directory}
+\title{Set dbSNP directory}
 \usage{
 set_dbsnp_directory(path)
 }
@@ -13,5 +13,5 @@ set_dbsnp_directory(path)
 NULL, updated config file
 }
 \description{
-set_dbsnp_directory
+Set dbSNP directory
 }
