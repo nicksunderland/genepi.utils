@@ -1,0 +1,75 @@
+---
+title: "Standardise GWAS"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Standardise GWAS}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Here is a simple example of using the `standardise_gwas()` function to standardise your GWAS input ready for use with other features in this package. 
+
+```{r setup}
+library(genepi.utils)
+
+gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+
+gwas
+```
+
+## Column mapping
+
+We provide a number of column mapping options for standard GWAS formats through the `ColumnMapping()` class. The available formats can we queried like so: 
+
+```{r mapping}
+# column mapping object
+map_obj <- ColumnMapping()
+
+# available formats
+input_formats(map_obj)
+```
+
+## Standardise GWAS
+
+A GWAS can then be standardised like so:
+
+```{r std}
+gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid=FALSE)[]
+
+gwas
+```
+
+## Custom mapping
+
+The provided mapping formats can be inspected with `get_map()`. The `input_format` input of `standardise_gwas()` can either be one of the pre-defined mappings (as shown above), or you can provide your own custom mapping in the form of a named list. In this case the list should contain a minimum of the names SNP, CHR, BP, EA, OA, BETA, SE, P, and EAF.
+
+```{r format}
+map_obj <- ColumnMapping()
+
+standard_mapping <- get_map(map_obj, input_format="ns_map")
+
+standard_mapping
+```
+
+
+```{r custom_map, eval=FALSE}
+custom_map <- list(SNP  = "snp_marker", 
+                   CHR  = "chrom", 
+                   BP   = "position", 
+                   EA   = "effect_allele", 
+                   OA   = "alt_allele", 
+                   BETA = "beta", 
+                   SE   = "std_error", 
+                   P    = "pval", 
+                   EAF  = "frq")
+
+# not run
+gwas <- standardise_gwas(gwas, input_format=custom_map, build="GRCh37", populate_rsid=FALSE)[]
+```

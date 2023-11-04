@@ -57,7 +57,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
   dts <- split(dt, by=chr_col)
 
   if(verbose) {
-    message(paste("Chromosomes to process: ", paste0(names(dts), collapse=", ")))
+    message(paste("RSID mapping...\nChromosomes to process: ", paste0(names(dts), collapse=", ")))
     # message(paste("Available cores: ", parallel::detectCores()))
     # message("Full fst, fstcore & data.table parallelisation only available on MacOS if packages compiled with -fopenmp flags")
   }
@@ -84,6 +84,13 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
   # put back the original chromosome column and remove the temporary one
   out_data[, (chr_col) := chr_col_orig]
   out_data[, chr_col_orig := NULL]
+
+  # report
+  msg <- paste0("RSID coverage ", round(100*sum(!is.na(out_data[["RSID"]]))/nrow(out_data), digits=2), "% (", sum(!is.na(out_data[["RSID"]])), "/", nrow(out_data), ")")
+  if(flip!="no_flip") {
+    msg <- paste0(msg, ", of which ", round(100*sum(out_data[["rsid_flip_match"]], na.rm=TRUE)/nrow(out_data), digits=2),"% (", sum(out_data[["rsid_flip_match"]], na.rm=TRUE), "/", nrow(out_data), ") where found flipping alleles")
+  }
+  message(msg)
 
   # return
   if(alt_rsids) {

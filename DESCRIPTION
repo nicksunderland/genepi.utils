@@ -12,6 +12,7 @@ Imports:
     data.table,
     fst,
     furrr,
+    future,
     progressr,
     yaml
 Suggests: 

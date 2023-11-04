@@ -7,6 +7,7 @@
 standardise_gwas(
   gwas,
   input_format = "default",
+  drop = FALSE,
   build = "GRCh37",
   populate_rsid = FALSE
 )
@@ -14,7 +15,9 @@ standardise_gwas(
 \arguments{
 \item{gwas}{a string file path, or data.frame like object}
 
-\item{input_format}{a string or list()}
+\item{input_format}{a string or list(); if string, must be a valid format - these can be obtained with \code{input_formats(ColumnMapping())}}
+
+\item{drop}{a logical, whether to drop additional columns not in the input_format mapping}
 
 \item{build}{a string, one of GRCh37 or GRCh38}
 

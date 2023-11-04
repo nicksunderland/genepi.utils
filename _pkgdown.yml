@@ -5,8 +5,15 @@ reference:
   contents:
   - standardise_gwas
   - harmonise_gwases
+  - ColumnMapping
+  - format_gwas_output
+  - get_map
+  - input_formats
+  - is.input_format
+
 - title: "RSID mapping"
-  desc: "Functions for mapping chromosome and position data to variant RSIDs."
+  desc: >
+    Functions for mapping chromosome and position data to variant RSIDs
   contents:
   - chrpos_to_rsid
   - set_dbsnp_directory

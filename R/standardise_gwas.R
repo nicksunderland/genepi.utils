@@ -5,13 +5,14 @@ BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = SE = SNP = NULL
 #' @description
 #' Standardises a GWAS with appropriate column names and data checks.
 #' @param gwas a string file path, or data.frame like object
-#' @param input_format a string or list()
+#' @param input_format a string or list(); if string, must be a valid format - these can be obtained with `input_formats(ColumnMapping())`
+#' @param drop a logical, whether to drop additional columns not in the input_format mapping
 #' @param build a string, one of GRCh37 or GRCh38
 #' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
 #' @return a standardised data.table
 #' @export
 #'
-standardise_gwas <- function(gwas, input_format="default", build="GRCh37", populate_rsid=FALSE) {
+standardise_gwas <- function(gwas, input_format="default", drop=FALSE, build="GRCh37", populate_rsid=FALSE) {
 
   # validate inputs
   build <- match.arg(build, c("GRCh37", "GRCh38"))
@@ -19,44 +20,15 @@ standardise_gwas <- function(gwas, input_format="default", build="GRCh37", popul
     populate_rsid <- match.arg(populate_rsid, names(genepi.utils::which_dbsnp_builds()))
   }
 
-  # define the column mapping
-  if(is.character(input_format)) {
-
-    mapping <- get_map(ColumnMapping(), input_format)
-
-  } else if(is.list(input_format)) {
-
-    mapping <- input_format
-
-  } else {
-
-    valid_formats <- input_formats(ColumnMapping())
-    stop(paste0("`input_format` must be a defined format [", paste0(valid_formats, collapse=", "), "], or a custom list() with at least named elements c(SNP=..., BETA=..., SE=..., EA=..., OA=..., EAF=..., P=..."))
-
-  }
-
-  # read the gwas if a file path, or ensure is a data.frame like object
-  if(is.character(gwas)) {
-
-    stopifnot("`gwas` must be a valid file path is supplied as a character" = file.exists(gwas))
-    gwas <- data.table::fread(gwas, nThread=parallel::detectCores())
-
-  } else if(inherits(gwas, "data.frame")) {
-
-    gwas <- data.table::as.data.table(gwas)
-
-  } else {
-
-    stop("`gwas` must be a valid file path or data.frame like object")
-
-  }
+  # get the mapping
+  mapping <- get_gwas_mapping(input_format)
 
   # apply the standardisation procedures
-  gwas <- gwas |>
-    change_column_names(mapping) |>
+  gwas <- get_input_gwas(gwas) |>
+    change_column_names(mapping, drop) |>
     filter_incomplete_rows() |>
     standardise_columns() |>
-    standardise_alleles() |>
+    standardise_alleles(build) |>
     health_check() |>
     populate_rsid(populate_rsid)
 
@@ -75,15 +47,21 @@ standardise_gwas <- function(gwas, input_format="default", build="GRCh37", popul
 #' @return a data.table
 #' @noRd
 #'
-change_column_names <- function(gwas, columns = list(), opposite_mapping = FALSE) {
+change_column_names <- function(gwas, columns = list(), drop=FALSE, opposite_mapping = FALSE) {
 
   if (!opposite_mapping) {
 
-    data.table::setnames(gwas, unname(columns), names(columns))
+    data.table::setnames(gwas, unlist(unname(columns)), names(columns))
 
   } else {
 
-    data.table::setnames(gwas, names(columns), unname(columns))
+    data.table::setnames(gwas, names(columns), unlist(unname(columns)))
+
+  }
+
+  if(drop) {
+
+    gwas[, names(gwas)[!names(gwas) %in% names(columns)] := NULL]
 
   }
 
@@ -102,13 +80,13 @@ filter_incomplete_rows <- function(gwas) {
 
   check_na <- c("CHR","BP","EA","OA","EAF")
 
-  empty_row_idx <- gwas[, rowSums(is.na(.SD))==length(check_na), .SDcols=check_na]
+  empty_rows <- gwas[, rowSums(is.na(.SD))==length(check_na), .SDcols=check_na]
 
-  if (length(empty_row_idx) > 0) {
-    warning(paste0("Filtering out ", length(empty_row_idx), " rows due to NAs"))
+  if (sum(empty_rows) > 0) {
+    warning(paste0("Filtering out ", sum(empty_rows), " rows due to NAs"))
   }
 
-  return(gwas[!empty_row_idx, ])
+  return(gwas[!(empty_rows), ])
 }
 
 
@@ -140,24 +118,30 @@ standardise_columns <- function(gwas) {
     }
   }
 
-  # convert odds ratio to betas and standard error
-  if (all(c("OR", "OR_LB", "OR_UB") %in% names(gwas)) & !all(c("BETA", "SE") %in% names(gwas))) {
+  # convert odds ratio to betas and standard error, if BETA, SE not provided
+  if(!all(c("BETA", "SE") %in% names(gwas))) {
 
-    gwas <- convert_or_to_beta(gwas)
+    if (all(c("OR", "OR_LB", "OR_UB") %in% names(gwas))) {
 
-  } else if (all(c("OR", "OR_SE") %in% names(gwas)) & !all(c("BETA", "SE") %in% names(gwas))) {
+      gwas <- convert_or_to_beta(gwas)
 
-    gwas <- convert_or_to_beta(gwas)
+    } else if (all(c("OR", "OR_SE") %in% names(gwas))) {
 
-  } else {
+      gwas <- convert_or_to_beta(gwas)
 
-    stop("problem standardising BETA and SE columns. No BETA SE columns provided and no OR OR_LB OR_UB or OR OR_SE columns provided to compute them.")
+    } else {
 
+      stop("problem standardising BETA and SE columns. No BETA SE columns provided and no OR OR_LB OR_UB or OR OR_SE columns provided to compute them.")
+
+    }
   }
 
   # correct types
-  gwas[, BP := as.integer(BP)]
-  gwas[, P  := as.numeric(BP)]
+  gwas[, CHR := as.character(CHR)]
+  gwas[, BP  := as.integer(BP)]
+  gwas[, BETA:= as.numeric(BETA)]
+  gwas[, SE  := as.numeric(SE)]
+  gwas[, P   := as.numeric(P)]
   gwas[P==0, P := .Machine$double.xmin]
 
   return(gwas)
@@ -194,6 +178,8 @@ convert_or_to_beta <- function(gwas) {
 #' Standardise alleles to upper
 #' @param gwas a data.table
 #' @return a data.table
+#' @importFrom future plan multisession
+#' @importFrom progressr with_progress
 #' @noRd
 #'
 standardise_alleles <- function(gwas, build) {
@@ -203,8 +189,8 @@ standardise_alleles <- function(gwas, build) {
   gwas[, OA := toupper(OA)]
 
   # define valid allele formats (could include 'D' and 'I' here, chosen not to for now)
-  valid_alleles <- ((grepl("^[AGCT]+$", gwas[["EA"]]) | is.na(EA)) & grepl("^[AGCT]+$", gwas[["OA"]])) |
-                   ((grepl("^[AGCT]+$", gwas[["OA"]]) | is.na(OA)) & grepl("^[AGCT]+$", gwas[["EA"]]))
+  valid_alleles <- ((grepl("^[AGCT]+$", gwas[["EA"]]) | is.na(gwas[["EA"]])) & grepl("^[AGCT]+$", gwas[["OA"]])) |
+                   ((grepl("^[AGCT]+$", gwas[["OA"]]) | is.na(gwas[["OA"]])) & grepl("^[AGCT]+$", gwas[["EA"]]))
 
   # report invalid
   if(any(!valid_alleles)) {
@@ -254,15 +240,18 @@ populate_rsid <- function(gwas, populate_rsid=FALSE) {
   }
 
   # get the RSIDs
-  gwas <- chrpos_to_rsid(gwas,
-                         chr_col   = "CHR",
-                         pos_col   = "BP",
-                         ea_col    = "EA",
-                         nea_col   = "OA",
-                         build     = populate_rsid,
-                         flip      = "report",
-                         alt_rsids = FALSE,
-                         verbose   = TRUE)
+  future::plan(future::multisession, workers=parallel::detectCores())
+  progressr::with_progress({
+    gwas <- chrpos_to_rsid(gwas,
+                           chr_col   = "CHR",
+                           pos_col   = "BP",
+                           ea_col    = "EA",
+                           nea_col   = "OA",
+                           build     = populate_rsid,
+                           flip      = "report",
+                           alt_rsids = FALSE,
+                           verbose   = TRUE)
+  })
 
   # RSIDs at the front
   cols <- c("RSID", "rsid_flip_match")
@@ -330,6 +319,80 @@ harmonise_gwases <- function(...) {
 }
 
 
+#' @title Get / format the input GWAS
+#' @param gwas a file path, or data.frame like object
+#' @return a data.table
+#' @noRd
+#'
+get_input_gwas <- function(gwas) {
+
+  if(is.character(gwas)) {
+
+    stopifnot("`gwas` must be a valid file path is supplied as a character" = file.exists(gwas))
+    gwas <- data.table::fread(gwas, nThread=parallel::detectCores())
+
+  } else if(inherits(gwas, "data.frame")) {
+
+    gwas <- data.table::as.data.table(gwas)
+
+  } else {
+
+    stop("`gwas` must be a valid file path or data.frame like object")
+
+  }
+
+  return(gwas)
+}
+
+
+#' @title Get the GWAS mapping
+#' @param input_format a file path, or data.frame like object
+#' @return a data.table
+#' @noRd
+#'
+get_gwas_mapping <- function(input_format) {
+
+  if(is.character(input_format)) {
+
+    mapping <- get_map(ColumnMapping(), input_format)
+
+  } else if(is.list(input_format)) {
+
+    mapping <- input_format
+
+  } else {
+
+    valid_formats <- input_formats(ColumnMapping())
+    stop(paste0("`input_format` must be a defined format [", paste0(valid_formats, collapse=", "), "], or a custom list() with at least named elements c(SNP=..., BETA=..., SE=..., EA=..., OA=..., EAF=..., P=..."))
+
+  }
+
+  return(mapping)
+}
+
+
+#' @title Format a GWAS file
+#' @description
+#' This formats a GWAS file column names and writes out to `output_file`
+#' @param file_gwas a string file path, or data.frame like object
+#' @param output_file a string, a file path
+#' @param output_format a string, a valid format - these can be obtained with `input_formats(ColumnMapping())`
+#' @return a file written to output_file
+#' @export
+#'
+format_gwas_output <- function(file_gwas, output_file, output_format="default") {
+
+  mapping <- get_gwas_mapping(output_format)
+
+  gwas <- get_input_gwas(gwas) |>
+    change_column_names(mapping, drop=FALSE, opposite_mapping=TRUE)
+
+  data.table::fwrite(gwas, output_file, sep="\t", nThread=parallel::detectCores())
+}
+
+
+
+
 # TODO:
 # populate_snp_from_rsid <- function(gwas) {
 #   start <- Sys.time()
@@ -345,11 +408,6 @@ harmonise_gwases <- function(...) {
 #   return(gwas)
 # }
 
-# TODO:
-# format_gwas_output <- function(file_gwas, output_file, output_format="default") {
-#   gwas <- vroom::vroom(file_gwas) %>%
-#     change_column_names(column_map[[output_format]], opposite_mapping = T)
-#
-#   vroom:vroom_write(gwas, output_file, delim="\t")
-# }
+
+
 
