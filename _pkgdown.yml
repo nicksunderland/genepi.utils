@@ -1,0 +1,13 @@
+reference:
+- title: "GWAS standardisation"
+  desc: >
+    Functions for standardising GWAS inputs
+  contents:
+  - standardise_gwas
+- title: "RSID mapping"
+  desc: "Functions for mapping chromosome and position data to variant RSIDs."
+  contents:
+  - chrpos_to_rsid
+  - set_dbsnp_directory
+  - which_dbsnp_builds
+  - which_dbsnp_directory
