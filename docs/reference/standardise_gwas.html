@@ -61,6 +61,7 @@
 <span>  <span class="va">gwas</span>,</span>
 <span>  input_format <span class="op">=</span> <span class="st">"default"</span>,</span>
 <span>  drop <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  fill <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  build <span class="op">=</span> <span class="st">"GRCh37"</span>,</span>
 <span>  populate_rsid <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -78,6 +79,10 @@
 
 <dt>drop</dt>
 <dd><p>a logical, whether to drop additional columns not in the input_format mapping</p></dd>
+
+
+<dt>fill</dt>
+<dd><p>a logical, whether to add (NAs) missing columns present in the mapping but not present in the GWAS</p></dd>
 
 
 <dt>build</dt>

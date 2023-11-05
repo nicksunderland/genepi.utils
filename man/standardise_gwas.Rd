@@ -8,6 +8,7 @@ standardise_gwas(
   gwas,
   input_format = "default",
   drop = FALSE,
+  fill = FALSE,
   build = "GRCh37",
   populate_rsid = FALSE
 )
@@ -18,6 +19,8 @@ standardise_gwas(
 \item{input_format}{a string or list(); if string, must be a valid format - these can be obtained with \code{input_formats(ColumnMapping())}}
 
 \item{drop}{a logical, whether to drop additional columns not in the input_format mapping}
+
+\item{fill}{a logical, whether to add (NAs) missing columns present in the mapping but not present in the GWAS}
 
 \item{build}{a string, one of GRCh37 or GRCh38}
 

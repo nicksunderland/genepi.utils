@@ -7,12 +7,44 @@ BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = SE = SNP = NULL
 #' @param gwas a string file path, or data.frame like object
 #' @param input_format a string or list(); if string, must be a valid format - these can be obtained with `input_formats(ColumnMapping())`
 #' @param drop a logical, whether to drop additional columns not in the input_format mapping
+#' @param fill a logical, whether to add (NAs) missing columns present in the mapping but not present in the GWAS
 #' @param build a string, one of GRCh37 or GRCh38
 #' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
 #' @return a standardised data.table
 #' @export
 #'
-standardise_gwas <- function(gwas, input_format="default", drop=FALSE, build="GRCh37", populate_rsid=FALSE) {
+standardise_gwas <- function(gwas, input_format="default", drop=FALSE, fill=FALSE, build="GRCh37", populate_rsid=FALSE) {
+#
+#   load_all()
+#   gwas="/Users/xx20081/Documents/local_data/hermes_progression/paradigm_hf/raw/paradigm.females.comp2.gz"
+#   gwas <- data.table::fread(gwas, nThread=parallel::detectCores())
+#
+#   # overwrite "D"/"I" coding if present
+#   if(any(grepl("^(D|I)$", gwas[[mapping[["EA"]]]]))) {
+#     gwas[, mapping[["EA"]] := ORI_EFFECT_ALLELE]
+#     gwas[, mapping[["OA"]] := ORI_OTHER_ALLELE]
+#   }
+#
+#   drop=T
+#   fill=T
+#   build="GRCh37"
+#   populate_rsid=FALSE
+#   input_format=list(
+#     "SNP"=       "MARKER",
+#       "CHR"=       "CHR",
+#       "BP"=        "POS",
+#       "EA"=        "EFFECT_ALLELE",
+#       "OA"=        "OTHER_ALLELE",
+#       "BETA"=      "BETA",
+#       "SE"=        "SE",
+#       "P"=         "P",
+#       "EAF"=       "EAF",
+#       "STRAND"=    "STRAND",
+#       "N"=         "N_SAMPLE",
+#       "N_CASE"=    "N_EVENTS",
+#       "IMPUTED"=   "Imputed",
+#       "INFO"=      "QUAL_SCORE"
+#   )
 
   # validate inputs
   build <- match.arg(build, c("GRCh37", "GRCh38"))
@@ -25,9 +57,10 @@ standardise_gwas <- function(gwas, input_format="default", drop=FALSE, build="GR
 
   # apply the standardisation procedures
   gwas <- get_input_gwas(gwas) |>
-    change_column_names(mapping, drop) |>
-    filter_incomplete_rows() |>
+    change_column_names(mapping, drop, fill) |>
     standardise_columns() |>
+    filter_incomplete_rows() |>
+    filter_invalid_values() |>
     standardise_alleles(build) |>
     health_check() |>
     populate_rsid(populate_rsid)
@@ -47,7 +80,17 @@ standardise_gwas <- function(gwas, input_format="default", drop=FALSE, build="GR
 #' @return a data.table
 #' @noRd
 #'
-change_column_names <- function(gwas, columns = list(), drop=FALSE, opposite_mapping = FALSE) {
+change_column_names <- function(gwas, columns = list(), drop=FALSE, fill=FALSE, opposite_mapping = FALSE) {
+
+  if(fill) {
+
+    gwas[, unlist(unname(columns))[!unlist(unname(columns)) %in% names(gwas)] := NA]
+
+  } else {
+
+    columns <- columns[unlist(unname(columns)) %in% names(gwas)]
+
+  }
 
   if (!opposite_mapping) {
 
@@ -65,28 +108,9 @@ change_column_names <- function(gwas, columns = list(), drop=FALSE, opposite_map
 
   }
 
+
+
   return(gwas)
-}
-
-
-#' @title Filter incomplete rows
-#' @description
-#' Remove rows where "CHR","BP","EA","OA","EAF" are all missing.
-#' @param gwas a data.table
-#' @return a filtered data.table
-#' @noRd
-#'
-filter_incomplete_rows <- function(gwas) {
-
-  check_na <- c("CHR","BP","EA","OA","EAF")
-
-  empty_rows <- gwas[, rowSums(is.na(.SD))==length(check_na), .SDcols=check_na]
-
-  if (sum(empty_rows) > 0) {
-    warning(paste0("Filtering out ", sum(empty_rows), " rows due to NAs"))
-  }
-
-  return(gwas[!(empty_rows), ])
 }
 
 
@@ -103,12 +127,12 @@ standardise_columns <- function(gwas) {
   # ensure CHR and BP columns present
   if (!all(c("CHR", "BP") %in% names(gwas))) {
 
-    valid_pattern <- grepl("\\d[:_]\\d", gwas[["SNP"]])
+    valid_pattern <- grepl("(?i)(\\d+|X|Y)[:_]\\d+", gwas[["SNP"]])
 
     if(all(valid_pattern)) {
 
-      gwas[, CHR := sub("(\\d)[:_]\\d(?:.*)", "\\1", SNP)]
-      gwas[, BP  := sub("\\d[:_](\\d)(?:.*)", "\\1", SNP)]
+      gwas[, CHR := sub("(?i)(\\d+|X|Y)[:_]\\d+(?:.*)", "\\1", SNP)]
+      gwas[, BP  := sub("(?i)(?:\\d+|X|Y)[:_](\\d+)(?:.*)", "\\1", SNP)]
 
     } else {
 
@@ -136,6 +160,9 @@ standardise_columns <- function(gwas) {
     }
   }
 
+  # TODO: more calculation things like getting P from Z and SE etc
+  # https://bios25328.hakyimlab.org/post/2022/04/13/calculate-z-score-p-value-chi2-stat-from-gwas/
+
   # correct types
   gwas[, CHR := as.character(CHR)]
   gwas[, BP  := as.integer(BP)]
@@ -145,6 +172,63 @@ standardise_columns <- function(gwas) {
   gwas[P==0, P := .Machine$double.xmin]
 
   return(gwas)
+}
+
+
+#' @title Filter incomplete rows
+#' @description
+#' Remove rows where values are missing or invalid.
+#' @param gwas a data.table
+#' @return a filtered data.table
+#' @noRd
+#'
+filter_incomplete_rows <- function(gwas) {
+
+  check_na <- c("CHR","BP","EAF","BETA","SE","P")
+
+  missing <- gwas[, rowSums(is.na(.SD)) > 0, .SDcols=check_na]
+
+  if (any(missing)) {
+    warning(paste0("Filtering out ", sum(missing), " rows due to NAs one or more of columns: ", paste0(check_na, collapse=", ")))
+  }
+
+  return(gwas[!missing, ])
+}
+
+
+#' @title Filter invalid data values
+#' @description
+#' Remove rows where values do not make sense.
+#' @param gwas a data.table
+#' @return a filtered data.table
+#' @noRd
+#'
+filter_invalid_values <- function(gwas) {
+
+  invalid_flags <- list(
+    "BETA" = is.infinite(gwas[["BETA"]]),
+    "P"    = is.infinite(gwas[["P"]]),
+    "SE"   = is.infinite(gwas[["SE"]])
+  )
+
+  report_cols <- c("CHR","BP","BETA","SE","P")
+
+  any_invalid <- rep(FALSE, nrow(gwas))
+
+  for(i in seq_along(invalid_flags)) {
+
+    col  <- names(invalid_flags)[i]
+
+    invalid <- invalid_flags[[i]]
+
+    if (sum(invalid, na.rm=T) > 0) {
+      warning(paste0("Filtering out ", sum(invalid, na.rm=T), " rows due to invalid data in the ", col, " column."))
+    }
+
+    any_invalid <- any_invalid | invalid
+  }
+
+  return(gwas[!any_invalid, ])
 }
 
 
@@ -270,16 +354,18 @@ populate_rsid <- function(gwas, populate_rsid=FALSE) {
 #'
 health_check <- function(gwas) {
 
-  invalid_pvals <- gwas[["P"]] <= 0 | gwas[["P"]] > 1
-  if (sum(invalid_pvals) > 0) {
+  invalid_pvals <- gwas[["P"]] <= 0 | gwas[["P"]] > 1 | is.na(gwas[["P"]])
+
+  if (sum(invalid_pvals, na.rm=TRUE) > 0 | any(is.na(invalid_pvals))) {
     cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
     warning(paste0("GWAS has ", sum(invalid_pvals), " P value(s) outside accepted range, for example:"))
     print(gwas[which(invalid_pvals)[1], cols, with=FALSE])
     stop("invalid GWAS P value(s)")
   }
 
-  invalid_eaf <- gwas[["EAF"]] < 0 | gwas[["EAF"]] > 1
-  if (sum(invalid_eaf) > 0) {
+  invalid_eaf <- gwas[["EAF"]] < 0 | gwas[["EAF"]] > 1 | is.na(gwas[["EAF"]])
+
+  if (sum(invalid_eaf, na.rm=T) > 0 | any(is.na(invalid_eaf))) {
     cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
     warning(paste0("GWAS has ", sum(invalid_eaf), " EAF value(s) outside accepted range, for example:"))
     print(gwas[which(invalid_eaf)[1], cols, with=FALSE])
