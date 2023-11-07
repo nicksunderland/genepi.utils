@@ -5,12 +5,14 @@
 ColumnMapping <- function() {
 
   # possible maps
+  # must have at least: CHR, BP, EA, OE, EAF, P AND/OR Z, (BETA, SE) AND/OR (OR, OR_SE) AND/OR (OR, OR_LB, OR_UB)
   maps <- list(
     default = list(SNP="SNP", CHR="CHR", BP="BP", EA="EA", OA="OA", EAF="EAF", P="P", BETA="BETA", SE="SE", OR="OR", OR_SE="OR_SE", OR_LB="OR_LB", OR_UB="OR_UB", RSID="RSID"),
     metal   = list(SNP="MarkerName", EA="Allele1", OA="Allele2", EAF="Freq1", P="P-value", BETA="Effect", SE="StdErr"),
     ieu_ukb = list(SNP="SNP", BETA="BETA", SE="SE", EA="ALLELE1", OA="ALLELE0", EAF="A1FREQ", P="P_BOLT_LMM_INF"),
     ns_map  = list(SNP="MARKER", CHR="CHR", BP="POS", EA="A1", OA="A2", BETA="BETA", SE="SE", EAF="EAF", P="P"),
-    gwama   = list(SNP="rs_number", EA="reference_allele", OA="other_allele", BETA="beta", SE="se", EAF="eaf", P="p-value", BETA_95U="beta_95U",BETA_95L="beta_95L", Z="z", LOG10_P="_-log10_p-value", Q_STAT="q_statistic",I2="i2", N_STUDIES="n_studies", N_SAMPLES="n_samples", EFFECTS="effects")
+    gwama   = list(SNP="rs_number", EA="reference_allele", OA="other_allele", BETA="beta", SE="se", EAF="eaf", P="p-value", BETA_95U="beta_95U",BETA_95L="beta_95L", Z="z", LOG10_P="_-log10_p-value", Q_STAT="q_statistic",I2="i2", N_STUDIES="n_studies", N="n_samples", EFFECTS="effects"),
+    giant   = list(SNP="SNP", CHR="CHR", BP="POS", "EA"="Tested_Allele", OA="Other_Allele", EAF="Freq_Tested_Allele", BETA="BETA", SE="SE", P="P", N="N", INFO="INFO")
   )
 
 

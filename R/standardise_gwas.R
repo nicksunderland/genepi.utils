@@ -155,13 +155,25 @@ standardise_columns <- function(gwas) {
 
     } else {
 
-      stop("problem standardising BETA and SE columns. No BETA SE columns provided and no OR OR_LB OR_UB or OR OR_SE columns provided to compute them.")
+      stop("problem standardising/creating BETA and SE columns. No BETA SE columns provided and no OR OR_LB OR_UB or OR OR_SE columns provided to compute them.")
 
     }
   }
 
-  # TODO: more calculation things like getting P from Z and SE etc
-  # https://bios25328.hakyimlab.org/post/2022/04/13/calculate-z-score-p-value-chi2-stat-from-gwas/
+  # convert Z-score to Pvalue if P not provided but Z score is
+  if(!"P" %in% names(gwas)) {
+
+    if("Z" %in% names(gwas)) {
+
+      gwas <- convert_z_to_p(gwas)
+
+    } else {
+
+      stop("problem standardising/creating P value column. No P value column found and no Z column provided to compute it.")
+
+    }
+
+  }
 
   # correct types
   gwas[, CHR := as.character(CHR)]
@@ -170,6 +182,46 @@ standardise_columns <- function(gwas) {
   gwas[, SE  := as.numeric(SE)]
   gwas[, P   := as.numeric(P)]
   gwas[P==0, P := .Machine$double.xmin]
+
+  return(gwas)
+}
+
+
+#' @title Convert Z score to p-value
+#' @description
+#' Given a Z-score, calculates the p-value.
+#' @param gwas a data.table with the following columns: Z
+#' @return a data.table with new column P
+#' @noRd
+#'
+convert_z_to_p <- function(gwas) {
+
+  gwas[, P := 2 * pnorm(-abs(Z))]
+
+  return(gwas)
+}
+
+
+#' @title Convert odds ratio to beta
+#' @description
+#' Given an OR and lower and upper bounds, calculates the BETA, and SE.
+#' Based on this answer: https://stats.stackexchange.com/a/327684
+#' @param gwas a data.table with the following columns: OR, LB (lower bound), UB (upper bound)
+#' @return a data.table with new columns BETA and SE
+#' @noRd
+#'
+convert_or_to_beta <- function(gwas) {
+
+  gwas[, BETA := log(OR)]
+
+  if ("OR_SE" %in% names(gwas)) {
+
+    gwas[, OR_UB := OR + OR_SE * 1.96]
+    gwas[, OR_UB := OR - OR_SE * 1.96]
+
+  }
+
+  gwas[, SE := (OR_UB - OR_LB) / (2 * 1.95996)]
 
   return(gwas)
 }
@@ -229,31 +281,6 @@ filter_invalid_values <- function(gwas) {
   }
 
   return(gwas[!any_invalid, ])
-}
-
-
-#' @title Convert odds ratio to beta
-#' @description
-#' Given an OR and lower and upper bounds, calculates the BETA, and SE.
-#' Based on this answer: https://stats.stackexchange.com/a/327684
-#' @param gwas a data.table with the following columns: OR, LB (lower bound), UB (upper bound)
-#' @return a data.table with new columns BETA and SE
-#' @noRd
-#'
-convert_or_to_beta <- function(gwas) {
-
-  gwas[, BETA := log(OR)]
-
-  if ("OR_SE" %in% names(gwas)) {
-
-    gwas[, OR_UB := OR + OR_SE * 1.96]
-    gwas[, OR_UB := OR - OR_SE * 1.96]
-
-  }
-
-  gwas[, SE := (OR_UB - OR_LB) / (2 * 1.95996)]
-
-  return(gwas)
 }
 
 
