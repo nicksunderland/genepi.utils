@@ -19,6 +19,9 @@
     <loc>/articles/index.html</loc>
   </url>
   <url>
+    <loc>/articles/plotting.html</loc>
+  </url>
+  <url>
     <loc>/articles/standardise_gwas.html</loc>
   </url>
   <url>
@@ -53,6 +56,12 @@
   </url>
   <url>
     <loc>/reference/is.input_format.html</loc>
+  </url>
+  <url>
+    <loc>/reference/manhattan.html</loc>
+  </url>
+  <url>
+    <loc>/reference/miami.html</loc>
   </url>
   <url>
     <loc>/reference/set_dbsnp_directory.html</loc>

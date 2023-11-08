@@ -1,43 +1,34 @@
-gwas_in = data.table::fread("/Users/xx20081/Documents/local_data/hermes_progression/biostat_disc/raw/BIOSTAT_Discovery.allcause.gz")
-set.seed(2023)
-gwas_in = gwas_in[sample(1:nrow(gwas_in), size=100000), c("CHR","POS","OTHER_ALLELE","EFFECT_ALLELE","EAF","BETA","SE","P","EUR")]
-gwas_in[, BETA := gwas_in[sample(nrow(gwas_in)), BETA]]
-gwas_in[, P    := gwas_in[sample(nrow(gwas_in)), P]]
-gwas_in[, P    := gwas_in[sample(nrow(gwas_in)), P]]
-gwas_in[, SNP  := gwas_in[, paste0(CHR,":",POS,"[b37]",OTHER_ALLELE,",",EFFECT_ALLELE)]]
-data.table::setnames(gwas_in, c("CHR","POS","OTHER_ALLELE","EFFECT_ALLELE","EAF","BETA","SE","P","EUR"), c("CHR","BP","OA","EA","EAF","BETA","SE","P","EUR_EAF"))
-data.table::setkey(gwas_in, CHR, BP)
-gwas_path = "/Users/xx20081/git/genepi.utils/inst/extdata/example3_gwas_sumstats.tsv"
-data.table::fwrite(gwas_in, gwas_path, sep="\t")
-gwas_in = data.table::fread(gwas_path)
+# silence R CMD checks for data.table columns
+BETA = BP = CHR = P = SE = SNP = CHR_int = chr_len = tot = x = i.tot = highlight = NULL
 
-highlight_snps = gwas_in[SNP=="4:32205845[b37]C,T", ][["SNP"]]
-annotate_snps = gwas_in[SNP=="4:32205845[b37]C,T", ][["SNP"]]
-
-
-p <- manhattan(gwas,
-               highlight_snps = highlight_snps,
-               highlight_win = 250,
-               annotate_snps = annotate_snps,
-               hit_table = TRUE,
-               title = "HELLO",
-               subtitle = "subdsadsda")
-p
-
-
-m <- miami(gwases           = list(gwas, data.table::copy(gwas)),
-           highlight_snps   = list("top"=highlight_snps, "bottom"=highlight_snps),
-           highlight_win    = list("top"=100, "bottom"=100),
-           annotate_snps    = list("top"=annotate_snps,"bottom"=annotate_snps),
-           title            = "Miami",
-           hit_table        = TRUE)
-m
-
-
-
-
-
-
+#' @title Manhattan plot
+#' @description
+#' Create a Manhattan plot with ggplot2 geom_point.
+#' @param gwas a data.table with a minimum of columns SNP, CHR, BP, and P
+#' @param highlight_snps (optional) a character vector of SNPs to highlight
+#' @param highlight_win (optional) a numeric, the number of kb either side of the highlight_snps to also highlight (i.e create peaks)
+#' @param annotate_snps (optional) a character vector of SNPs to annotate
+#' @param colours (optional) a character vector colour codes to be replicated along the chromosomes
+#' @param highlight_colour (optional) a character colour code; the colour to highlight points in
+#' @param highlight_shape (optional) a numeric shape code; the shape of the highlight points (see ggplot2 shape codes)
+#' @param highlight_alpha (optional) a numeric value between 0 and 1; the alpha of the highlighted points colour
+#' @param sig_line_1 (optional) a numeric value (-log10(P)) for where to draw a horizontal line
+#' @param sig_line_2 (optional) a numeric value (-log10(P)) for where to draw a second horizontal line
+#' @param y_limits (optional) a numeric length 2 vector c(min-Y, max-Y)
+#' @param title (optional) a string title
+#' @param subtitle (optional) a string subtitle
+#' @param hit_table (optional) a logical, whether to display a table of top hits (lowest P values)
+#' @param max_table_hits (optional) an integer, how many top hits to show in the table
+#' @param downsample (optional) a numeric between 0 and 1, tghe proportion by which to downsample by, e.g. 0.5 will remove 50% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)
+#' @param downsample_pval (optional) a numeric between 0 and 1, the p-values affected by downsampling, default >0.1
+#' @return a ggplot
+#' @export
+#' @importFrom data.table setkey
+#' @importFrom ggpubr ggarrange
+#' @importFrom ggrepel geom_label_repel
+#' @importFrom gridExtra tableGrob
+#' @import ggplot2
+#'
 manhattan <- function(gwas,
                       highlight_snps = NULL,
                       highlight_win = 100,
@@ -45,6 +36,7 @@ manhattan <- function(gwas,
                       colours = c("#d9d9d9", "#bfbfbf"),
                       highlight_colour = "#e15758",
                       highlight_shape = 16,
+                      highlight_alpha = 1.0,
                       sig_line_1 = 5e-8,
                       sig_line_2 = NULL,
                       y_limits = c(0, 7.5),
@@ -65,8 +57,8 @@ manhattan <- function(gwas,
   stopifnot("downsample_pval must be numeric between 0 and 1" = is.numeric(downsample_pval))
 
   # create factor from CHR
-  gwas[, CHR := as.factor(CHR)]
-  gwas[, CHR_int := as.integer(CHR)]
+  gwas[, "CHR" := as.factor(CHR)]
+  gwas[, "CHR_int" := as.integer(CHR)]
 
   # down-sample the insignificant dots for plotting
   if(downsample > 0) {
@@ -79,16 +71,16 @@ manhattan <- function(gwas,
   }
 
   # prepare x axis
-  data.table::setkey(gwas, CHR_int, BP)
-  gwas[gwas[, .(chr_len = as.numeric(max(BP))), by = CHR_int]
+  data.table::setkey(gwas, "CHR_int", "BP")
+  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "CHR_int"]
            [, tot := data.table::shift(cumsum(chr_len), fill=0)],
        x := BP + i.tot,
        on = "CHR_int"]
-  x_ticks <- gwas[, .("x_ticks"= (max(x) + min(x)) / 2), by = CHR_int]
+  x_ticks <- gwas[, list("x_ticks"= (max(x) + min(x)) / 2), by = "CHR_int"]
 
   # prepare y axis
   if(is.null(y_limits)) {
-    y_limits <- c(min(-log10(gwas$P),na.rm=T), max(-log10(gwas$P),na.rm=T))
+    y_limits <- c(0, max(-log10(gwas$P),na.rm=T))
   }
   log10P <- expression(paste("-log"[10], plain(P)))
 
@@ -119,7 +111,7 @@ manhattan <- function(gwas,
       }
     }
     plot <- plot +
-      ggplot2::geom_point(data = gwas[highlight==TRUE, ], color=highlight_colour, shape=highlight_shape, alpha=0.8, size=1.5)
+      ggplot2::geom_point(data = gwas[highlight==TRUE, ], color=highlight_colour, shape=highlight_shape, alpha=highlight_alpha, size=1.5)
   }
 
   # add SNP label annotations
@@ -151,10 +143,18 @@ manhattan <- function(gwas,
   return(plot)
 }
 
+
+#' @title Create top hits table
+#' @param gwas a data.table with at least columns SNP & P; optionally BETA and SE
+#' @param n number of top hits to display
+#' @return a gridExtra::tableGrob
+#' @importFrom utils head
+#' @noRd
+#'
 hit_table <- function(gwas, n) {
   # base columns and BETA and SE if provided
   cols <- c(c("SNP","P"), names(gwas)[names(gwas) %in% c("BETA","SE")])
-  table_data <- head(gwas[order(P), cols, with=FALSE], n=n)
+  table_data <- utils::head(gwas[order(P), cols, with=FALSE], n=n)
   table_data <- table_data[, lapply(.SD, signif, digits=2), by=SNP]
   table_data[, SNP := strtrim(SNP, 23)]
   table <- gridExtra::tableGrob(table_data, rows=NULL)
@@ -162,6 +162,18 @@ hit_table <- function(gwas, n) {
 }
 
 
+#' @title Miami plot
+#' @description
+#' Create a Miami plot. Please look carefully at the parameters as these largely map to the
+#' `manhattan()` parameters, the main difference being that you need to supply a 2 element
+#' list of the parameter, one for the upper and one for the lower plot aspect of the Miami
+#' plot. Some parameters are not duplicated however - see the example defaults below.
+#' @param gwases a list of 2 data.tables
+#' @inheritParams manhattan
+#' @return a ggplot
+#' @export
+#' @importFrom ggpubr annotate_figure
+#'
 miami <- function(gwases,
                   highlight_snps   = list("top"=NULL, "bottom"=NULL),
                   highlight_win    = list("top"=100, "bottom"=100),
@@ -173,7 +185,7 @@ miami <- function(gwases,
                   sig_line_2       = list("top"=NULL,"bottom"=NULL),
                   y_limits         = list("top"=c(0, 7.5),"bottom"=c(0, 7.5)),
                   title            = NULL,
-                  # subtitle         = list("top"=NULL,"bottom"=NULL), # doesn't look good at the minute
+                  subtitle         = list("top"=NULL,"bottom"=NULL),
                   hit_table        = FALSE,
                   max_table_hits   = 10,
                   downsample       = 0.1,
@@ -235,16 +247,20 @@ miami <- function(gwases,
     upper_table <- hit_table(gwases[[1]], max_table_hits)
     lower_table <- hit_table(gwases[[2]], max_table_hits)
     plot <- ggpubr::ggarrange(plot_upper,NULL,upper_table,NULL,NULL,NULL, plot_lower,NULL,lower_table,
-                              nrow=3, ncol=3, heights=c(1,-0.05,1), widths=c(0.75,0,0.25))
-                              # doesnt line up.... labels=c(subtitle[[1]],NULL,NULL,NULL,NULL,NULL,subtitle[[2]],NULL,NULL))
+                              nrow=3, ncol=3, heights=c(1,0,1), widths=c(0.75,0,0.25),
+                              labels=c(subtitle[[1]],"","",subtitle[[2]],"",""),
+                              vjust = 0.5,
+                              font.label=list(size=12, color="black", face="plain"))
   } else {
-    plot <- ggpubr::ggarrange(plot_upper, NULL, plot_lower, ncol=1, heights=c(1, -0.05, 1))
-                              # labels = subtitle)
+    plot <- ggpubr::ggarrange(plot_upper, NULL, plot_lower, ncol=1, heights=c(1,0,1),
+                              labels = c(subtitle[[1]],"",subtitle[[2]]),
+                              vjust = 0.5,
+                              font.label=list(size=12, color="black", face="plain"))
   }
 
   # add overall title
   if(!is.null(title)) {
-    plot <- ggpubr::annotate_figure(plot, top=ggpubr::text_grob(title, face = "bold"))
+    plot <- ggpubr::annotate_figure(plot, top=ggpubr::text_grob(title, face="bold", size=14))
   }
 
   return(plot)

@@ -73,3 +73,38 @@ which_dbsnp_builds <- function(build=NULL) {
 }
 
 
+#' @title Generate random GWAS data
+#' @description
+#' Generates rows of synthetic GWAS summary stats data. Useful for developing plotting and other
+#' methods. No attempt is made to make this data at all realistic.
+#' @param n number of fake variants to generate
+#' @param seed seed, for reproducibility
+#' @return a data.table with columns SNP, CHR, BP, OA, EA, EAF, BETA, P, EUR_EAF
+#' @export
+#' @importFrom stats rnorm runif
+#'
+generate_random_gwas_data <- function(n, seed=2023) {
+
+  EAF = EUR_EAF = SNP = NULL
+
+  set.seed(seed)
+
+  gwas <- data.table::data.table(
+    "CHR"= sample(c(as.character(1:22), "X"), size=n, replace=TRUE),
+    "BP"= sample(1:200000000, size=n, replace=FALSE),
+    "OA" = sample(c("A","C","T","G","AAC","GTTC","TAT"), size=n, replace=TRUE, prob=c(0.95,0.95,0.95,0.95,0.05,0.05,0.05)),
+    "EA" = sample(c("A","C","T","G","AAC","GTTC","TAT"), size=n, replace=TRUE, prob=c(0.95,0.95,0.95,0.95,0.05,0.05,0.05)),
+    "EAF"= stats::rnorm(n),
+    "BETA"= stats::rnorm(n, sd=1.5),
+    "P"= stats::runif(n)^2,
+    "EUR_EAF"= stats::rnorm(n)
+  )
+
+  gwas[, EAF     := (EAF - min(EAF)) / (max(EAF) - min(EAF))]
+  gwas[, EUR_EAF := (EUR_EAF - min(EUR_EAF)) / (max(EUR_EAF) - min(EUR_EAF))]
+  gwas[, SNP     := paste0(CHR,":",BP,"[b37]",OA,",",EA)]
+
+  return(gwas)
+}
+
+

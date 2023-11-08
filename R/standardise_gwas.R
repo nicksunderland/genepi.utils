@@ -1,5 +1,5 @@
 # silence R CMD checks for data.table columns
-BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = SE = SNP = NULL
+BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = Z = SE = SNP = NULL
 
 #' @title Standardise GWAS format
 #' @description
@@ -192,11 +192,12 @@ standardise_columns <- function(gwas) {
 #' Given a Z-score, calculates the p-value.
 #' @param gwas a data.table with the following columns: Z
 #' @return a data.table with new column P
+#' @importFrom stats pnorm
 #' @noRd
 #'
 convert_z_to_p <- function(gwas) {
 
-  gwas[, P := 2 * pnorm(-abs(Z))]
+  gwas[, P := 2 * stats::pnorm(-abs(Z))]
 
   return(gwas)
 }

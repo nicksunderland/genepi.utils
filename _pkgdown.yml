@@ -19,3 +19,10 @@ reference:
   - set_dbsnp_directory
   - which_dbsnp_builds
   - which_dbsnp_directory
+
+- title: "Plotting"
+  desc: >
+    Functions for creating common GenEpi data plots
+  contents:
+  - manhattan
+  - miami

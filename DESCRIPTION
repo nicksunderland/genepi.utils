@@ -13,7 +13,13 @@ Imports:
     fst,
     furrr,
     future,
+    ggplot2,
+    ggpubr,
+    ggrepel,
+    gridExtra,
     progressr,
+    stats,
+    utils,
     yaml
 Suggests: 
     knitr,
