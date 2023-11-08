@@ -26,3 +26,4 @@ reference:
   contents:
   - manhattan
   - miami
+  - generate_random_gwas_data

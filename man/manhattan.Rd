@@ -15,7 +15,7 @@ manhattan(
   highlight_alpha = 1,
   sig_line_1 = 5e-08,
   sig_line_2 = NULL,
-  y_limits = c(0, 7.5),
+  y_limits = c(NULL, NULL),
   title = NULL,
   subtitle = NULL,
   hit_table = FALSE,

@@ -14,7 +14,7 @@ miami(
   highlight_shape = list(top = 16, bottom = 16),
   sig_line_1 = list(top = 5e-08, bottom = 5e-08),
   sig_line_2 = list(top = NULL, bottom = NULL),
-  y_limits = list(top = c(0, 7.5), bottom = c(0, 7.5)),
+  y_limits = list(top = c(NULL, NULL), bottom = c(NULL, NULL)),
   title = NULL,
   subtitle = list(top = NULL, bottom = NULL),
   hit_table = FALSE,

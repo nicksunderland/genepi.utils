@@ -7,23 +7,9 @@ load_all()
 
 
 
-gwas_in = data.table::fread("/Users/xx20081/Documents/local_data/hermes_progression/biostat_disc/raw/BIOSTAT_Discovery.allcause.gz")
-set.seed(2023)
-gwas_in = gwas_in[sample(1:nrow(gwas_in), size=100000), c("CHR","POS","OTHER_ALLELE","EFFECT_ALLELE","EAF","BETA","SE","P","EUR")]
-gwas_in[, BETA := gwas_in[sample(nrow(gwas_in)), BETA]]
-gwas_in[, P    := gwas_in[sample(nrow(gwas_in)), P]]
-gwas_in[, P    := gwas_in[sample(nrow(gwas_in)), P]]
-gwas_in[, SNP  := gwas_in[, paste0(CHR,":",POS,"[b37]",OTHER_ALLELE,",",EFFECT_ALLELE)]]
-data.table::setnames(gwas_in, c("CHR","POS","OTHER_ALLELE","EFFECT_ALLELE","EAF","BETA","SE","P","EUR"), c("CHR","BP","OA","EA","EAF","BETA","SE","P","EUR_EAF"))
-data.table::setkey(gwas_in, CHR, BP)
-gwas_path = "/Users/xx20081/git/genepi.utils/inst/extdata/example3_gwas_sumstats.tsv"
-data.table::fwrite(gwas_in, gwas_path, sep="\t")
-gwas_in = data.table::fread(gwas_path)
-
-highlight_snps = gwas_in[SNP=="4:32205845[b37]C,T", ][["SNP"]]
-annotate_snps = gwas_in[SNP=="4:32205845[b37]C,T", ][["SNP"]]
-
-gwas=gwas_in
+gwas = genepi.utils::generate_random_gwas_data(100000)
+highlight_snps = c("15:135277414[b37]G,T")
+annotate_snps = c("15:135277414[b37]G,T")
 
 p <- manhattan(gwas,
                highlight_snps = highlight_snps,

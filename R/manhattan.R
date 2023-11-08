@@ -39,7 +39,7 @@ manhattan <- function(gwas,
                       highlight_alpha = 1.0,
                       sig_line_1 = 5e-8,
                       sig_line_2 = NULL,
-                      y_limits = c(0, 7.5),
+                      y_limits = c(NULL,NULL),
                       title = NULL,
                       subtitle = NULL,
                       hit_table = FALSE,
@@ -55,6 +55,11 @@ manhattan <- function(gwas,
   stopifnot("highlight_win must be numeric (kb either side of each hit to highlight; default=0)" = is.numeric(highlight_win))
   stopifnot("downsample percentage must be numeric between 0 and 1" = is.numeric(downsample))
   stopifnot("downsample_pval must be numeric between 0 and 1" = is.numeric(downsample_pval))
+
+  # #testing
+  # gwas = genepi.utils::generate_random_gwas_data(100000)
+  # highlight_snps = c("15:135277414[b37]G,T")
+  # annotate_snps = c("15:135277414[b37]G,T")
 
   # create factor from CHR
   gwas[, "CHR" := as.factor(CHR)]
@@ -80,7 +85,7 @@ manhattan <- function(gwas,
 
   # prepare y axis
   if(is.null(y_limits)) {
-    y_limits <- c(0, max(-log10(gwas$P),na.rm=T))
+    y_limits <- c(0, ceiling(max(-log10(gwas$P),na.rm=T)))
   }
   log10P <- expression(paste("-log"[10], plain(P)))
 
@@ -183,7 +188,7 @@ miami <- function(gwases,
                   highlight_shape  = list("top"=16,"bottom"=16),
                   sig_line_1       = list("top"=5e-8,"bottom"=5e-8),
                   sig_line_2       = list("top"=NULL,"bottom"=NULL),
-                  y_limits         = list("top"=c(0, 7.5),"bottom"=c(0, 7.5)),
+                  y_limits         = list("top"=c(NULL,NULL),"bottom"=c(NULL,NULL)),
                   title            = NULL,
                   subtitle         = list("top"=NULL,"bottom"=NULL),
                   hit_table        = FALSE,
@@ -231,9 +236,14 @@ miami <- function(gwases,
   plot_upper <- plot_upper +
     ggplot2::theme(axis.title.x = ggplot2::element_blank())
 
+  # flipping overwrites manhattan() things so need to recalculate
+  if(is.null(y_limits[[2]])) {
+    y_limits <- c(ceiling(max(-log10(gwases[[2]]$P),na.rm=T)), 0)
+  }
+
   # flip the bottom plot
   plot_lower <- plot_lower +
-    ggplot2::scale_y_reverse() +
+    ggplot2::scale_y_reverse(limits=y_limits, expand=c(0, 0)) +
     ggplot2::scale_x_continuous(expand=c(0.01, 0.01), position = "top") +
     ggplot2::theme(axis.title.x=ggplot2::element_blank(),
                    axis.line.x=ggplot2::element_blank(),
