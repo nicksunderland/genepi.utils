@@ -142,17 +142,41 @@ parameters is not strictly necessary, but helps readability.</p>
 <div class="section level2">
 <h2 id="qq-plot">QQ plot<a class="anchor" aria-label="anchor" href="#qq-plot"></a>
 </h2>
-<p>TBC…</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_random_gwas_data.html">generate_random_gwas_data</a></span><span class="op">(</span><span class="fl">100000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">pz_plot</span><span class="op">(</span><span class="va">gwas</span>,</span>
+<span>              <span class="va">...</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="pz-plot">PZ plot<a class="anchor" aria-label="anchor" href="#pz-plot"></a>
 </h2>
-<p>TBC…</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_random_gwas_data.html">generate_random_gwas_data</a></span><span class="op">(</span><span class="fl">100000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">pz_plot</span><span class="op">(</span><span class="va">gwas</span>,</span>
+<span>              <span class="va">...</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="eaf-plot">EAF plot<a class="anchor" aria-label="anchor" href="#eaf-plot"></a>
 </h2>
-<p>TBC…</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_random_gwas_data.html">generate_random_gwas_data</a></span><span class="op">(</span><span class="fl">100000</span><span class="op">)</span></span>
+<span><span class="va">gwas</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="va">EUR_EAF</span> <span class="op">:=</span> <span class="cn">NA</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eaf_plot.html">eaf_plot</a></span><span class="op">(</span><span class="va">gwas</span>,</span>
+<span>              eaf_col <span class="op">=</span> <span class="st">"EAF"</span>,</span>
+<span>              ref_eaf_col <span class="op">=</span> <span class="st">"EUR_EAF"</span>,</span>
+<span>              tolerance <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>              colours <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>missing<span class="op">=</span><span class="st">"#5B1A18"</span>, outlier<span class="op">=</span><span class="st">"#FD6467"</span>, within<span class="op">=</span><span class="st">"#7294D4"</span><span class="op">)</span>,</span>
+<span>              title <span class="op">=</span> <span class="st">"EAF study vs. reference plot"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/eaf_plot.png" width="80%" style="display: block; margin: auto;"></p>
 </div>
   </div>
 

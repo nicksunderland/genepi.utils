@@ -26,4 +26,5 @@ reference:
   contents:
   - manhattan
   - miami
+  - eaf_plot
   - generate_random_gwas_data

@@ -252,7 +252,7 @@ miami <- function(gwases,
                    plot.background=ggplot2::element_rect(fill='transparent', color=NA),
                    panel.background=ggplot2::element_rect(fill='transparent'))
 
-  # combine plots
+  # combine plots, with or without tables
   if(hit_table) {
     upper_table <- hit_table(gwases[[1]], max_table_hits)
     lower_table <- hit_table(gwases[[2]], max_table_hits)
@@ -273,6 +273,7 @@ miami <- function(gwases,
     plot <- ggpubr::annotate_figure(plot, top=ggpubr::text_grob(title, face="bold", size=14))
   }
 
+  # return the complete plot
   return(plot)
 }
 
