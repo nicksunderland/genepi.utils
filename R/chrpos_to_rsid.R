@@ -9,6 +9,7 @@
 #' @param flip a string, options: "report", "allow", "no_flip"
 #' @param alt_rsids a logical, whether to return additional alternate RSIDs
 #' @param verbose a logical, runtime reporting
+#' @param dbsnp_dir a string file path to the dbSNP .fst file directory - see setup documentation.
 #'
 #' @return a data.table with an RSID column (or a list: 1-data.table; 2-list of alternate rsids IDs)
 #' @export
@@ -17,7 +18,16 @@
 #' @importFrom furrr future_map
 #' @importFrom fst fst read_fst
 #'
-chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, build="b37_dbsnp156", flip="no_flip", alt_rsids=FALSE, verbose=TRUE) {
+chrpos_to_rsid <- function(dt,
+                           chr_col,
+                           pos_col,
+                           ea_col=NULL,
+                           nea_col=NULL,
+                           flip="no_flip",
+                           alt_rsids=FALSE,
+                           build="b37_dbsnp156",
+                           dbsnp_dir = genepi.utils::which_dbsnp_directory(),
+                           verbose=TRUE) {
 
   # checks
   stopifnot("`dt` must be a data.table" = inherits(dt, "data.table"))
@@ -37,6 +47,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
   if(is.numeric(dt[,get(chr_col)])) {
     stopifnot("`chr_col`, if numeric, must be whole numbers" = all(dt[,get(chr_col)] %% 1 == 0))
   }
+  stopifnot("`dbsnp_dir` must be a valid directory path" = dir.exists(dbsnp_dir))
 
   build <- match.arg(build, c("b37_dbsnp156"))
   flip  <- match.arg(flip, c("report", "allow", "no_flip"))
@@ -68,7 +79,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
   # set up parallel processing and process each chromosome independently
   out <- furrr::future_map(.x = dts,
                            .f = process_chromosome,
-                           chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, flip=flip, alt_rsids=alt_rsids, p=p,
+                           chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, dbsnp_dir=dbsnp_dir, flip=flip, alt_rsids=alt_rsids, p=p,
                            .options=furrr::furrr_options(seed=TRUE))
 
   # deal with alternative RSIDs if requested
@@ -108,7 +119,7 @@ chrpos_to_rsid <- function(dt, chr_col, pos_col, ea_col=NULL, nea_col=NULL, buil
 # this function could be defined in the above function. However I took it out to avoid
 # the gwas data.table being captured in each futures environment. See this discussion
 # for the details: https://furrr.futureverse.org/articles/gotchas.html#function-environments-and-large-objects
-process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
+process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
 
   # silence RMDcheck warning
   i.RSID = baseRSID = NULL
@@ -120,8 +131,9 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, flip, alt_rsid
   chrom <- chrom_dt[[1, chr_col]]
 
   # the dbSNP `.fst` file for this chromosome
-  dbSNP_dir  <- genepi.utils::which_dbsnp_builds(build=build)
-  dbSNP_path <- file.path(dbSNP_dir, paste0("chr", chrom, ".fst"))
+  dbSNP_build_dir  <- file.path(dbsnp_dir, build)
+  dbSNP_path <- file.path(dbSNP_build_dir, paste0("chr", chrom, ".fst"))
+  stopifnot("Missing .fst reference file - is the dbSNP directory set correctly?" = file.exists(dbSNP_path))
 
   # read just the dbSNP position data (an integer vector) (reduce amount of data read in)
   dbSNP_pos <- fst::read_fst(dbSNP_path, "BP", as.data.table=TRUE)

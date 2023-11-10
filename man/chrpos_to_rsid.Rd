@@ -10,9 +10,10 @@ chrpos_to_rsid(
   pos_col,
   ea_col = NULL,
   nea_col = NULL,
-  build = "b37_dbsnp156",
   flip = "no_flip",
   alt_rsids = FALSE,
+  build = "b37_dbsnp156",
+  dbsnp_dir = genepi.utils::which_dbsnp_directory(),
   verbose = TRUE
 )
 }
@@ -27,11 +28,13 @@ chrpos_to_rsid(
 
 \item{nea_col}{a string column name; non effect allele}
 
-\item{build}{a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)}
-
 \item{flip}{a string, options: "report", "allow", "no_flip"}
 
 \item{alt_rsids}{a logical, whether to return additional alternate RSIDs}
+
+\item{build}{a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)}
+
+\item{dbsnp_dir}{a string file path to the dbSNP .fst file directory - see setup documentation.}
 
 \item{verbose}{a logical, runtime reporting}
 }

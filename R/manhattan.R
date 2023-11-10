@@ -1,9 +1,10 @@
 # silence R CMD checks for data.table columns
-BETA = BP = CHR = P = SE = SNP = CHR_int = chr_len = tot = x = i.tot = highlight = NULL
+BETA = BP = CHR = P = SE = SNP = chr_len = tot = x = i.tot = highlight = NULL
 
 #' @title Manhattan plot
 #' @description
 #' Create a Manhattan plot with ggplot2 geom_point.
+#'
 #' @param gwas a data.table with a minimum of columns SNP, CHR, BP, and P
 #' @param highlight_snps (optional) a character vector of SNPs to highlight
 #' @param highlight_win (optional) a numeric, the number of kb either side of the highlight_snps to also highlight (i.e create peaks)
@@ -20,6 +21,7 @@ BETA = BP = CHR = P = SE = SNP = CHR_int = chr_len = tot = x = i.tot = highlight
 #' @param hit_table (optional) a logical, whether to display a table of top hits (lowest P values)
 #' @param max_table_hits (optional) an integer, how many top hits to show in the table
 #' @param downsample (optional) a numeric between 0 and 1, tghe proportion by which to downsample by, e.g. 0.5 will remove 50% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)
+#' @param base_text_size an integer, `base_size` for the ggplot2 theme
 #' @param downsample_pval (optional) a numeric between 0 and 1, the p-values affected by downsampling, default >0.1
 #' @return a ggplot
 #' @export
@@ -42,6 +44,7 @@ manhattan <- function(gwas,
                       y_limits = c(NULL,NULL),
                       title = NULL,
                       subtitle = NULL,
+                      base_text_size = 14,
                       hit_table = FALSE,
                       max_table_hits = 10,
                       downsample = 0.1,
@@ -63,39 +66,49 @@ manhattan <- function(gwas,
 
   # create factor from CHR
   gwas[, "CHR" := as.factor(CHR)]
-  gwas[, "CHR_int" := as.integer(CHR)]
 
   # down-sample the insignificant dots for plotting
   if(downsample > 0) {
     set.seed(2023)
     insig_rows <- which(gwas[["P"]] > downsample_pval)
     insig_pval <- gwas[insig_rows, ][["P"]]
-    gwas <- gwas[-sample(x    = insig_rows,
-                         size = round(length(insig_pval)*downsample),
-                         prob = (insig_pval - min(insig_pval, na.rm=T)) / (max(insig_pval, na.rm=T) - min(insig_pval, na.rm=T))), ]
+    prob       <- (insig_pval - min(insig_pval, na.rm=T)) / (max(insig_pval, na.rm=T) - min(insig_pval, na.rm=T)) # high P more likely to be removed
+    n_remove   <- round(length(insig_pval)*downsample)
+    remove_idxs<- sample(insig_rows, size=n_remove, prob=prob, replace=TRUE) # replace=FALSE takes ages, so just call unique after and accept exact % wont be quite accurate
+    gwas <- gwas[-unique(remove_idxs), ]
   }
 
   # prepare x axis
-  data.table::setkey(gwas, "CHR_int", "BP")
-  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "CHR_int"]
+  data.table::setkey(gwas, "CHR", "BP")
+  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "CHR"]
            [, tot := data.table::shift(cumsum(chr_len), fill=0)],
        x := BP + i.tot,
-       on = "CHR_int"]
-  x_ticks <- gwas[, list("x_ticks"= (max(x) + min(x)) / 2), by = "CHR_int"]
+       on = "CHR"]
+  x_ticks <- gwas[, list("x_ticks"= (max(x) + min(x)) / 2), by = "CHR"]
 
   # prepare y axis
   if(is.null(y_limits)) {
-    y_limits <- c(0, ceiling(max(-log10(gwas$P),na.rm=T)))
+    # data max
+    max_p <- max(-log10(gwas$P),na.rm=T)
+    # data & line1 max
+    if(!is.null(sig_line_1)) {
+      max_p <- max(c(max_p, -log10(sig_line_1)),na.rm=T)
+    }
+    # data & line2 max
+    if(!is.null(sig_line_2)) {
+      max_p <- max(c(max_p, -log10(sig_line_2)),na.rm=T)
+    }
+    y_limits <- c(0, ceiling(max_p))
   }
   log10P <- expression(paste("-log"[10], plain(P)))
 
   # base plot
   plot <- ggplot2::ggplot(gwas, ggplot2::aes(x=x, y=-log10(P), color=CHR)) +
     ggplot2::geom_point(alpha=0.8, size=0.2) +
-    ggplot2::scale_x_continuous(label=x_ticks$CHR_int, breaks=x_ticks$x_ticks, expand=c(0.01, 0.01)) +
+    ggplot2::scale_x_continuous(label=x_ticks$CHR, breaks=x_ticks$x_ticks, expand=c(0.01, 0.01)) +
     ggplot2::scale_y_continuous(limits=y_limits, expand=c(0, 0)) +
     ggplot2::scale_color_manual(values=rep(colours, length.out=length(levels(gwas$CHR)))) +
-    ggplot2::theme_classic() +
+    ggplot2::theme_classic(base_size = base_text_size) +
     ggplot2::theme(
       legend.position ="none",
       panel.border = ggplot2::element_blank(),
@@ -191,6 +204,7 @@ miami <- function(gwases,
                   y_limits         = list("top"=c(NULL,NULL),"bottom"=c(NULL,NULL)),
                   title            = NULL,
                   subtitle         = list("top"=NULL,"bottom"=NULL),
+                  base_text_size   = 14,
                   hit_table        = FALSE,
                   max_table_hits   = 10,
                   downsample       = 0.1,
@@ -238,7 +252,17 @@ miami <- function(gwases,
 
   # flipping overwrites manhattan() things so need to recalculate
   if(is.null(y_limits[[2]])) {
-    y_limits <- c(ceiling(max(-log10(gwases[[2]]$P),na.rm=T)), 0)
+    # data max
+    max_p <- max(-log10(gwases[[2]]$P),na.rm=T)
+    # data & line1 max
+    if(!is.null(sig_line_1[[2]])) {
+      max_p <- max(c(max_p, -log10(sig_line_1[[2]])),na.rm=T)
+    }
+    # data & line2 max
+    if(!is.null(sig_line_2[[2]])) {
+      max_p <- max(c(max_p, -log10(sig_line_2[[2]])),na.rm=T)
+    }
+    y_limits <- c(ceiling(max_p), 0)
   }
 
   # flip the bottom plot
@@ -270,7 +294,7 @@ miami <- function(gwases,
 
   # add overall title
   if(!is.null(title)) {
-    plot <- ggpubr::annotate_figure(plot, top=ggpubr::text_grob(title, face="bold", size=14))
+    plot <- ggpubr::annotate_figure(plot, top=ggpubr::text_grob(title, face="bold", size=base_text_size+2))
   }
 
   # return the complete plot

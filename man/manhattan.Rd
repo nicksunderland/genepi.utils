@@ -18,6 +18,7 @@ manhattan(
   y_limits = c(NULL, NULL),
   title = NULL,
   subtitle = NULL,
+  base_text_size = 14,
   hit_table = FALSE,
   max_table_hits = 10,
   downsample = 0.1,
@@ -50,6 +51,8 @@ manhattan(
 \item{title}{(optional) a string title}
 
 \item{subtitle}{(optional) a string subtitle}
+
+\item{base_text_size}{an integer, \code{base_size} for the ggplot2 theme}
 
 \item{hit_table}{(optional) a logical, whether to display a table of top hits (lowest P values)}
 
