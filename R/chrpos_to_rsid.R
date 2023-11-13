@@ -1,6 +1,6 @@
 #' @title Chromosome & position data to variant RSID
 #'
-#' @param dt a data.table with at least columns (chrom<chr>, pos<int>, ea<chr>, nea<chr>)
+#' @param dt a data.frame like object with at least columns (chrom<chr>, pos<int>, ea<chr>, nea<chr>)
 #' @param chr_col a string column name; chromosome position
 #' @param pos_col a string column name; base position
 #' @param ea_col a string column name; effect allele
@@ -17,20 +17,32 @@
 #' @importFrom progressr progressor
 #' @importFrom furrr future_map
 #' @importFrom fst fst read_fst
+#' @importFrom tibble as_tibble
 #'
 chrpos_to_rsid <- function(dt,
                            chr_col,
                            pos_col,
                            ea_col=NULL,
                            nea_col=NULL,
-                           flip="no_flip",
+                           flip="allow",
                            alt_rsids=FALSE,
                            build="b37_dbsnp156",
                            dbsnp_dir = genepi.utils::which_dbsnp_directory(),
                            verbose=TRUE) {
 
   # checks
-  stopifnot("`dt` must be a data.table" = inherits(dt, "data.table"))
+  if(all(file.exists(as.character(dt)))) {
+    dt <- data.table::fread(dt, nThread=parallel::detectCores())
+  }
+  stopifnot("`dt` must be a data.frame like object" = inherits(dt, "data.frame"))
+  if(inherits(dt, "tbl_df")) {
+    df_type <- "tibble"
+  } else if(inherits(dt, "data.table")) {
+    df_type <- "data.table"
+  } else if(inherits(dt, "data.frame")) {
+    df_type <- "data.frame"
+  }
+  dt <- data.table::as.data.table(dt)
   stopifnot("`chr_col` must be a column name in `dt`" = chr_col %in% colnames(dt))
   stopifnot("`pos_col` must be a column name in `dt`" = pos_col %in% colnames(dt))
   stopifnot("`pos_col` must be numeric/integer type" = is.numeric(dt[,get(pos_col)]))
@@ -48,9 +60,9 @@ chrpos_to_rsid <- function(dt,
     stopifnot("`chr_col`, if numeric, must be whole numbers" = all(dt[,get(chr_col)] %% 1 == 0))
   }
   stopifnot("`dbsnp_dir` must be a valid directory path" = dir.exists(dbsnp_dir))
-
   build <- match.arg(build, c("b37_dbsnp156"))
   flip  <- match.arg(flip, c("report", "allow", "no_flip"))
+
 
   # data adjustment
   # (?i) case-insensitive
@@ -103,15 +115,35 @@ chrpos_to_rsid <- function(dt,
   }
   message(msg)
 
-  # return
+  # remove flipping flag from output if not wanted
+  if(flip=="allow") {
+    out_data[, "rsid_flip_match" := NULL]
+  }
+
+  # return as same type as input
   if(alt_rsids) {
 
+    if(df_type=="tibble") {
+      out_data <- tibble::as_tibble(out_data)
+      out_alts <- tibble::as_tibble(out_alts)
+    } else if(df_type=="data.table") {
+      # pass, already data.table
+    } else if(inherits(dt, "data.frame")) {
+      out_data <- as.data.frame(out_data)
+      out_alts <- as.data.frame(out_alts)
+    }
     return(list("data" = out_data, "alt_rsids" = out_alts))
 
   } else {
 
+    if(df_type=="tibble") {
+      out_data <- tibble::as_tibble(out_data)
+    } else if(df_type=="data.table") {
+      # pass, already data.table
+    } else if(inherits(dt, "data.frame")) {
+      out_data <- as.data.frame(out_data)
+    }
     return(out_data)
-
   }
 }
 
@@ -122,7 +154,7 @@ chrpos_to_rsid <- function(dt,
 process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
 
   # silence RMDcheck warning
-  i.RSID = baseRSID = NULL
+  RSID = i.RSID = baseRSID = rsid_flip_match = NULL
 
   # increment progress bar #1
   p()
@@ -185,6 +217,16 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, fli
       # make data.table longer, one allele combination per row
       dbSNP_data <- dbSNP_data[, lapply(.SD, unlist), by=1:nrow(dbSNP_data)]
       dbSNP_data[, nrow := NULL]
+
+      # recode as D/I if input data has D/I coding
+      if(any(grepl("^(D|I)$", chrom_dt[[nea_col]]))) {
+        dbSNP_data[, "ALT" := data.table::fcase(nchar(ALT)< nchar(REF), "D",
+                                                 nchar(ALT)> nchar(REF), "I",
+                                                 nchar(ALT)==nchar(REF), ALT)]
+        dbSNP_data[, "REF" := data.table::fcase(ALT=="D", "I",
+                                                ALT=="I", "D",
+                                                rep(TRUE, nrow(dbSNP_data)), REF)]
+      }
     }
 
     # increment progress bar #5
@@ -220,19 +262,9 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, fli
       # set the keys to flipped alleles
       data.table::setkeyv(dbSNP_data, dbSNP_keyflip)
 
-      if(flip=="report") {
-
-        # add in flipped matches and a logical flag
-        chrom_dt[dbSNP_data, c("RSID", "rsid_flip_match") := list(i.RSID, TRUE)]
-
-      } else if(flip=="allow") {
-
-        # add in flipped matches
-        chrom_dt[dbSNP_data, "RSID" := i.RSID]
-
-      } else {
-        stop("internal code problem with `flip` argument")
-      }
+      # add in flipped matches and a logical flag
+      chrom_dt[dbSNP_data, c("RSID", "rsid_flip_match") := list(i.RSID, TRUE)]
+      chrom_dt[!is.na(RSID) & is.na(rsid_flip_match), rsid_flip_match := FALSE]
 
       if(alt_rsids) {
         # get any alt rsids that match flipped
@@ -250,7 +282,7 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, fli
     p()
     chrom_dt[["RSID"]] <- NA_character_
     if(alt_rsids) alt_rsid_data <- data.table::copy(chrom_dt)
-    if(flip=="report" & alleles) chrom_dt[, "rsid_flip_match" := NA_character_]
+    if(flip!="no_flip" & alleles) chrom_dt[, rsid_flip_match := NA_character_]
     if(alt_rsids) {
       alt_rsid_data[, "baseRSID" := NA_character_]
       alt_rsid_data <- alt_rsid_data[!is.na(baseRSID), ]

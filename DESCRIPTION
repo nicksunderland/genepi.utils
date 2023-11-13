@@ -24,7 +24,8 @@ Imports:
     yaml,
     mclust,
     gganimate,
-    viridis
+    viridis,
+    tibble
 Suggests: 
     knitr,
     rmarkdown,

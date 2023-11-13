@@ -10,7 +10,7 @@ chrpos_to_rsid(
   pos_col,
   ea_col = NULL,
   nea_col = NULL,
-  flip = "no_flip",
+  flip = "allow",
   alt_rsids = FALSE,
   build = "b37_dbsnp156",
   dbsnp_dir = genepi.utils::which_dbsnp_directory(),
@@ -18,7 +18,7 @@ chrpos_to_rsid(
 )
 }
 \arguments{
-\item{dt}{a data.table with at least columns (chrom\if{html}{\out{<chr>}}, pos\if{html}{\out{<int>}}, ea\if{html}{\out{<chr>}}, nea\if{html}{\out{<chr>}})}
+\item{dt}{a data.frame like object with at least columns (chrom\if{html}{\out{<chr>}}, pos\if{html}{\out{<int>}}, ea\if{html}{\out{<chr>}}, nea\if{html}{\out{<chr>}})}
 
 \item{chr_col}{a string column name; chromosome position}
 

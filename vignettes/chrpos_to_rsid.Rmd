@@ -83,7 +83,7 @@ gwas_with_rsids <- genepi.utils::chrpos_to_rsid(gwas,
 str(gwas_with_rsids)
 ```
 
-### Allele specification
+### Allele specification / matching
 
 Although matching on alleles is desirable, especially for indels, we can still match on just chromosome and position by either leaving `ea_col` and `nea_col` arguments out, or setting them to `NULL`.
 
@@ -92,6 +92,37 @@ gwas_with_rsids <- genepi.utils::chrpos_to_rsid(gwas,
                                                 chr_col = "chromosome",
                                                 pos_col = "base_pair_location",
                                                 build   = "b37_dbsnp156")
+
+str(gwas_with_rsids)
+```
+
+Alleles are not always aligned to the reference and so we allow allele flipping by default with the parameter `flip="allow"`. If you would like to flag which variants have been assigned an rsID based on flipped alleles use `flip="report"`; this will add a logical column to the output called `rsid_flip_match`. To prevent allele flipping and only assign based on the reference allele orientation use `flip="no_flip"`.
+
+```{r example_6, eval=TRUE}
+gwas_with_rsids <- genepi.utils::chrpos_to_rsid(gwas,
+                                                chr_col = "chromosome",
+                                                pos_col = "base_pair_location",
+                                                ea_col  = "effect_allele",
+                                                nea_col = "other_allele",
+                                                flip    = "report",
+                                                build   = "b37_dbsnp156")
+
+str(gwas_with_rsids)
+```
+
+Coding of indels as D/I is allowed, however please check the alternate rsID output as mutliple rsIDs (indels) may be present for D/I coding at any particular base position.
+
+```{r example_7, eval=TRUE}
+gwas_id_coding <- data.table::fread(system.file("extdata", "example3_gwas_sumstats.tsv", package="genepi.utils"))
+
+gwas_with_rsids <- genepi.utils::chrpos_to_rsid(dt      = gwas_id_coding,
+                                                chr_col = "chromosome",
+                                                pos_col = "base_pair_location",
+                                                ea_col  = "effect_allele",
+                                                nea_col = "other_allele",
+                                                flip    = "allow",
+                                                build   = "b37_dbsnp156", 
+                                                alt_rsids=TRUE)
 
 str(gwas_with_rsids)
 ```
