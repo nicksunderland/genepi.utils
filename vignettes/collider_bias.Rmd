@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 An example of using the `ColliderBias()` class and associated functions to investigate the degree of index event (collider) bias in your GWAS progression data. 
 
-```{r setup, eval=T, results="hide", warning=FALSE, message=FALSE}
+```{r setup, eval=F}
 library(genepi.utils)
 
 gwas_incidence <- generate_random_gwas_data(50000)
@@ -30,7 +30,7 @@ collider_object <- ColliderBias(gwas_incidence, gwas_progression)
 
 Run the Slope-hunter algorithm.
 
-```{r run_slopehunter, eval=T}
+```{r run_slopehunter, eval=F}
 collider_object <- slopehunter(collider_object, bootstraps=10)
 ```
 Run the SlopeHunter expectation-maximization method to estimate the bias adjustment factor. The algorithm uses model-based clustering and proposes that the distributions of the incidence(GI) and progression (GP) BETAs can be written like so:  
