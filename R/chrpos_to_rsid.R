@@ -31,8 +31,12 @@ chrpos_to_rsid <- function(dt,
                            verbose=TRUE) {
 
   # checks
-  if(all(file.exists(as.character(dt)))) {
-    dt <- data.table::fread(dt, nThread=parallel::detectCores())
+  if(is.character(dt)) {
+    if(file.exists(dt)) {
+      dt <- data.table::fread(dt, nThread=parallel::detectCores())
+    } else {
+      stop("If `dt` is a string then it needs to be a valid file path")
+    }
   }
   stopifnot("`dt` must be a data.frame like object" = inherits(dt, "data.frame"))
   if(inherits(dt, "tbl_df")) {

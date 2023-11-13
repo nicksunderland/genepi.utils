@@ -62,7 +62,7 @@ m
 
 
 
-gwas_sumstats_4.3million_rows <- "/Users/xx20081/Documents/local_data/hermes_progression/bioshift_triumph/raw/bioshift_triumph.allcause.gz"
+gwas_sumstats_4.3million_rows <- "/Users/xx20081/Documents/local_data/hermes_progression/biostat_val/pre_qc/biostat_val.allcause_death.autosomes.gz"
 
 # some GWAS data
 dt <- data.table::fread( gwas_sumstats_4.3million_rows )
