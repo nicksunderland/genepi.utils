@@ -20,6 +20,17 @@ reference:
   - which_dbsnp_builds
   - which_dbsnp_directory
 
+- title: "Collider bias"
+  desc: >
+    Functions for analysing collider / index event bias and adjust GWAS data for this bias.
+  contents:
+  - ColliderBias
+  - analyse
+  - slopehunter
+  - dudbridge
+  - ivw_mr
+  - plot_slopehunter_iters
+
 - title: "Plotting"
   desc: >
     Functions for creating common GenEpi data plots

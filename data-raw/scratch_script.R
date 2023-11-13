@@ -3,7 +3,24 @@ load_all()
 
 
 
+gwas_i <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz")
+gwas_p <- data.table::fread("/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz")
+data.table::setkey(gwas_i, "CHR", "BP")
+data.table::setkey(gwas_p, "CHR", "BP")
+gwas_i <- gwas_i[1:10000,]
+gwas_p <- gwas_p[1:10000,]
 
+
+collider = genepi.utils::ColliderBias(gwas_i, gwas_p)
+
+harm = collider$harmonised
+
+collider = genepi.utils::slopehunter(collider, bootstraps=0)
+
+
+p<- plot_slopehunter_iters(collider)
+
+p
 
 
 

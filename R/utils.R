@@ -96,6 +96,7 @@ generate_random_gwas_data <- function(n, seed=2023) {
     "EA" = sample(c("A","C","T","G","AAC","GTTC","TAT"), size=n, replace=TRUE, prob=c(0.95,0.95,0.95,0.95,0.05,0.05,0.05)),
     "EAF"= stats::rnorm(n),
     "BETA"= stats::rnorm(n, sd=1.5),
+    "SE"= stats::runif(n),
     "P"= stats::runif(n)^2,
     "EUR_EAF"= stats::rnorm(n)
   )

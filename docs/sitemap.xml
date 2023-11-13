@@ -13,6 +13,9 @@
     <loc>/articles/chrpos_to_rsid.html</loc>
   </url>
   <url>
+    <loc>/articles/collider_bias.html</loc>
+  </url>
+  <url>
     <loc>/articles/example_1.html</loc>
   </url>
   <url>
@@ -31,10 +34,19 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/ColliderBias.html</loc>
+  </url>
+  <url>
     <loc>/reference/ColumnMapping.html</loc>
   </url>
   <url>
+    <loc>/reference/analyse.html</loc>
+  </url>
+  <url>
     <loc>/reference/chrpos_to_rsid.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dudbridge.html</loc>
   </url>
   <url>
     <loc>/reference/eaf_plot.html</loc>
@@ -64,13 +76,22 @@
     <loc>/reference/is.input_format.html</loc>
   </url>
   <url>
+    <loc>/reference/ivw_mr.html</loc>
+  </url>
+  <url>
     <loc>/reference/manhattan.html</loc>
   </url>
   <url>
     <loc>/reference/miami.html</loc>
   </url>
   <url>
+    <loc>/reference/plot_slopehunter_iters.html</loc>
+  </url>
+  <url>
     <loc>/reference/set_dbsnp_directory.html</loc>
+  </url>
+  <url>
+    <loc>/reference/slopehunter.html</loc>
   </url>
   <url>
     <loc>/reference/standardise_gwas.html</loc>

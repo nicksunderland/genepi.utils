@@ -18,12 +18,18 @@ Imports:
     ggrepel,
     gridExtra,
     progressr,
+    TwoSampleMR,
     stats,
     utils,
-    yaml
+    yaml,
+    mclust,
+    gganimate,
+    viridis
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
+Remotes:
+    https://github.com/MRCIEU/TwoSampleMR
 VignetteBuilder: knitr
 Config/testthat/edition: 3
