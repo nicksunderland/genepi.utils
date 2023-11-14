@@ -14,30 +14,28 @@ knitr::opts_chunk$set(
 )
 ```
 
-An example of using the `ColliderBias()` class and associated functions to investigate the degree of index event (collider) bias in your GWAS progression data. 
+An example of using the `ColliderBias()` class and associated functions to investigate the degree of index event (collider) bias in your GWAS progression data. We start with independent variants from the incident GWAS of interest - this will will require pre-processing with appropriate clumping parameters. All variants from the progression GWAS are included in the initial step. We then create the `ColliderBias()` object which will further standardise the data and perform harmonisation.
 
 ```{r setup, eval=F}
 library(genepi.utils)
 
-gwas_incidence <- generate_random_gwas_data(50000)
-gwas_progression <- generate_random_gwas_data(50000)
-gwas_progression[, BETA := sample(BETA, replace=TRUE)]
+gwas_clumped_incidence <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_incidence/clumped/hf_incidence_pheno1_eur.clumps.gz")
+gwas_progression <- data.table::fread("/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz")
 
-collider_object <- ColliderBias(gwas_incidence, gwas_progression)
+collider_object <- ColliderBias(gwas_clumped_incidence, gwas_progression)
+
 ```
 
 ## Slope-hunter
 
-Run the Slope-hunter algorithm.
+### Background
 
-```{r run_slopehunter, eval=F}
-collider_object <- slopehunter(collider_object, bootstraps=10)
-```
 Run the SlopeHunter expectation-maximization method to estimate the bias adjustment factor. The algorithm uses model-based clustering and proposes that the distributions of the incidence(GI) and progression (GP) BETAs can be written like so:  
 
 $$
-  \binom{\beta_{GI}}{\beta'_{GI}}
+  \binom{\beta_{GI}}{\beta'_{GP}}
   \sim
+  \color{#F8766D}{
   \pi_{1}N
   \begin{pmatrix}
   \underline{0},
@@ -45,8 +43,9 @@ $$
   \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} \\
   b_1\sigma_{I}^{2} & b_{1}^{2}\sigma_{I}^{2} \\
   \end{bmatrix}
-  \end{pmatrix}
+  \end{pmatrix}}
   +
+  \color{#619CFF}{
   \pi_{2}N
   \begin{pmatrix}
   \underline{0},
@@ -54,7 +53,8 @@ $$
   \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} + \sigma_{IP} \\
   b_1\sigma_{I}^{2} + \sigma_{IP} & b_{1}^{2}\sigma_{I}^{2} + \sigma_{P}^{2} + 2b_{1}\sigma_{IP} \\
   \end{bmatrix}
-  \end{pmatrix}
+  \end{pmatrix}}
+  \color{gray}{
   +
   \pi_{3}
   \begin{pmatrix}
@@ -66,14 +66,14 @@ $$
   \begin{pmatrix}
   \eta_{0} \\
   \eta_{0}
-  \end{pmatrix}
+  \end{pmatrix}}
 $$
   
   
-* Cluster 1: SNPs that cause incidence but not progression  
-* Cluster 2: SNPs that cause incidence and progression  
-* Cluster 3: SNPs that cause progression but not incidence  
-* Cluster 4: SNPs that cause neither incidence or progression  
+* Cluster 1: SNPs that cause incidence but not progression (red)  
+* Cluster 2: SNPs that cause incidence and progression (blue)  
+* Cluster 3: SNPs that cause progression but not incidence (gray)  
+* Cluster 4: SNPs that cause neither incidence or progression (gray)    
 
 The values \eqn{\pi_{1}, \pi_{2}, \pi_{3}, \pi_{4}} are the probabilities that a SNP belongs to the respective clusters.  
 
@@ -82,12 +82,38 @@ The first thing to note is that we can filter out SNPs from cluster 3 and 4 by o
 This function's code is adapted from the SlopeHunter R package and if using this method the SlopeHunter package should be referenced as the original source.
 
 
-## Plot
+### Run
 
-Visualise the iterative algorithm
+Running the Slope-hunter algorithm requires initialising parameters.  
+
+* `ip` is the initial p-value by which to filter the incident GWA variants. Variants with a p-value greater that `ip` will be removed from the analysis (i.e. variants in clusters 3 & 4).
+* `pi0` is an initial guess for the proportion of variants that only associate with incidence (i.e. belong to cluster 1).  
+* `sxy1` is an initial guess for the covariance between incidence and progression betas in cluster 2.  
+
+The standard error of the slope is estimated with bootstrapping, 100 samples in the case below.
+
+```{r run_slopehunter, eval=F}
+result <- slopehunter(x          = collider_object, 
+                      ip         = 0.001,
+                      pi0        = 0.6,
+                      sxy1       = 1e-5,
+                      bootstraps = 100)
+
+result
+```
+
+
+### Visualise
+
+We can visualise the iterative EM algorithm like so. The variants are allocated to either cluster 1 (incidence only) or cluster 2 (incidence and progression) based on how well they conform to defined bivariate distributions for each cluster. The key point is that the incidence-only distribution has a linear relationship between incidence and progression betas, with no constant term - i.e. we search for a straight line passing through the origin. At each iteration the distribution parameters are recalculated (variance / s.dev / cov) and variant reassigned to either cluster 1 or 2, until the model converges.
 
 ```{r plot_gif, eval=FALSE}
-p <- plot_slopehunter_iters(collider_object)
+p <- plot_slopehunter_iters(collider_object,
+                            ip     = 0.001,
+                            pi0    = 0.6,
+                            sxy1   = 1e-5,
+                            x_lims = c(-0.2, 0.2), 
+                            y_lims = c(-0.5, 0.5))
 
 p
 ```
@@ -96,4 +122,99 @@ gganimate::anim_save("figures/slopehunter.gif")
 ```
 ```{r show_gif, echo=FALSE, out.width="90%", fig.align='center'}
 knitr::include_graphics("figures/slopehunter.gif")
+```
+
+The algorithm can be sensitive to the incidence p-value threshold `ip`. Too high and null variants without any effect on incidence will be included. Too low and the clusters will become small and variants will smaller effects on incidence will be removed. It is a good idea to investigate the stability of the adjustment factor estimate to difference in `ip` threshold. To do this, create a collider object with a range of `ip` values. Then plot using `plot_slopehunter()`.
+
+```{r plot_pvals, eval=FALSE}
+collider_object <- ColliderBias(gwas_i = gwas_clumped_incidence, 
+                                gwas_p = gwas_progression, 
+                                ip     = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001), 
+                                bootstraps = 0)
+
+p <- plot_slopehunter(collider_object)
+p
+```
+```{r save_pvals, include=FALSE, eval=FALSE}
+png("figures/slopehunter_pvalues.png", width=600, height=600, units="px")
+p
+dev.off()
+```
+```{r show_pvals, echo=FALSE, out.width="98%", fig.align='center'}
+knitr::include_graphics("figures/slopehunter_pvalues.png")
+```
+
+
+## Dudbridge - corrected weighted least-squares
+
+TBC
+
+### Background
+
+### Run 
+```{r run_dudbridge, eval=F}
+result <- dudbridge(collider_object)
+
+result
+```
+
+## IVW Mendelian Randomisation
+
+TBC
+
+### Background
+
+### Run 
+```{r run_ivw_mr, eval=F}
+result <- ivw_mr(collider_object)
+
+result
+```
+
+
+## Overall assessment
+
+We can run many combinations of the above analyses by defining sets of parameters in the ColliderBias object. Note: be careful with large numbers of parameters as this will quickly lead to large numbers of combinations. e.g.  
+
+* methods = c("slopehunter")  
+* ip = c(0.05,0.001,0.00001)  
+* pi0 = c(0.6, 0.65, 0.7). 
+* sxy1 = c(1e-5, 1e-4, 1e-3)  
+
+...will lead to 27 separate analyses.  
+
+We can use the `analyse()` function to run all combinations of methods and parameters. Here is the (in-)stability of the b-slope with different p-values (`ip`) in the Slope-hunter and IVW-MR methods.
+
+```{r run_all, eval=F}
+collider_object <- analyse(x          = collider_object, 
+                           methods    = c("slopehunter","ivw_mr"),
+                           ip         = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001),
+                           pi0        = 0.6,
+                           sxy1       = 1e-5,
+                           bootstraps = 100)
+
+p <- plot_p_threshold(collider_object)
+p
+```
+```{r save_all_pvals, include=FALSE, eval=FALSE}
+png("figures/slopehunter_all_methods_pvalues.png", width=600, height=600, units="px")
+p
+dev.off()
+```
+```{r show_all_pvals, echo=FALSE, out.width="98%", fig.align='center'}
+knitr::include_graphics("figures/slopehunter_all_methods_pvalues.png")
+```
+
+
+## Applying the correction factor
+
+Once the parameters have been set and `b` estimate of the correction calculated we next need to apply the correction to the (biased) progression GWAS data. As the correction uses the incidence data we can only apply this to variants that appear in both incidence and progression datasets (the harmonised dataset).
+
+$$
+\beta_{GP} = \beta_{GP}^{'} - b_{1}\beta_{GI}
+$$
+```{r apply_correction, eval=F}
+corrected_gwas <- apply_correction(collider_object, b=-0.62897804, se=0.09785357)
+
+str(corrected_gwas)
 ```

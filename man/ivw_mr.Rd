@@ -5,14 +5,16 @@
 \alias{ivw_mr.ColliderBias}
 \title{IVW MR}
 \usage{
-ivw_mr(x, ip)
+ivw_mr(x, ip, ...)
 
-\method{ivw_mr}{ColliderBias}(x, ip = 0.001)
+\method{ivw_mr}{ColliderBias}(x, ip = 0.001, ...)
 }
 \arguments{
 \item{x}{a ColliderBias object}
 
 \item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
+
+\item{...}{sink for unneeded params}
 }
 \value{
 a ColliderBias object with updated parameter and results fields

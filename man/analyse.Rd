@@ -5,9 +5,16 @@
 \alias{analyse.ColliderBias}
 \title{Run collider bias analysis}
 \usage{
-analyse(x, methods, ip, pi0, sxy1)
+analyse(x, methods, ip, pi0, sxy1, bootstraps)
 
-\method{analyse}{ColliderBias}(x, methods, ip, pi0, sxy1)
+\method{analyse}{ColliderBias}(
+  x,
+  methods = NULL,
+  ip = NULL,
+  pi0 = NULL,
+  sxy1 = NULL,
+  bootstraps = NULL
+)
 }
 \arguments{
 \item{x}{a ColliderBias object}
@@ -19,6 +26,8 @@ analyse(x, methods, ip, pi0, sxy1)
 \item{pi0}{a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only}
 
 \item{sxy1}{a numeric, the initial (guess) of the covariance between incidence and progression BETAs}
+
+\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)}
 }
 \value{
 a ColliderBias object with updated parameter and results fields

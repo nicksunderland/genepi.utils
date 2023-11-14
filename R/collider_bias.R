@@ -23,41 +23,29 @@ ColliderBias <- function(gwas_i,
                          sxy1       = 1e-5,
                          bootstraps = 100) {
 
+  message("Creating ColliderBias object...")
+
   # checks
   stopifnot("Invalid `ColliderBias` parameters" = valid_params(methods, ip, pi0, sxy1, bootstraps))
 
-  # format data - add cols used by TwoSampleMR::format_data
-  if(!"phenotype" %in% names(gwas_i)) gwas_i[, "phenotype" := "incidence"]
-  if(!"phenotype" %in% names(gwas_p)) gwas_p[, "phenotype" := "progression"]
-  if(!"id" %in% names(gwas_i))        gwas_i[, "id" := "incidence"]
-  if(!"id" %in% names(gwas_p))        gwas_p[, "id" := "progression"]
+  # format
+  formatted_gwases <- format_gwas_for_collider_analysis(gwas_i, gwas_p)
 
-  # define the columns for TwoSampleMR::format_data
-  cols <- list(snp_col="SNP",chr_col="CHR",pos_col="BP",effect_allele_col="EA",other_allele_col="OA",beta_col="BETA",se_col="SE",pval="P",eaf_col="EAF",phenotype_col="phenotype",id_col="id")
-  i_cols = p_cols = cols
-  if("N" %in% names(gwas_p)) i_cols <- c(i_cols, list(samplesize_col="N"))
-  if("N" %in% names(gwas_p)) p_cols <- c(p_cols, list(samplesize_col="N"))
-
-  # run the formatting
-  gwas_i <- do.call(TwoSampleMR::format_data, c(list(dat=gwas_i, type="exposure"), i_cols))
-  gwas_p <- do.call(TwoSampleMR::format_data, c(list(dat=gwas_p, type="outcome"), p_cols))
-
-  # harmonise effects
-  gwas_harmonised <- TwoSampleMR::harmonise_data(gwas_i, gwas_p) |> data.table::as.data.table()
+  # harmonise
+  harmonised <- TwoSampleMR::harmonise_data(formatted_gwases[["gwas_i"]], formatted_gwases[["gwas_p"]]) |> data.table::as.data.table()
 
   # package the data into a structure of class ColliderBias
   s3_struct <- structure(
     .Data = list(
-      gwas_i     = gwas_i,
-      gwas_p     = gwas_p,
-      harmonised = gwas_harmonised,
+      gwas_i     = formatted_gwases[["gwas_i"]],
+      gwas_p     = formatted_gwases[["gwas_p"]],
+      harmonised = harmonised,
       methods    = c("slopehunter","dudbridge","ivw_mr"),
-      ip         = 0.001,
-      pi0        = 0.6,
-      sigma0     = 1e-5,
-      bootstraps = 100,
-      results    = list(),
-      plots      = list()
+      ip         = ip,
+      pi0        = pi0,
+      sxy1       = sxy1,
+      bootstraps = bootstraps,
+      results    = data.table::data.table()
     ),
     class = "ColliderBias"
   )
@@ -82,10 +70,40 @@ ColliderBias <- function(gwas_i,
 #' @inheritParams ColliderBias
 #' @return a ColliderBias object with updated parameter and results fields
 #' @export
-analyse <- function(x,methods,ip,pi0,sxy1) UseMethod("analyse")
+analyse <- function(x,methods,ip,pi0,sxy1,bootstraps) UseMethod("analyse")
 #' @rdname analyse
 #' @export
-analyse.ColliderBias <- function(x,methods,ip,pi0,sxy1) {
+analyse.ColliderBias <- function(x,methods=NULL,ip=NULL,pi0=NULL,sxy1=NULL,bootstraps=NULL) {
+
+  if(is.null(methods)) methods <- x$methods
+  if(is.null(ip)) ip <- x$ip
+  if(is.null(pi0)) pi0 <- x$pi0
+  if(is.null(sxy1)) sxy1 <- x$sxy1
+  if(is.null(bootstraps)) bootstraps <- x$bootstraps
+
+  params <- lapply(methods, function(m) {
+    if(m=="slopehunter") return(expand.grid(method="slopehunter", ip=ip, pi0=pi0, sxy1=sxy1, bootstraps=bootstraps))
+    if(m=="dudbridge") return(expand.grid(method="dudbridge", ip=NA_real_, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
+    if(m=="ivw_mr") return(expand.grid(method="ivw_mr", ip=ip, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
+  }) |> data.table::rbindlist()
+
+  # results from each combination of parameters
+  results <- data.table::data.table()
+  for(i in 1:nrow(params)) {
+
+    res <- do.call(what = as.character(params$method[[i]]),
+                   args = list(x    = x,
+                               ip   = params$ip[[i]],
+                               pi0  = params$pi0[[i]],
+                               sxy1 = params$sxy1[[i]],
+                               bootstraps = params$bootstraps[[i]]))
+
+    results <- rbind(results, as.data.frame(res))
+  }
+
+  # add the results dt to the object
+  x[["results"]] <- results
+
   return(x)
 }
 
@@ -153,17 +171,60 @@ analyse.ColliderBias <- function(x,methods,ip,pi0,sxy1) {
 #' @param x a ColliderBias object
 #' @inheritParams ColliderBias
 #' @param seed an integer, seed for reproducibility
-#' @return a ColliderBias object with updated parameter and results fields
+#' @return a list with the method parameters and results
 #' @export
 slopehunter <- function(x,ip,pi0,sxy1,bootstraps,seed) UseMethod("slopehunter")
 #' @rdname slopehunter
 #' @export
-slopehunter.ColliderBias <- function(x,
-                                     ip         = 0.9,
+slopehunter.ColliderBias <- function(x          = NULL,
+                                     ip         = 0.001,
                                      pi0        = 0.6,
                                      sxy1       = 1e-5,
                                      bootstraps = 100,
                                      seed       = 2023) {
+
+
+  # inc <- SlopeHunter::format_data(x$gwas_i,
+  #                          type = "incidence",
+  #                          snp_col = "SNP",
+  #                          beta_col = "beta.exposure",
+  #                          se_col = "se.exposure",
+  #                          pval_col = "pval.exposure",
+  #                          eaf_col = "eaf.exposure",
+  #                          effect_allele_col = "effect_allele.exposure",
+  #                          other_allele_col = "other_allele.exposure",
+  #                          chr_col = "chr.exposure",
+  #                          pos_col = "pos.exposure")
+  #
+  # pro <- SlopeHunter::format_data(x$gwas_p,
+  #                               type = "prognosis",
+  #                               snp_col = "SNP",
+  #                               beta_col = "beta.outcome",
+  #                               se_col = "se.outcome",
+  #                               pval_col = "pval.outcome",
+  #                               eaf_col = "eaf.outcome",
+  #                               effect_allele_col = "effect_allele.outcome",
+  #                               other_allele_col = "other_allele.outcome",
+  #                               chr_col = "chr.outcome",
+  #                               pos_col = "pos.outcome")
+  #
+  # h <- SlopeHunter::harmonise_effects(inc,pro) |> as.data.frame()
+  #
+  # sh <- SlopeHunter:: hunt(h, xp_thresh=ip, init_pi=pi0, init_sigmaIP=sxy1)
+  #
+  # res <- analysis_result(method ="slopehunter",
+  #                        ip     = ip,
+  #                        pi0    = pi0,
+  #                        sxy1   = sxy1,
+  #                        b      = sh$b,
+  #                        bse    = sh$bse,
+  #                        entropy= sh$entropy)
+
+
+
+
+
+
 
   pval.exposure = NULL
 
@@ -173,17 +234,20 @@ slopehunter.ColliderBias <- function(x,
   # exit if there are no significant incidence variants at this threshold
   if(nrow(d)==0) {
     warning(paste0("No significant incidence SNPs at `ip` ", ip, "\n"))
-    return(x)
+    return(analysis_result(method ="slopehunter",
+                           ip     = ip,
+                           pi0    = pi0,
+                           sxy1   = sxy1))
   }
 
   # run the EM algorithm
-  result <- shclust(d, pi0, sxy1, collect_iters=FALSE)
+  result <- shclust(d, pi0=pi0, sxy1=sxy1, collect_iters=FALSE)
 
   # run lots more times bootstrapping to estimate SE
   if (bootstraps > 0){
     b.boots = vector("numeric", bootstraps)
     for(i in 1:bootstraps){
-      cat("Bootstrap sample", i, "of", bootstraps, "samples ...\n")
+      if(i%%10==0) cat("Bootstrapping... ", i, "of", bootstraps, "\n")
       set.seed(seed+i)
       boot_idxs = sample(1:nrow(d), size = nrow(d), replace = TRUE)
       d_boot = d[boot_idxs,]
@@ -199,17 +263,19 @@ slopehunter.ColliderBias <- function(x,
 
     # calculate bse
     result$bse  = sd(abs(b.boots))
-    result$b_CI = c(result$b - 1.96*result$bse, result$b + 1.96*result$bse)
+    result$bse_LB = result$b - 1.96*result$bse
+    result$bse_UB = result$b + 1.96*result$bse
   }
 
-  # print the results
-  cat("SlopeHunter:  b =", result$b, " ( SE", result$bse, ")\n")
-
-  # add the result to the collider object
-  x$results[["slopehunter"]] <- result
-
-  # return the updated object
-  return(x)
+  # overall result to return
+  res <- analysis_result(method ="slopehunter",
+                         ip     = ip,
+                         pi0    = pi0,
+                         sxy1   = sxy1,
+                         b      = result$b,
+                         bse    = result$bse,
+                         entropy= result$entropy)
+  return(res)
 }
 
 
@@ -234,7 +300,7 @@ shclust <- function(d, pi0, sxy1, collect_iters=FALSE) {
 
   # data for contour plotting
   iter_data <- list()
-  b_iter_data <- list()
+  iter_bs <- list()
 
   # convergence criterion
   loglkl_ck = 0
@@ -267,6 +333,7 @@ shclust <- function(d, pi0, sxy1, collect_iters=FALSE) {
     if(collect_iters & (iter %in% 1:20 | iter%%10==0)) {
       tmp <- d[, c("beta.exposure", "beta.outcome", "pt", "clusters")]
       iter_data <- c(iter_data, list(tmp))
+      iter_bs <- c(iter_bs, list(dir0*sy0/sx0))
     }
 
     # loglik of the mixture model: pi0 * f0 + (1-p0) * f1
@@ -314,25 +381,161 @@ shclust <- function(d, pi0, sxy1, collect_iters=FALSE) {
   result <- list(fit     = d,
                  b       = b,
                  bse     = bse,
-                 b_CI    = c(b - 1.96*bse, b + 1.96*bse),
+                 bse_LB  = b - 1.96*bse,
+                 bse_UB  = b + 1.96*bse,
                  entropy = entropy,
-                 iters   = iter_data)
+                 iters   = iter_data,
+                 iters_b = iter_bs)
 
   return(result)
 }
 
 
+#' @title Dudbridge CWLS method
+#' @description
+#' The Dudbridge corrected weighted least-squares method for assessing collider bias.
+#' @param ... sink for unneeded params
+#' @param x a ColliderBias object
+#' @return a ColliderBias object with updated parameter and results fields
+#' @export
+#' @importFrom MendelianRandomization mr_ivw
+dudbridge <- function(x, ...) UseMethod("dudbridge")
+#' @rdname dudbridge
+#' @export
+dudbridge.ColliderBias <- function(x, ...) {
+
+  # dots just so we can call all the methods with the same parameters
+  ignore <- list(...)
+
+  # harmonise the filtered incidence variants against the progression
+  d <- TwoSampleMR::harmonise_data(x$gwas_i, x$gwas_p) |> data.table::as.data.table()
+
+  # calculate the correction
+  cwls_correction <- MendelianRandomization::mr_ivw(
+    MendelianRandomization::mr_input(
+      bx   = d[["beta.exposure"]],
+      bxse = d[["se.exposure"]],
+      by   = d[["beta.outcome"]],
+      byse = d[["se.outcome"]]
+    )
+  )
+
+  weights <- 1 / d[["se.outcome"]]^2
+
+  weighting <-  (sum(weights*d[["beta.exposure"]]^2)) /
+               ((sum(weights*d[["beta.exposure"]]^2)) - (sum(weights*d[["se.exposure"]]^2)))
+
+  cwls_estimated_slope <- cwls_correction$Estimate * weighting
+  cwls_estimated_standard_error <- cwls_correction$StdError * weighting
+
+  # overall result to return
+  res <- analysis_result(method ="dudbridge",
+                         b      = cwls_estimated_slope,
+                         bse    = cwls_estimated_standard_error)
+
+  return(res)
+
+}
+
+
+
+#' @title IVW MR
+#' @description
+#' The Inverse variance weighted Mendelian Randomisation method for assessing collider bias.
+#' @param x a ColliderBias object
+#' @param ... sink for unneeded params
+#' @inheritParams ColliderBias
+#' @return a ColliderBias object with updated parameter and results fields
+#' @export
+#' @importFrom TwoSampleMR harmonise_data mr
+ivw_mr <- function(x,ip, ...) UseMethod("ivw_mr")
+#' @rdname ivw_mr
+#' @export
+ivw_mr.ColliderBias <- function(x,ip = 0.001, ...) {
+
+  ignore <- list(...)
+
+  pval.exposure = NULL
+
+  # filter by the incidence threshold
+  d <- x$harmonised[pval.exposure < ip, ]
+
+  # exit if there are no significant incidence variants at this threshold
+  if(nrow(d)==0) {
+    warning(paste0("No significant incidence SNPs at `ip` ", ip, "\n"))
+    return(analysis_result(method ="ivw_mr", ip = ip))
+  }
+
+  # run the MR
+  mr_results <- TwoSampleMR::mr(d, method_list = c("mr_ivw"))
+
+  # overall result to return
+  res <- analysis_result(method ="ivw_mr",
+                         b   = mr_results$b,
+                         bse = mr_results$se,
+                         ip  = ip)
+
+  return(res)
+}
+
+
+#' @title Apply collider bias correction factor
+#' @description
+#' Apply collider bias adjustment.
+#' @param x a ColliderBias object
+#' @param b the calculated adjustment factor `b`
+#' @param se the calculated b standard error
+#' @return a data.table
+#' @export
+#' @importFrom stats pchisq
+#'
+apply_correction <- function(x,b,se) UseMethod("apply_correction")
+#' @rdname apply_correction
+#' @export
+apply_correction.ColliderBias <- function(x,b,se) {
+
+  adjusted_beta = adjusted_se = adjusted_p = NULL
+
+  x$harmonised[, adjusted_beta := beta.outcome - (b * beta.exposure)]
+  x$harmonised[, adjusted_se   := sqrt(
+    (se.outcome^2) +
+    ((b^2) * (se.exposure^2)) +
+    ((se.exposure^2) * (se^2)) +
+    ((se.exposure^2) * (se^2))
+    )
+  ]
+
+  x$harmonised[, adjusted_p := stats::pchisq( (adjusted_beta / adjusted_se)^2, 1, lower.tail=FALSE)]
+
+  data.table::setkey(x$harmonised, "SNP")
+  data.table::setkey(x$gwas_p, "SNP")
+
+  gwas <- x$gwas_p[x$harmonised, c("adjusted_beta", "adjusted_se", "adjusted_p") := .(i.adjusted_beta,
+                                                                                      i.adjusted_se,
+                                                                                      i.adjusted_p), on="SNP"]
+
+  return(gwas)
+}
 
 #' @title Create an animation of Slope-hunter iterations
-#' @param x a ColliderBias object
+#' @inheritParams slopehunter
+#' @param x_lims x axis limits
+#' @param y_lims y axis limits
 #' @return a plot
 #' @export
 #' @importFrom gganimate transition_states
 #'
-plot_slopehunter_iters <- function(x) UseMethod("plot_slopehunter_iters")
+plot_slopehunter_iters <- function(x,ip,pi0,sxy1,bootstraps,seed,x_lims,y_lims) UseMethod("plot_slopehunter_iters")
 #' @rdname plot_slopehunter_iters
 #' @export
-plot_slopehunter_iters.ColliderBias <- function(x) {
+plot_slopehunter_iters.ColliderBias <- function(x,
+                                                ip         = 0.001,
+                                                pi0        = 0.6,
+                                                sxy1       = 1e-5,
+                                                bootstraps = 0,
+                                                seed       = 2023,
+                                                x_lims     = NULL,
+                                                y_lims     = NULL) {
 
   pval.exposure = beta.exposure = beta.outcome = pt = clusters = iter = NULL
 
@@ -340,14 +543,23 @@ plot_slopehunter_iters.ColliderBias <- function(x) {
   d <- x$harmonised[pval.exposure < x$ip, ]
 
   # run the EM algorithm
-  result <- shclust(d, x$pi0, x$sigma0, collect_iters=TRUE)
+  result <- shclust(d, x$pi0, x$sxy1, collect_iters=TRUE)
 
   # make the plot
-  result <- data.table::rbindlist(result$iters, idcol="iter")
+  result_dat <- data.table::rbindlist(result$iters, idcol="iter")
+
+  # slope data
+  result_b <- data.table::data.table(slope = unlist(result$iters_b),
+                                     intercept = 0,
+                                     iter=1:length(result$iters_b),
+                                     label = paste0("b = ", as.character(round(unlist(result$iters_b), digits=2))),
+                                     xpos = Inf, ypos = Inf, hjustvar = 1.2, vjustvar = 1.4)
 
   # Make a ggplot, but add frame=year: one image per year
   p <- ggplot2::ggplot() +
-    geom_point(data=result, mapping=ggplot2::aes(x=beta.exposure, y=beta.outcome, fill=pt, color=clusters, size=clusters), shape=21) +
+    ggplot2::geom_text(data=result_b, mapping=ggplot2::aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=label)) +
+    ggplot2::geom_abline(data=result_b, mapping=ggplot2::aes(slope=slope,intercept=intercept), color="darkred") +
+    ggplot2::geom_point(data=result_dat, mapping=ggplot2::aes(x=beta.exposure, y=beta.outcome, fill=pt, color=clusters, size=clusters), shape=21) +
     viridis::scale_fill_viridis(limits=c(0,1)) +
     ggplot2::scale_size_manual(values = c("Hunted"=1.5, "Pleiotropic"=0.5)) +
     ggplot2::scale_alpha_manual(values = c("Hunted"=1.0, "Pleiotropic"=0.1)) +
@@ -360,12 +572,126 @@ plot_slopehunter_iters.ColliderBias <- function(x) {
                   y = 'BETA progression',
                   color = "Cluster",
                   fill = "Likelihood Gi SNP") +
-    ggplot2::guides(size = "none") +
+    ggplot2::guides(size = "none")
+
+  # limits
+  if(!is.null(x_lims)) {
+    p <- p + ggplot2::xlim(x_lims)
+  }
+  if(!is.null(y_lims)) {
+    p <- p + ggplot2::ylim(y_lims)
+  }
+
+  p <- p +
     gganimate::transition_states(iter, transition_length=0.1, state_length=1)
 
   return(p)
 }
 
+
+#' @title Plot the estimated correction factor variability
+#' @param x a ColliderBias object with populated results field
+#' @return a plot
+#' @export
+#' @import ggplot2
+#'
+plot_p_threshold <- function(x) UseMethod("plot_p_threshold")
+#' @rdname plot_p_threshold
+#' @export
+plot_p_threshold.ColliderBias <- function(x) {
+
+  # b by p-values
+  p <- ggplot2::ggplot(data=x$results,
+                  mapping=ggplot2::aes(x=ip, y=b)) +
+    ggplot2::geom_ribbon(mapping=ggplot2::aes(ymin=b-(1.96*bse), ymax=b+(1.96*bse), fill=method), alpha=0.3) +
+    ggplot2::geom_point(mapping=ggplot2::aes(color=method)) +
+    ggplot2::geom_line(mapping=ggplot2::aes(color=method)) +
+    # viridis::scale_fill_viridis(discrete = TRUE) +
+    # viridis::scale_color_viridis(discrete = TRUE) +
+    ggplot2::scale_x_continuous(trans='log10') +
+    ggplot2::labs(title = 'Bias correction factor by p-value threshold',
+                  x = 'P-value `ip` threshold',
+                  y = 'b value (correction slope)',
+                  color = "Method",
+                  fill = "95%CI")
+
+  return(p)
+}
+
+
+#' @title Plot the Slope-hunter scatter plot
+#' @param x a ColliderBias object with populated results field
+#' @return a plot
+#' @export
+#' @import ggplot2
+#'
+plot_slopehunter <- function(x) UseMethod("plot_slopehunter")
+#' @rdname plot_slopehunter
+#' @export
+plot_slopehunter.ColliderBias <- function(x) {
+
+  BETAi = BETAp = CLUSTER = hjustvar = vjustvar = xpos = ypos = label = slope = intercept = NULL
+
+  # results for each pvalue
+  dat <- lapply(x$ip, function(thresh) {
+    d <- x$harmonised[pval.exposure < thresh, ]
+    result <- shclust(d, pi0=x$pi0, sxy1=x$sxy1, collect_iters=FALSE)
+    return(result)
+  })
+
+  # slope data
+  b_dat <- lapply(dat, function(x) data.table::data.table(slope=x$b,
+                                                          intercept=0,
+                                                          label = paste0("b = ", as.character(round(x$b, digits=2))),
+                                                          xpos = Inf,
+                                                          ypos = Inf,
+                                                          hjustvar = 1.2,
+                                                          vjustvar = 1.4)) |> setNames(x$ip) |> data.table::rbindlist(idcol="ip")
+  b_dat[, ip := factor(ip, levels=x$ip)]
+
+  # point data
+  dat <- lapply(dat, function(x) x$fit) |> setNames(x$ip) |> data.table::rbindlist(idcol="ip")
+  dat[, ip := factor(ip, levels=x$ip)]
+
+  # facet plot of different P value thresholds
+  g <- ggplot2::ggplot(data=dat, ggplot2::aes(BETAi, BETAp, color=CLUSTER)) +
+    ggplot2::geom_point() +
+    ggplot2::geom_abline(data=b_dat, ggplot2::aes(slope=slope, intercept=intercept), color = 'black') +
+    ggplot2::geom_text(data=b_dat, ggplot2::aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=label), color="black") +
+    ggplot2::theme_bw() +
+    ggplot2::labs(title = "SlopeHunter analysis - by p-value threshold (\u03BB)",
+                  x = "beta (indicence)",
+                  y = "beta (progression)") +
+    ggplot2::facet_wrap(~ ip)
+
+  return(g)
+}
+
+
+
+format_gwas_for_collider_analysis <- function(gwas_i, gwas_p) {
+
+  # format data - add cols used by TwoSampleMR::format_data
+  if(!"phenotype" %in% names(gwas_i)) gwas_i[, "phenotype" := "incidence"]
+  if(!"phenotype" %in% names(gwas_p)) gwas_p[, "phenotype" := "progression"]
+  if(!"id" %in% names(gwas_i))        gwas_i[, "id" := "incidence"]
+  if(!"id" %in% names(gwas_p))        gwas_p[, "id" := "progression"]
+
+  # define the columns for TwoSampleMR::format_data
+  cols <- list(snp_col="SNP",chr_col="CHR",pos_col="BP",effect_allele_col="EA",other_allele_col="OA",beta_col="BETA",se_col="SE",pval="P",eaf_col="EAF",phenotype_col="phenotype",id_col="id")
+  i_cols = p_cols = cols
+  if("N" %in% names(gwas_p)) i_cols <- c(i_cols, list(samplesize_col="N"))
+  if("N" %in% names(gwas_p)) p_cols <- c(p_cols, list(samplesize_col="N"))
+
+  # run the formatting
+  message("Formatting GWAS inputs")
+  gwas_i <- do.call(TwoSampleMR::format_data, c(list(dat=gwas_i, type="exposure"), i_cols)) |> data.table::as.data.table()
+  gwas_p <- do.call(TwoSampleMR::format_data, c(list(dat=gwas_p, type="outcome"), p_cols)) |> data.table::as.data.table()
+
+  # return
+  return(list("gwas_i"=gwas_i, "gwas_p"=gwas_p))
+
+}
 
 
 valid_params <- function(methods, ip, pi0, sigma0, bootstraps) {
@@ -390,142 +716,30 @@ valid_params <- function(methods, ip, pi0, sigma0, bootstraps) {
 }
 
 
-
-
-#' @title Dudbridge CWLS method
-#' @description
-#' The Dudbridge corrected weighted least-squares method for assessing collider bias.
-#'
-#' @param x a ColliderBias object
-#' @return a ColliderBias object with updated parameter and results fields
-#' @export
-dudbridge <- function(x) UseMethod("dudbridge")
-#' @rdname dudbridge
-#' @export
-dudbridge.ColliderBias <- function(x) {
-#
-#   # copy the harmonised data in
-#   d <- x$harmonised
-#
-#
-#
-#
-#
-#   cwls_correction <- MendelianRandomization::mr_ivw(MendelianRandomization::mr_input(
-#     bx = pruned_harmonised_effects$BETA.incidence,
-#     bxse = pruned_harmonised_effects$SE.incidence,
-#     by = pruned_harmonised_effects$BETA.prognosis,
-#     byse = pruned_harmonised_effects$SE.prognosis
-#   ))
-#
-#   pruned_harmonised_effects$weights <- 1 / pruned_harmonised_effects$SE.prognosis^2
-#
-#   weighting <- (sum(pruned_harmonised_effects$weights * pruned_harmonised_effects$BETA.incidence^2)) /
-#     (
-#       (sum(pruned_harmonised_effects$weights * pruned_harmonised_effects$BETA.incidence^2)) -
-#         (sum(pruned_harmonised_effects$weights * pruned_harmonised_effects$SE.incidence^2))
-#     )
-#
-#   cwls_estimated_slope <- cwls_correction$Estimate * weighting
-#   cwls_estimated_standard_error <- cwls_correction$StdError * weighting
-#
-#   collider_bias_results <- rbind(collider_bias_results,
-#                                  data.table::data.table(
-#                                    METHOD = "cwls",
-#                                    P_VALUE_THRESHOLD = NA,
-#                                    SNPS_USED = nrow(clumped_snps),
-#                                    BETA = cwls_estimated_slope,
-#                                    SE = cwls_estimated_standard_error,
-#                                    ENTROPY = NA,
-#                                    PLEIOTROPIC = NA
-#                                  )
-#   )
-#
-
-
+analysis_result <- function(method=NA_character_,
+                            ip     = NA_real_,
+                            pi0    = NA_real_,
+                            sxy1   = NA_real_,
+                            b      = NA_real_,
+                            bse    = NA_real_,
+                            entropy= NA_real_) {
+  s3_struct <- structure(
+    .Data = list(
+      method = method,
+      ip     = ip,
+      pi0    = pi0,
+      sxy1   = sxy1,
+      b      = b,
+      bse    = bse,
+      entropy= entropy
+    ),
+    class = "list"
+  )
 }
 
 
 
-#' @title IVW MR
-#' @description
-#' The Inverse variance weighted Mendelian Randomisation method for assessing collider bias.
-#' @param x a ColliderBias object
-#' @inheritParams ColliderBias
-#' @return a ColliderBias object with updated parameter and results fields
-#' @export
-ivw_mr <- function(x,ip) UseMethod("ivw_mr")
-#' @rdname ivw_mr
-#' @export
-ivw_mr.ColliderBias <- function(x, ip = 0.001) {
-#
-#   # filter by the incidence threshold
-#   d <- x$harmonised["pval.exposure" <= ip, ]
-#
-#   # exit if there are no significant incidence variants at this threshold
-#   if(nrow(d)==0) {
-#     warning(paste0("No significant incidence SNPs at `ip` ", ip, "\n"))
-#     return(x)
-#   }
-#
 
-    #
-    # # determine which to use for MR
-    # x <- subset(x1, mr_keep)
-    #
-    # # apply the method
-    # res <- lapply(method_list, function(meth)
-    # {
-    #   get(meth)(x$beta.exposure, x$beta.outcome, x$se.exposure, x$se.outcome, parameters)
-    # })
-
-    # the method
-    # Inverse variance weighted regression
-    #
-    # The default multiplicative random effects IVW estimate.
-    # The standard error is corrected for under dispersion
-    # Use the  mr_ivw_mre  function for estimates that don't correct for under dispersion.
-    # #    }
-    # mr_ivw <- function(b_exp, b_out, se_exp, se_out, parameters=default_parameters())
-    # {
-      # if(sum(!is.na(b_exp) & !is.na(b_out) & !is.na(se_exp) & !is.na(se_out)) < 2)
-      #   return(list(b=NA, se=NA, pval=NA, nsnp=NA))
-      #
-      # ivw.res <- summary(stats::lm(b_out ~ -1 + b_exp, weights = 1/se_out^2))
-      # b <- ivw.res$coef
-      # se <- ivw.res$coef["b_exp","Std. Error"]/min(1,ivw.res$sigma) #sigma is the residual standard error
-      # pval <- 2 * stats::pnorm(abs(b/se), lower.tail=FALSE)
-      # Q_df <- length(b_exp) - 1
-      # Q <- ivw.res$sigma^2 * Q_df
-      # Q_pval <- stats::pchisq(Q, Q_df, lower.tail=FALSE)
-      # # from formula phi =  Q/DF rearranged to to Q = phi*DF, where phi is sigma^2
-      # # Q.ivw<-sum((1/(se_out/b_exp)^2)*(b_out/b_exp-ivw.reg.beta)^2)
-      # return(list(b = b, se = se, pval = pval, nsnp=length(b_exp), Q = Q, Q_df = Q_df, Q_pval = Q_pval))
-    # }
-
-
-
-
-    # default_parameters <- function()
-    # {
-    #   list(
-    #     test_dist = "z",
-    #     nboot = 1000,
-    #     Cov = 0,
-    #     penk = 20,
-    #     phi = 1,
-    #     alpha = 0.05,
-    #     Qthresh = 0.05,
-    #     over.dispersion = TRUE,
-    #     loss.function = "huber",
-    #     shrinkage = FALSE
-    #   )
-    # }
-
-  # }
-
-
-}
 
 
 

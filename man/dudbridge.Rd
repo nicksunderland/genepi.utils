@@ -5,12 +5,14 @@
 \alias{dudbridge.ColliderBias}
 \title{Dudbridge CWLS method}
 \usage{
-dudbridge(x)
+dudbridge(x, ...)
 
-\method{dudbridge}{ColliderBias}(x)
+\method{dudbridge}{ColliderBias}(x, ...)
 }
 \arguments{
 \item{x}{a ColliderBias object}
+
+\item{...}{sink for unneeded params}
 }
 \value{
 a ColliderBias object with updated parameter and results fields

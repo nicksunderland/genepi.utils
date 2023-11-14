@@ -5,12 +5,35 @@
 \alias{plot_slopehunter_iters.ColliderBias}
 \title{Create an animation of Slope-hunter iterations}
 \usage{
-plot_slopehunter_iters(x)
+plot_slopehunter_iters(x, ip, pi0, sxy1, bootstraps, seed, x_lims, y_lims)
 
-\method{plot_slopehunter_iters}{ColliderBias}(x)
+\method{plot_slopehunter_iters}{ColliderBias}(
+  x,
+  ip = 0.001,
+  pi0 = 0.6,
+  sxy1 = 1e-05,
+  bootstraps = 0,
+  seed = 2023,
+  x_lims = NULL,
+  y_lims = NULL
+)
 }
 \arguments{
 \item{x}{a ColliderBias object}
+
+\item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
+
+\item{pi0}{a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only}
+
+\item{sxy1}{a numeric, the initial (guess) of the covariance between incidence and progression BETAs}
+
+\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)}
+
+\item{seed}{an integer, seed for reproducibility}
+
+\item{x_lims}{x axis limits}
+
+\item{y_lims}{y axis limits}
 }
 \value{
 a plot

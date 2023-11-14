@@ -25,7 +25,8 @@ Imports:
     mclust,
     gganimate,
     viridis,
-    tibble
+    tibble,
+    MendelianRandomization
 Suggests: 
     knitr,
     rmarkdown,

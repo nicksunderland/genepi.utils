@@ -8,8 +8,8 @@
 slopehunter(x, ip, pi0, sxy1, bootstraps, seed)
 
 \method{slopehunter}{ColliderBias}(
-  x,
-  ip = 0.9,
+  x = NULL,
+  ip = 0.001,
   pi0 = 0.6,
   sxy1 = 1e-05,
   bootstraps = 100,
@@ -30,7 +30,7 @@ slopehunter(x, ip, pi0, sxy1, bootstraps, seed)
 \item{seed}{an integer, seed for reproducibility}
 }
 \value{
-a ColliderBias object with updated parameter and results fields
+a list with the method parameters and results
 }
 \description{
 Run the SlopeHunter expectation-maximization method to estimate the bias adjustment
