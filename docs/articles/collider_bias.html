@@ -89,28 +89,33 @@
     
 <p>An example of using the <code><a href="../reference/ColliderBias.html">ColliderBias()</a></code> class and
 associated functions to investigate the degree of index event (collider)
-bias in your GWAS progression data.</p>
+bias in your GWAS progression data. We start with independent variants
+from the incident GWAS of interest - this will will require
+pre-processing with appropriate clumping parameters. All variants from
+the progression GWAS are included in the initial step. We then create
+the <code><a href="../reference/ColliderBias.html">ColliderBias()</a></code> object which will further standardise
+the data and perform harmonisation.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">gwas_incidence</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_random_gwas_data.html">generate_random_gwas_data</a></span><span class="op">(</span><span class="fl">50000</span><span class="op">)</span></span>
-<span><span class="va">gwas_progression</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_random_gwas_data.html">generate_random_gwas_data</a></span><span class="op">(</span><span class="fl">50000</span><span class="op">)</span></span>
-<span><span class="va">gwas_progression</span><span class="op">[</span>, <span class="va">BETA</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">BETA</span>, replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">gwas_clumped_incidence</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Documents/local_data/hermes_incidence/clumped/hf_incidence_pheno1_eur.clumps.gz"</span><span class="op">)</span></span>
+<span><span class="va">gwas_progression</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">collider_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColliderBias.html">ColliderBias</a></span><span class="op">(</span><span class="va">gwas_incidence</span>, <span class="va">gwas_progression</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">collider_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColliderBias.html">ColliderBias</a></span><span class="op">(</span><span class="va">gwas_clumped_incidence</span>, <span class="va">gwas_progression</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="slope-hunter">Slope-hunter<a class="anchor" aria-label="anchor" href="#slope-hunter"></a>
 </h2>
-<p>Run the Slope-hunter algorithm.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">collider_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/slopehunter.html">slopehunter</a></span><span class="op">(</span><span class="va">collider_object</span>, bootstraps<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h3>
 <p>Run the SlopeHunter expectation-maximization method to estimate the
 bias adjustment factor. The algorithm uses model-based clustering and
 proposes that the distributions of the incidence(GI) and progression
 (GP) BETAs can be written like so:</p>
 <p><span class="math display">\[
-  \binom{\beta_{GI}}{\beta'_{GI}}
+  \binom{\beta_{GI}}{\beta'_{GP}}
   \sim
+  \color{#F8766D}{
   \pi_{1}N
   \begin{pmatrix}
   \underline{0},
@@ -118,8 +123,9 @@ proposes that the distributions of the incidence(GI) and progression
   \sigma_{I}^{2} &amp; b_{1}\sigma_{I}^{2} \\
   b_1\sigma_{I}^{2} &amp; b_{1}^{2}\sigma_{I}^{2} \\
   \end{bmatrix}
-  \end{pmatrix}
+  \end{pmatrix}}
   +
+  \color{#619CFF}{
   \pi_{2}N
   \begin{pmatrix}
   \underline{0},
@@ -128,7 +134,8 @@ proposes that the distributions of the incidence(GI) and progression
   b_1\sigma_{I}^{2} + \sigma_{IP} &amp; b_{1}^{2}\sigma_{I}^{2} +
 \sigma_{P}^{2} + 2b_{1}\sigma_{IP} \\
   \end{bmatrix}
-  \end{pmatrix}
+  \end{pmatrix}}
+  \color{gray}{
   +
   \pi_{3}
   \begin{pmatrix}
@@ -140,16 +147,18 @@ proposes that the distributions of the incidence(GI) and progression
   \begin{pmatrix}
   \eta_{0} \\
   \eta_{0}
-  \end{pmatrix}
+  \end{pmatrix}}
 \]</span></p>
 <ul>
-<li>Cluster 1: SNPs that cause incidence but not progression<br>
+<li>Cluster 1: SNPs that cause incidence but not progression (red)<br>
 </li>
-<li>Cluster 2: SNPs that cause incidence and progression<br>
+<li>Cluster 2: SNPs that cause incidence and progression (blue)<br>
 </li>
-<li>Cluster 3: SNPs that cause progression but not incidence<br>
+<li>Cluster 3: SNPs that cause progression but not incidence
+(gray)<br>
 </li>
-<li>Cluster 4: SNPs that cause neither incidence or progression</li>
+<li>Cluster 4: SNPs that cause neither incidence or progression
+(gray)</li>
 </ul>
 <p>The values are the probabilities that a SNP belongs to the respective
 clusters.</p>
@@ -166,15 +175,158 @@ incidence.</p>
 using this method the SlopeHunter package should be referenced as the
 original source.</p>
 </div>
-<div class="section level2">
-<h2 id="plot">Plot<a class="anchor" aria-label="anchor" href="#plot"></a>
-</h2>
-<p>Visualise the iterative algorithm</p>
+<div class="section level3">
+<h3 id="run">Run<a class="anchor" aria-label="anchor" href="#run"></a>
+</h3>
+<p>Running the Slope-hunter algorithm requires initialising
+parameters.</p>
+<ul>
+<li>
+<code>ip</code> is the initial p-value by which to filter the
+incident GWA variants. Variants with a p-value greater that
+<code>ip</code> will be removed from the analysis (i.e. variants in
+clusters 3 &amp; 4).</li>
+<li>
+<code>pi0</code> is an initial guess for the proportion of variants
+that only associate with incidence (i.e. belong to cluster 1).<br>
+</li>
+<li>
+<code>sxy1</code> is an initial guess for the covariance between
+incidence and progression betas in cluster 2.</li>
+</ul>
+<p>The standard error of the slope is estimated with bootstrapping, 100
+samples in the case below.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/slopehunter.html">slopehunter</a></span><span class="op">(</span>x          <span class="op">=</span> <span class="va">collider_object</span>, </span>
+<span>                      ip         <span class="op">=</span> <span class="fl">0.001</span>,</span>
+<span>                      pi0        <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>                      sxy1       <span class="op">=</span> <span class="fl">1e-5</span>,</span>
+<span>                      bootstraps <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">result</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="visualise">Visualise<a class="anchor" aria-label="anchor" href="#visualise"></a>
+</h3>
+<p>We can visualise the iterative EM algorithm like so. The variants are
+allocated to either cluster 1 (incidence only) or cluster 2 (incidence
+and progression) based on how well they conform to defined bivariate
+distributions for each cluster. The key point is that the incidence-only
+distribution has a linear relationship between incidence and progression
+betas, with no constant term - i.e. we search for a straight line
+passing through the origin. At each iteration the distribution
+parameters are recalculated (variance / s.dev / cov) and variant
+reassigned to either cluster 1 or 2, until the model converges.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter_iters.html">plot_slopehunter_iters</a></span><span class="op">(</span><span class="va">collider_object</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter_iters.html">plot_slopehunter_iters</a></span><span class="op">(</span><span class="va">collider_object</span>,</span>
+<span>                            ip     <span class="op">=</span> <span class="fl">0.001</span>,</span>
+<span>                            pi0    <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>                            sxy1   <span class="op">=</span> <span class="fl">1e-5</span>,</span>
+<span>                            x_lims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span><span class="op">)</span>, </span>
+<span>                            y_lims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/slopehunter.gif" width="90%" style="display: block; margin: auto;"></p>
+<p>The algorithm can be sensitive to the incidence p-value threshold
+<code>ip</code>. Too high and null variants without any effect on
+incidence will be included. Too low and the clusters will become small
+and variants will smaller effects on incidence will be removed. It is a
+good idea to investigate the stability of the adjustment factor estimate
+to difference in <code>ip</code> threshold. To do this, create a
+collider object with a range of <code>ip</code> values. Then plot using
+<code><a href="../reference/plot_slopehunter.html">plot_slopehunter()</a></code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">collider_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColliderBias.html">ColliderBias</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>, </span>
+<span>                                gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>, </span>
+<span>                                ip     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>,<span class="fl">0.001</span>,<span class="fl">0.0001</span>,<span class="fl">0.00001</span>,<span class="fl">0.000001</span>,<span class="fl">0.0000001</span><span class="op">)</span>, </span>
+<span>                                bootstraps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter.html">plot_slopehunter</a></span><span class="op">(</span><span class="va">collider_object</span><span class="op">)</span></span>
+<span><span class="va">p</span></span></code></pre></div>
+<p><img src="figures/slopehunter_pvalues.png" width="98%" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="dudbridge---corrected-weighted-least-squares">Dudbridge - corrected weighted least-squares<a class="anchor" aria-label="anchor" href="#dudbridge---corrected-weighted-least-squares"></a>
+</h2>
+<p>TBC</p>
+<div class="section level3">
+<h3 id="background-1">Background<a class="anchor" aria-label="anchor" href="#background-1"></a>
+</h3>
+</div>
+<div class="section level3">
+<h3 id="run-1">Run<a class="anchor" aria-label="anchor" href="#run-1"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dudbridge.html">dudbridge</a></span><span class="op">(</span><span class="va">collider_object</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">result</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="ivw-mendelian-randomisation">IVW Mendelian Randomisation<a class="anchor" aria-label="anchor" href="#ivw-mendelian-randomisation"></a>
+</h2>
+<p>TBC</p>
+<div class="section level3">
+<h3 id="background-2">Background<a class="anchor" aria-label="anchor" href="#background-2"></a>
+</h3>
+</div>
+<div class="section level3">
+<h3 id="run-2">Run<a class="anchor" aria-label="anchor" href="#run-2"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ivw_mr.html">ivw_mr</a></span><span class="op">(</span><span class="va">collider_object</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">result</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="overall-assessment">Overall assessment<a class="anchor" aria-label="anchor" href="#overall-assessment"></a>
+</h2>
+<p>We can run many combinations of the above analyses by defining sets
+of parameters in the ColliderBias object. Note: be careful with large
+numbers of parameters as this will quickly lead to large numbers of
+combinations. e.g. </p>
+<ul>
+<li>methods = c(“slopehunter”)<br>
+</li>
+<li>ip = c(0.05,0.001,0.00001)<br>
+</li>
+<li>pi0 = c(0.6, 0.65, 0.7).</li>
+<li>sxy1 = c(1e-5, 1e-4, 1e-3)</li>
+</ul>
+<p>…will lead to 27 separate analyses.</p>
+<p>We can use the <code><a href="../reference/analyse.html">analyse()</a></code> function to run all
+combinations of methods and parameters. Here is the (in-)stability of
+the b-slope with different p-values (<code>ip</code>) in the
+Slope-hunter and IVW-MR methods.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">collider_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse.html">analyse</a></span><span class="op">(</span>x          <span class="op">=</span> <span class="va">collider_object</span>, </span>
+<span>                           methods    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slopehunter"</span>,<span class="st">"ivw_mr"</span><span class="op">)</span>,</span>
+<span>                           ip         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>,<span class="fl">0.001</span>,<span class="fl">0.0001</span>,<span class="fl">0.00001</span>,<span class="fl">0.000001</span>,<span class="fl">0.0000001</span><span class="op">)</span>,</span>
+<span>                           pi0        <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>                           sxy1       <span class="op">=</span> <span class="fl">1e-5</span>,</span>
+<span>                           bootstraps <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_p_threshold.html">plot_p_threshold</a></span><span class="op">(</span><span class="va">collider_object</span><span class="op">)</span></span>
+<span><span class="va">p</span></span></code></pre></div>
+<p><img src="figures/slopehunter_all_methods_pvalues.png" width="98%" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level2">
+<h2 id="applying-the-correction-factor">Applying the correction factor<a class="anchor" aria-label="anchor" href="#applying-the-correction-factor"></a>
+</h2>
+<p>Once the parameters have been set and <code>b</code> estimate of the
+correction calculated we next need to apply the correction to the
+(biased) progression GWAS data. As the correction uses the incidence
+data we can only apply this to variants that appear in both incidence
+and progression datasets (the harmonised dataset).</p>
+<p><span class="math display">\[
+\beta_{GP} = \beta_{GP}^{'} - b_{1}\beta_{GI}
+\]</span></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">corrected_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_correction.html">apply_correction</a></span><span class="op">(</span><span class="va">collider_object</span>, b<span class="op">=</span><span class="op">-</span><span class="fl">0.62897804</span>, se<span class="op">=</span><span class="fl">0.09785357</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">corrected_gwas</span><span class="op">)</span></span></code></pre></div>
 </div>
   </div>
 

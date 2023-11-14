@@ -63,16 +63,53 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span><span class="va">x</span>, <span class="va">ip</span>, <span class="va">pi0</span>, <span class="va">sxy1</span>, <span class="va">bootstraps</span>, <span class="va">seed</span>, <span class="va">x_lims</span>, <span class="va">y_lims</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ColliderBias</span></span>
-<span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  ip <span class="op">=</span> <span class="fl">0.001</span>,</span>
+<span>  pi0 <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>  sxy1 <span class="op">=</span> <span class="fl">1e-05</span>,</span>
+<span>  bootstraps <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">2023</span>,</span>
+<span>  x_lims <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  y_lims <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>a ColliderBias object</p></dd>
+
+
+<dt>ip</dt>
+<dd><p>a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS</p></dd>
+
+
+<dt>pi0</dt>
+<dd><p>a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only</p></dd>
+
+
+<dt>sxy1</dt>
+<dd><p>a numeric, the initial (guess) of the covariance between incidence and progression BETAs</p></dd>
+
+
+<dt>bootstraps</dt>
+<dd><p>a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)</p></dd>
+
+
+<dt>seed</dt>
+<dd><p>an integer, seed for reproducibility</p></dd>
+
+
+<dt>x_lims</dt>
+<dd><p>x axis limits</p></dd>
+
+
+<dt>y_lims</dt>
+<dd><p>y axis limits</p></dd>
 
 </dl></div>
     <div id="value">

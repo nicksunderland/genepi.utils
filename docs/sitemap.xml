@@ -43,6 +43,9 @@
     <loc>/reference/analyse.html</loc>
   </url>
   <url>
+    <loc>/reference/apply_correction.html</loc>
+  </url>
+  <url>
     <loc>/reference/chrpos_to_rsid.html</loc>
   </url>
   <url>
@@ -83,6 +86,12 @@
   </url>
   <url>
     <loc>/reference/miami.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_p_threshold.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_slopehunter.html</loc>
   </url>
   <url>
     <loc>/reference/plot_slopehunter_iters.html</loc>

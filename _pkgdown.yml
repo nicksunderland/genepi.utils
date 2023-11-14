@@ -29,6 +29,9 @@ reference:
   - slopehunter
   - dudbridge
   - ivw_mr
+  - apply_correction
+  - plot_p_threshold
+  - plot_slopehunter
   - plot_slopehunter_iters
 
 - title: "Plotting"

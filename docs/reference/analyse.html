@@ -76,10 +76,17 @@ quickly lead to very large numbers of combinations. e.g. <br></p><ul><li><p>meth
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">analyse</span><span class="op">(</span><span class="va">x</span>, <span class="va">methods</span>, <span class="va">ip</span>, <span class="va">pi0</span>, <span class="va">sxy1</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">analyse</span><span class="op">(</span><span class="va">x</span>, <span class="va">methods</span>, <span class="va">ip</span>, <span class="va">pi0</span>, <span class="va">sxy1</span>, <span class="va">bootstraps</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for ColliderBias</span></span>
-<span><span class="fu">analyse</span><span class="op">(</span><span class="va">x</span>, <span class="va">methods</span>, <span class="va">ip</span>, <span class="va">pi0</span>, <span class="va">sxy1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">analyse</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  methods <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ip <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pi0 <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sxy1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  bootstraps <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -102,6 +109,10 @@ quickly lead to very large numbers of combinations. e.g. <br></p><ul><li><p>meth
 
 <dt>sxy1</dt>
 <dd><p>a numeric, the initial (guess) of the covariance between incidence and progression BETAs</p></dd>
+
+
+<dt>bootstraps</dt>
+<dd><p>a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)</p></dd>
 
 </dl></div>
     <div id="value">
