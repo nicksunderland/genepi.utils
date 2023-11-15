@@ -24,6 +24,45 @@ set_dbsnp_directory <- function(path) {
   invisible(path)
 }
 
+
+#' @title Set the PLINK2 path
+#' @param path path to the PLINK2 executable
+#' @return NULL, updated config file
+#' @export
+#' @importFrom yaml read_yaml write_yaml
+#'
+set_plink <- function(path) {
+
+  stopifnot("`path` must be a valid PLINK path" = file.exists(path) & grepl("plink", basename(path), ignore.case=TRUE))
+
+  config_path <- system.file("config.yml", package="genepi.utils")
+
+  config <- yaml::read_yaml(config_path)
+
+  config[["plink"]] <- path
+
+  yaml::write_yaml(config, config_path)
+
+  message(paste0("plink path set to: ", path))
+
+  invisible(path)
+}
+
+
+#' @title Get plink path
+#' @return a string file path, the currently set plink path
+#' @export
+#'
+which_plink <- function() {
+
+  config_path <- system.file("config.yml", package="genepi.utils")
+
+  config <- yaml::read_yaml(config_path)
+
+  return(config[["plink"]])
+}
+
+
 #' @title Get dbSNP directory
 #' @return a string file path, the currently set dbSNP directory path
 #' @export
@@ -71,6 +110,47 @@ which_dbsnp_builds <- function(build=NULL) {
     }
   }
 }
+
+
+#' @title Set the 1000G reference path
+#' @param path path to the 1000G reference pfile
+#' @return NULL, updated config file
+#' @export
+#' @importFrom yaml read_yaml write_yaml
+#'
+set_1000G_reference <- function(path) {
+
+  stopifnot("`path` must be a valid pfile (.pvar) path (n.b. do not include the extension)" = file.exists(paste0(path,".pvar")))
+  stopifnot("`path` must be a valid pfile (.psam) path (n.b. do not include the extension)" = file.exists(paste0(path,".psam")))
+  stopifnot("`path` must be a valid pfile (.pgen) path (n.b. do not include the extension)" = file.exists(paste0(path,".pgen")))
+
+  config_path <- system.file("config.yml", package="genepi.utils")
+
+  config <- yaml::read_yaml(config_path)
+
+  config[["pfile_1000G"]] <- path
+
+  yaml::write_yaml(config, config_path)
+
+  message(paste0("1000G reference path set to: ", path))
+
+  invisible(path)
+}
+
+
+#' @title Get 1000G reference path
+#' @return a string file path, the currently set 1000G reference path
+#' @export
+#'
+which_1000G_reference <- function() {
+
+  config_path <- system.file("config.yml", package="genepi.utils")
+
+  config <- yaml::read_yaml(config_path)
+
+  return(config[["pfile_1000G"]])
+}
+
 
 
 #' @title Generate random GWAS data

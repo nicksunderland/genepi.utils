@@ -11,14 +11,17 @@ reference:
   - input_formats
   - is.input_format
 
+- title: "GWAS processing"
+  desc: >
+    Functions for prosessing GWAS data
+  contents:
+  - clump
+
 - title: "RSID mapping"
   desc: >
     Functions for mapping chromosome and position data to variant RSIDs
   contents:
   - chrpos_to_rsid
-  - set_dbsnp_directory
-  - which_dbsnp_builds
-  - which_dbsnp_directory
 
 - title: "Collider bias"
   desc: >
@@ -42,3 +45,15 @@ reference:
   - miami
   - eaf_plot
   - generate_random_gwas_data
+
+- title: "Setup"
+  desc: >
+    Functions for package configuration
+  contents:
+  - set_dbsnp_directory
+  - which_dbsnp_builds
+  - which_dbsnp_directory
+  - set_1000G_reference
+  - set_plink
+  - which_1000G_reference
+  - which_plink

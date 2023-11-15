@@ -49,6 +49,9 @@
     <loc>/reference/chrpos_to_rsid.html</loc>
   </url>
   <url>
+    <loc>/reference/clump.html</loc>
+  </url>
+  <url>
     <loc>/reference/dudbridge.html</loc>
   </url>
   <url>
@@ -97,7 +100,13 @@
     <loc>/reference/plot_slopehunter_iters.html</loc>
   </url>
   <url>
+    <loc>/reference/set_1000G_reference.html</loc>
+  </url>
+  <url>
     <loc>/reference/set_dbsnp_directory.html</loc>
+  </url>
+  <url>
+    <loc>/reference/set_plink.html</loc>
   </url>
   <url>
     <loc>/reference/slopehunter.html</loc>
@@ -106,9 +115,15 @@
     <loc>/reference/standardise_gwas.html</loc>
   </url>
   <url>
+    <loc>/reference/which_1000G_reference.html</loc>
+  </url>
+  <url>
     <loc>/reference/which_dbsnp_builds.html</loc>
   </url>
   <url>
     <loc>/reference/which_dbsnp_directory.html</loc>
+  </url>
+  <url>
+    <loc>/reference/which_plink.html</loc>
   </url>
 </urlset>
