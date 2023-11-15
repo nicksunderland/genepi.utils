@@ -16,6 +16,7 @@ reference:
     Functions for prosessing GWAS data
   contents:
   - clump
+  - harmonise
 
 - title: "RSID mapping"
   desc: >
@@ -54,6 +55,6 @@ reference:
   - which_dbsnp_builds
   - which_dbsnp_directory
   - set_1000G_reference
-  - set_plink
+  - set_plink2
   - which_1000G_reference
-  - which_plink
+  - which_plink2

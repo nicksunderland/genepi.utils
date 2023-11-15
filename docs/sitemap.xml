@@ -13,10 +13,16 @@
     <loc>/articles/chrpos_to_rsid.html</loc>
   </url>
   <url>
+    <loc>/articles/clumping.html</loc>
+  </url>
+  <url>
     <loc>/articles/collider_bias.html</loc>
   </url>
   <url>
     <loc>/articles/example_1.html</loc>
+  </url>
+  <url>
+    <loc>/articles/harmonise.html</loc>
   </url>
   <url>
     <loc>/articles/index.html</loc>
@@ -70,6 +76,9 @@
     <loc>/reference/get_map.html</loc>
   </url>
   <url>
+    <loc>/reference/harmonise.html</loc>
+  </url>
+  <url>
     <loc>/reference/harmonise_gwases.html</loc>
   </url>
   <url>
@@ -109,6 +118,9 @@
     <loc>/reference/set_plink.html</loc>
   </url>
   <url>
+    <loc>/reference/set_plink2.html</loc>
+  </url>
+  <url>
     <loc>/reference/slopehunter.html</loc>
   </url>
   <url>
@@ -125,5 +137,8 @@
   </url>
   <url>
     <loc>/reference/which_plink.html</loc>
+  </url>
+  <url>
+    <loc>/reference/which_plink2.html</loc>
   </url>
 </urlset>

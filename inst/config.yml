@@ -1,3 +1,3 @@
 dbsnp_directory: /Users/xx20081/Documents/local_data/genome_reference/dbsnp
-plink: /usr/local/plink/plink
-pfile_1000G: /Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup.pgen
+plink2: /usr/local/plink/plink2
+pfile_1000G: /Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup

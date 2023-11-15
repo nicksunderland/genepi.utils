@@ -1,0 +1,75 @@
+---
+title: "Clumping"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Clumping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Setup
+
+Clumping GWAS results aims to retain only independent variants, accounting for linkage disequilibrium (highly correlated signals).  The `clump()` function uses PLINK2 in the background and requires a genome reference dataset with linkage disequilibrium information. This reference must contain the same variant IDs as your GWAS results. It is recommended to first annotate your GWAS with rsIDs - this can be achieved with the `chrpos_to_rsid()` function if your data is not already annotated. The data is also expected in genepi.utils standard form, so run `standardise_gwas()` if needed. The standardisation and rsID annotation can also be performed in one step with the `standardise_gwas()` function, by passing an appropriate `populate_rsid` argument.
+
+A common reference dataset is the 1000 genomes phase 3 which can be downloaded from the PLINK [website](https://www.cog-genomics.org/plink/2.0/resources#phase3_1kg). **Important**: if you use a different dataset ensure that the IDs match those in your dataset). 
+
+To ready the PLINK2 pfiles for use with clumping you can run the following, as there appear to be some duplicate rsIDs in this dataset that PLINK2 does not like.
+
+```{bash preprocess_1000g, eval=FALSE}
+plink2 \
+  --pfile all_phase3 \
+  --rm-dup force-first \
+  --make-pgen \
+  --out all_phase3_nodup
+```
+
+The path to your processed reference files (`path/to/plink_ref/all_phase3_nodup`) can be directly passed the the `clump()` function as the `plink_ref` argument, or, you can cofigure the path in the package by using `set_1000G_reference()` - this only needs to be done once per install. The currently set reference path can be queried with `which_1000G_reference()`.
+
+You will need PLINK2 installed on your computer. The `clump()` function takes a path to the plink executable as the `plink2` argument. Alternatively, you can cofigure the path in the package by using `set_plink2()` - this only needs to be done once per install. The currently set PLINK2 path can be queried with `which_plink2()`. If the `plink2` argument is set to `NULL` the function will attempt to call plink directly, equivalent of running `plink2 --options` directly in your command line.
+
+```{r setup}
+library(genepi.utils)
+
+# the gwas data
+gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+
+# ensure annotated with rsID
+gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid="b37_dbsnp156")
+
+# check path to reference
+which_1000G_reference()
+
+# check path to plink2 executable
+which_plink2()
+```
+
+## Clumping
+
+Running the clumping procedure will annotate your GWAS with two columns: 
+
+* `index`: a logical column indicating whether the variant is an index/lead variant. If you only want clumped/index SNPs you should filter on this e.g. `gwas[index==TRUE, ]`
+* `clump`: an integer column indicating the clump that the variant belongs to.
+
+```{r clumping}
+# input gwas; n.b. trailing `[]` just for printing in rmarkdown
+gwas[]
+
+# run clumping
+clumped_gwas <- clump(gwas, 
+                      p1 = 1.0,
+                      p2 = 1.0, 
+                      r2 = 0.1, 
+                      kb = 250, 
+                      plink2    = which_plink2(), 
+                      plink_ref = which_1000G_reference())
+
+# view result
+clumped_gwas[]
+```

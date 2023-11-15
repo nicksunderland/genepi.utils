@@ -10,7 +10,7 @@ clump(
   p2 = 1,
   r2 = 0.1,
   kb = 250,
-  plink = genepi.utils::which_plink(),
+  plink2 = genepi.utils::which_plink2(),
   plink_ref = genepi.utils::which_1000G_reference()
 )
 }
@@ -25,7 +25,7 @@ clump(
 
 \item{kb}{a integer, the window for clumping}
 
-\item{plink}{a string, path to the plink executable}
+\item{plink2}{a string, path to the plink executable}
 
 \item{plink_ref}{a string, path to the pfile genome reference}
 }
@@ -33,11 +33,18 @@ clump(
 a data.table with additional columns \code{index} (logical, whether the variant is an index SNP) and \code{clump} (integer, the clump the variant belongs to)
 }
 \description{
-Clump variants in a GWAS using PLINK and an appropriate reference panel.
+Clump variants in a GWAS using PLINK2 and an appropriate reference panel.
 For example, the 1000 genomes phase 3 data can be downloaded from the PLINK
 website (https://www.cog-genomics.org/plink/2.0/resources#phase3_1kg). To remove
-duplicates you should run 'plink2 --pfile all_phase3 --rm-dup force-first --make-pgen --out all_phase3_nodup'
+duplicates you can run:
+\cr \cr
+plink2 \cr
+--pfile all_phase3 \cr
+--rm-dup force-first \cr
+--make-pgen \cr
+--out all_phase3_nodup \cr
+\cr
 The path to the reference (without the plink extensions) should be passed as the
-\code{plink_ref} argument. The path to the plink executable should be passed as the
-\code{plink} argument.
+\code{plink_ref} argument. The path to the plink2 executable should be passed as the
+\code{plink2} argument.
 }

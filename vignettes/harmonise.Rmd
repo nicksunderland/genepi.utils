@@ -1,0 +1,85 @@
+---
+title: "Harmonising datasets"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Harmonising datasets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Run
+
+Harmonise two datasets. Ensure that both GWAS inputs are standardised with `standardise_gwas()`. A rsID is not required, however the datasets
+should have the same SNP naming convention as this column is used for joining.
+
+```{r setup}
+library(genepi.utils)
+
+# the gwas data
+gwas1 <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+
+# mess with some alleles
+gwas2 <- gwas1
+gwas2[c(5,6,7), c("A1","A2") := list(c("A","A","D"),c("A","A","I"))]
+
+# ensure standard column names
+gwas1 <- standardise_gwas(gwas1, input_format="ns_map", build="GRCh37")
+gwas2 <- standardise_gwas(gwas2, input_format="ns_map", build="GRCh37")[]
+
+# view
+gwas2
+
+# harmonise
+harmonised <- harmonise(gwas1, gwas2)[]
+
+# view 
+harmonised
+```
+
+## Evaluation speed
+
+The motivation for the `harmonise()` function was the long run time with the `TwoSampleMR v0.5.7` package (issue [#455](https://github.com/MRCIEU/TwoSampleMR/issues/455)) as well as having control of the column naming and standardisation. Number of variants for evaluation speed analysis was downsampled to 100,000, as otherwise it takes a very long time. 
+
+```{r speed, echo=FALSE, out.width="80%", fig.align='center', fig.cap="Computation speed: Apple M2 Max 96GB 10 cores; 9.8 million incidence SNPs harmonised against 4.3 million progression SNPs"}
+knitr::include_graphics("figures/microbenchmark_harmonise.png")
+```
+
+```{r benchmarck, eval=FALSE}
+library(microbenchmark)
+library(ggplot2)
+
+gwas_progression_path <- "/Users/xx20081/Documents/local_data/hermes_progression/biostat_disc/post_qc/biostat_disc.allcause_death.autosomes.gz"
+gwas_incidence_path   <- "/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz"
+
+# some GWAS data
+gwas1 <- data.table::fread(gwas_incidence_path)[1:100000, ]
+gwas2 <- gwas1
+
+# Slopehunter read in 
+gwas1_sh <- SlopeHunter::read_incidence(gwas_incidence_path, snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+gwas2_sh <- SlopeHunter::read_prognosis(gwas_incidence_path, snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+
+# TwoSampleMR read in 
+gwas1_2smr <- TwoSampleMR::format_data(gwas1, type="exposure", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+gwas2_2smr <- TwoSampleMR::format_data(gwas1, type="outcome", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+
+# benchmarking harmonisation
+mbm <- microbenchmark("genepi.utils::harmonise()" = { genepi.utils::harmonise(gwas1, gwas2) },
+                      "Slopehunter::harmonise_effects()" = { SlopeHunter::harmonise_effects(gwas1, gwas2) },
+                      "TwoSampleMR::harmonise()" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },
+                      times = 10L)
+
+autoplot(mbm)
+
+# save
+png("figures/microbenchmark_harmonise.png")
+print(autoplot(mbm))
+dev.off()
+```

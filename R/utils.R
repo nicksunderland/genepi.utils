@@ -31,35 +31,35 @@ set_dbsnp_directory <- function(path) {
 #' @export
 #' @importFrom yaml read_yaml write_yaml
 #'
-set_plink <- function(path) {
+set_plink2 <- function(path) {
 
-  stopifnot("`path` must be a valid PLINK path" = file.exists(path) & grepl("plink", basename(path), ignore.case=TRUE))
+  stopifnot("`path` must be a valid PLINK2 path" = file.exists(path) & grepl("plink", basename(path), ignore.case=TRUE))
 
   config_path <- system.file("config.yml", package="genepi.utils")
 
   config <- yaml::read_yaml(config_path)
 
-  config[["plink"]] <- path
+  config[["plink2"]] <- path
 
   yaml::write_yaml(config, config_path)
 
-  message(paste0("plink path set to: ", path))
+  message(paste0("plink2 path set to: ", path))
 
   invisible(path)
 }
 
 
-#' @title Get plink path
-#' @return a string file path, the currently set plink path
+#' @title Get plink2 path
+#' @return a string file path, the currently set plink2 path
 #' @export
 #'
-which_plink <- function() {
+which_plink2 <- function() {
 
   config_path <- system.file("config.yml", package="genepi.utils")
 
   config <- yaml::read_yaml(config_path)
 
-  return(config[["plink"]])
+  return(config[["plink2"]])
 }
 
 

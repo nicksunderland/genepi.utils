@@ -301,13 +301,13 @@ standardise_alleles <- function(gwas, build) {
   gwas[, OA := toupper(OA)]
 
   # define valid allele formats (could include 'D' and 'I' here, chosen not to for now)
-  valid_alleles <- ((grepl("^[AGCT]+$", gwas[["EA"]]) | is.na(gwas[["EA"]])) & grepl("^[AGCT]+$", gwas[["OA"]])) |
-                   ((grepl("^[AGCT]+$", gwas[["OA"]]) | is.na(gwas[["OA"]])) & grepl("^[AGCT]+$", gwas[["EA"]]))
+  valid_alleles <- ((grepl("^([AGCT]+|[D])$", gwas[["EA"]]) | is.na(gwas[["EA"]])) & grepl("^([AGCT]+|[I])$", gwas[["OA"]])) |
+                   ((grepl("^([AGCT]+|[D])$", gwas[["OA"]]) | is.na(gwas[["OA"]])) & grepl("^([AGCT]+|[I])$", gwas[["EA"]]))
 
   # report invalid
   if(any(!valid_alleles)) {
 
-    example_invalid <- paste0(gwas[[which(!valid_alleles)[[1]], "EA"]], "/", gwas[[which(!valid_alleles)[[1]], "EA"]])
+    example_invalid <- paste0(gwas[[which(!valid_alleles)[[1]], "EA"]], "/", gwas[[which(!valid_alleles)[[1]], "OA"]])
     warning(paste0("filtering out ", sum(!valid_alleles), " invalid alleles, for example: `", example_invalid, "`"))
 
   }
@@ -360,14 +360,13 @@ populate_rsid <- function(gwas, populate_rsid=FALSE) {
                            ea_col    = "EA",
                            nea_col   = "OA",
                            build     = populate_rsid,
-                           flip      = "report",
+                           flip      = "allow",
                            alt_rsids = FALSE,
                            verbose   = TRUE)
   })
 
   # RSIDs at the front
-  cols <- c("RSID", "rsid_flip_match")
-  data.table::setcolorder(gwas, c(cols, names(gwas)[!names(gwas) %in% cols]))
+  data.table::setcolorder(gwas, c("RSID", names(gwas)[names(gwas) != "RSID"]))
 
   return(gwas)
 }

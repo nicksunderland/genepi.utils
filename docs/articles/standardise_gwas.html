@@ -53,7 +53,13 @@
       <a href="../articles/chrpos_to_rsid.html">CHR:POS to RSID mapping</a>
     </li>
     <li>
+      <a href="../articles/clumping.html">Clumping</a>
+    </li>
+    <li>
       <a href="../articles/collider_bias.html">Collider bias</a>
+    </li>
+    <li>
+      <a href="../articles/harmonise.html">Harmonising datasets</a>
     </li>
     <li>
       <a href="../articles/plotting.html">Plotting</a>
@@ -96,18 +102,18 @@ features in this package.</p>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gwas</span></span>
-<span><span class="co">#&gt;           MARKER   CHR       POS   BETA    SE     P   EAF     A1     A2</span></span>
-<span><span class="co">#&gt;           &lt;char&gt; &lt;int&gt;     &lt;int&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;char&gt; &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1: 10:100000625    10 100000625 -0.037 0.137 0.781 0.710      G      A</span></span>
-<span><span class="co">#&gt;  2: 10:100000645    10 100000645  0.045 0.173 0.961 0.121      C      A</span></span>
-<span><span class="co">#&gt;  3: 10:100003242    10 100003242 -0.037 0.134 0.480 0.504      G      T</span></span>
-<span><span class="co">#&gt;  4: 10:100003785    10 100003785 -0.008 0.137 0.743 0.155      C      T</span></span>
-<span><span class="co">#&gt;  5: 10:100004360    10 100004360  0.045 0.134 0.961 0.838      A      G</span></span>
-<span><span class="co">#&gt;  6: 10:100004906    10 100004906 -0.037 0.173 0.781 0.740      A      C</span></span>
-<span><span class="co">#&gt;  7: 10:100004996    10 100004996 -0.008 0.137 0.743 0.323      A      G</span></span>
-<span><span class="co">#&gt;  8: 10:100005282    10 100005282 -0.147 0.134 0.781 0.930      T      C</span></span>
-<span><span class="co">#&gt;  9: 10:100007362    10 100007362  0.045 0.173 0.961 0.816      C      G</span></span>
-<span><span class="co">#&gt; 10: 10:100008436    10 100008436 -0.008 0.208 0.743 0.946      A      G</span></span></code></pre></div>
+<span><span class="co">#&gt;           MARKER   CHR       POS   BETA    SE     P      EAF     A1     A2</span></span>
+<span><span class="co">#&gt;           &lt;char&gt; &lt;int&gt;     &lt;int&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;    &lt;num&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1: 10:100000625    10 100000625 -0.037 0.137 0.781 7.10e-05      G      A</span></span>
+<span><span class="co">#&gt;  2: 10:100000645    10 100000645  0.045 0.173 0.961 1.21e-01      C      A</span></span>
+<span><span class="co">#&gt;  3: 10:100003242    10 100003242 -0.037 0.134 0.480 5.04e-07      G      T</span></span>
+<span><span class="co">#&gt;  4: 10:100003785    10 100003785 -0.008 0.137 0.743 1.55e-01      C      T</span></span>
+<span><span class="co">#&gt;  5: 10:100004360    10 100004360  0.045 0.134 0.961 8.38e-01      A      G</span></span>
+<span><span class="co">#&gt;  6: 10:100004906    10 100004906 -0.037 0.173 0.781 7.40e-01      A      C</span></span>
+<span><span class="co">#&gt;  7: 10:100004996    10 100004996 -0.008 0.137 0.743 3.23e-10      A      G</span></span>
+<span><span class="co">#&gt;  8: 10:100005282    10 100005282 -0.147 0.134 0.781 9.30e-04      T      C</span></span>
+<span><span class="co">#&gt;  9: 10:100007362    10 100007362  0.045 0.173 0.961 8.16e-05      C      G</span></span>
+<span><span class="co">#&gt; 10: 10:100008436    10 100008436 -0.008 0.208 0.743 9.46e-04      A      G</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="column-mapping">Column mapping<a class="anchor" aria-label="anchor" href="#column-mapping"></a>
 </h2>
@@ -130,18 +136,18 @@ formats can be queried like so:</p>
 <code class="sourceCode R"><span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">gwas</span></span>
-<span><span class="co">#&gt;                      SNP    CHR        BP     EA     OA   EAF   BETA    SE</span></span>
-<span><span class="co">#&gt;                   &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 10:100000625[b37]A,G     10 100000625      G      A 0.710 -0.037 0.137</span></span>
-<span><span class="co">#&gt;  2: 10:100000645[b37]A,C     10 100000645      C      A 0.121  0.045 0.173</span></span>
-<span><span class="co">#&gt;  3: 10:100003242[b37]T,G     10 100003242      G      T 0.504 -0.037 0.134</span></span>
-<span><span class="co">#&gt;  4: 10:100003785[b37]T,C     10 100003785      C      T 0.155 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  5: 10:100004360[b37]G,A     10 100004360      A      G 0.838  0.045 0.134</span></span>
-<span><span class="co">#&gt;  6: 10:100004906[b37]C,A     10 100004906      A      C 0.740 -0.037 0.173</span></span>
-<span><span class="co">#&gt;  7: 10:100004996[b37]G,A     10 100004996      A      G 0.323 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  8: 10:100005282[b37]C,T     10 100005282      T      C 0.930 -0.147 0.134</span></span>
-<span><span class="co">#&gt;  9: 10:100007362[b37]G,C     10 100007362      C      G 0.816  0.045 0.173</span></span>
-<span><span class="co">#&gt; 10: 10:100008436[b37]G,A     10 100008436      A      G 0.946 -0.008 0.208</span></span>
+<span><span class="co">#&gt;                      SNP    CHR        BP     EA     OA      EAF   BETA    SE</span></span>
+<span><span class="co">#&gt;                   &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: 10:100000625[b37]A,G     10 100000625      G      A 7.10e-05 -0.037 0.137</span></span>
+<span><span class="co">#&gt;  2: 10:100000645[b37]A,C     10 100000645      C      A 1.21e-01  0.045 0.173</span></span>
+<span><span class="co">#&gt;  3: 10:100003242[b37]T,G     10 100003242      G      T 5.04e-07 -0.037 0.134</span></span>
+<span><span class="co">#&gt;  4: 10:100003785[b37]T,C     10 100003785      C      T 1.55e-01 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  5: 10:100004360[b37]G,A     10 100004360      A      G 8.38e-01  0.045 0.134</span></span>
+<span><span class="co">#&gt;  6: 10:100004906[b37]C,A     10 100004906      A      C 7.40e-01 -0.037 0.173</span></span>
+<span><span class="co">#&gt;  7: 10:100004996[b37]G,A     10 100004996      A      G 3.23e-10 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  8: 10:100005282[b37]C,T     10 100005282      T      C 9.30e-04 -0.147 0.134</span></span>
+<span><span class="co">#&gt;  9: 10:100007362[b37]G,C     10 100007362      C      G 8.16e-05  0.045 0.173</span></span>
+<span><span class="co">#&gt; 10: 10:100008436[b37]G,A     10 100008436      A      G 9.46e-04 -0.008 0.208</span></span>
 <span><span class="co">#&gt;         P</span></span>
 <span><span class="co">#&gt;     &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1: 0.781</span></span>

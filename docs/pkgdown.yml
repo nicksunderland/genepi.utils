@@ -3,8 +3,10 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   chrpos_to_rsid: chrpos_to_rsid.html
+  clumping: clumping.html
   collider_bias: collider_bias.html
+  harmonise: harmonise.html
   plotting: plotting.html
   standardise_gwas: standardise_gwas.html
-last_built: 2023-11-15T01:39Z
+last_built: 2023-11-15T17:14Z
 
