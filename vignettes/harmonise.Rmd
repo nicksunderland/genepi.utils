@@ -24,14 +24,15 @@ library(genepi.utils)
 
 # the gwas data
 gwas1 <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
-
-# mess with some alleles
 gwas2 <- gwas1
-gwas2[c(5,6,7), c("A1","A2") := list(c("A","A","D"),c("A","A","I"))]
 
 # ensure standard column names
 gwas1 <- standardise_gwas(gwas1, input_format="ns_map", build="GRCh37")
 gwas2 <- standardise_gwas(gwas2, input_format="ns_map", build="GRCh37")[]
+
+# mess with some alleles
+gwas1[c(5,7,8), c("EA","OA") := list(c("T","I","I"),c("A","D","D"))]
+gwas2[c(5,6,7,8), c("EA","OA") := list(c("A","A","D","ACC"),c("T","A","I","A"))]
 
 # view
 gwas2
@@ -45,9 +46,9 @@ harmonised
 
 ## Evaluation speed
 
-The motivation for the `harmonise()` function was the long run time with the `TwoSampleMR v0.5.7` package (issue [#455](https://github.com/MRCIEU/TwoSampleMR/issues/455)) as well as having control of the column naming and standardisation. Number of variants for evaluation speed analysis was downsampled to 100,000, as otherwise it takes a very long time. 
+The number of variants for evaluation speed analysis was downsampled to 100,000, as otherwise it takes a very long time. 
 
-```{r speed, echo=FALSE, out.width="80%", fig.align='center', fig.cap="Computation speed: Apple M2 Max 96GB 10 cores; 9.8 million incidence SNPs harmonised against 4.3 million progression SNPs"}
+```{r speed, echo=FALSE, out.width="80%", fig.align='center', fig.cap="Analysis with downsampled GWAS of 100,000 variants"}
 knitr::include_graphics("figures/microbenchmark_harmonise.png")
 ```
 

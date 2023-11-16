@@ -300,9 +300,10 @@ standardise_alleles <- function(gwas, build) {
   gwas[, EA := toupper(EA)]
   gwas[, OA := toupper(OA)]
 
-  # define valid allele formats (could include 'D' and 'I' here, chosen not to for now)
-  valid_alleles <- ((grepl("^([AGCT]+|[D])$", gwas[["EA"]]) | is.na(gwas[["EA"]])) & grepl("^([AGCT]+|[I])$", gwas[["OA"]])) |
-                   ((grepl("^([AGCT]+|[D])$", gwas[["OA"]]) | is.na(gwas[["OA"]])) & grepl("^([AGCT]+|[I])$", gwas[["EA"]]))
+  # define valid allele formats - NA allowed as deletion
+  valid_alleles <- (((grepl("^([AGCT]+|[D])$", gwas[["EA"]]) | is.na(gwas[["EA"]])) & grepl("^([AGCT]+|[I])$", gwas[["OA"]])) |   # positive assertion - EA valid SNP or deleteion, OA valid SNP or insertion
+                    ((grepl("^([AGCT]+|[D])$", gwas[["OA"]]) | is.na(gwas[["OA"]])) & grepl("^([AGCT]+|[I])$", gwas[["EA"]]))) &  # positive assertion - OA valid SNP or deleteion, EA valid SNP or insertion
+                   (!gwas[["EA"]]==gwas[["OA"]])                                                                                  # negative assertion - OA can't be the same as EA
 
   # report invalid
   if(any(!valid_alleles)) {

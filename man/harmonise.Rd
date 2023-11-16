@@ -4,12 +4,24 @@
 \alias{harmonise}
 \title{Harmonise GWAS effects}
 \usage{
-harmonise(gwas1, gwas2, gwas1_trait = "incidence", gwas2_trait = "progression")
+harmonise(
+  gwas1,
+  gwas2,
+  gwas1_trait = "incidence",
+  gwas2_trait = "progression",
+  merge = "chrpos"
+)
 }
 \arguments{
 \item{gwas1}{a data.frame like object, GWAS 1}
 
 \item{gwas2}{a data.frame like object, GWAS 2}
+
+\item{gwas1_trait}{a string, suffix to add to gwas1 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.}
+
+\item{gwas2_trait}{a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.}
+
+\item{merge}{a string, either \code{chrpos} for merging by CHR and BP (position) columns, or \code{snp} for merging by SNP column}
 }
 \value{
 a data.table, the harmonised dataset
@@ -17,10 +29,9 @@ a data.table, the harmonised dataset
 \description{
 Harmonise effects across two GWAS datasets. The \code{gwas} objects are expected to be in standard format - see \code{standardise_gwas()}.
 Corrects strand for non-palindromic SNPs (flip BETAs). Drop palindromic variants. Drop non-matching variant alleles. \cr
-This function is essentially the same as that of the \href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter}
-package, which is turn is based on a similar procedure from the \href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR}
-package. I have re-written it here to use the standardised column names and use pure data.table syntax. Please credit these other
-packages if using this function.
+This function is based on the same function in the \href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter}
+and \href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR} packages. I have re-written it here to use
+the standardised column names and use pure data.table syntax for increased processing speed.
 }
 \references{
 \href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter} https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R

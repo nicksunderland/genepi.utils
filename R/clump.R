@@ -32,7 +32,7 @@ clump <- function(gwas,
                   plink2    = genepi.utils::which_plink2(),
                   plink_ref = genepi.utils::which_1000G_reference()) {
 
-  SNP = RSID = SP2 = ID = i.clump = clump_member = NULL
+  SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = NULL
 
   # checks
   stopifnot("`gwas` must be a data.frame like object" = inherits(gwas, "data.frame"))

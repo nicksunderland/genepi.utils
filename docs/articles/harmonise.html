@@ -105,14 +105,15 @@ is used for joining.</p>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
 <span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># mess with some alleles</span></span>
 <span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="va">gwas1</span></span>
-<span><span class="va">gwas2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A1"</span>,<span class="st">"A2"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"D"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"I"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># ensure standard column names</span></span>
 <span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas1</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
 <span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas2</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># mess with some alleles</span></span>
+<span><span class="va">gwas1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EA"</span>,<span class="st">"OA"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"T"</span>,<span class="st">"I"</span>,<span class="st">"I"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"D"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">gwas2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EA"</span>,<span class="st">"OA"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"D"</span>,<span class="st">"ACC"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"T"</span>,<span class="st">"A"</span>,<span class="st">"I"</span>,<span class="st">"A"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># view</span></span>
 <span><span class="va">gwas2</span></span>
@@ -122,10 +123,10 @@ is used for joining.</p>
 <span><span class="co">#&gt;  2: 10:100000645[b37]A,C     10 100000645      C      A 1.21e-01  0.045 0.173</span></span>
 <span><span class="co">#&gt;  3: 10:100003242[b37]T,G     10 100003242      G      T 5.04e-07 -0.037 0.134</span></span>
 <span><span class="co">#&gt;  4: 10:100003785[b37]T,C     10 100003785      C      T 1.55e-01 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  5: 10:100004360[b37]A,A     10 100004360      A      A 8.38e-01  0.045 0.134</span></span>
-<span><span class="co">#&gt;  6: 10:100004906[b37]A,A     10 100004906      A      A 7.40e-01 -0.037 0.173</span></span>
-<span><span class="co">#&gt;  7: 10:100004996[b37]I,D     10 100004996      D      I 3.23e-10 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  8: 10:100005282[b37]C,T     10 100005282      T      C 9.30e-04 -0.147 0.134</span></span>
+<span><span class="co">#&gt;  5: 10:100004360[b37]G,A     10 100004360      A      T 8.38e-01  0.045 0.134</span></span>
+<span><span class="co">#&gt;  6: 10:100004906[b37]C,A     10 100004906      A      A 7.40e-01 -0.037 0.173</span></span>
+<span><span class="co">#&gt;  7: 10:100004996[b37]G,A     10 100004996      D      I 3.23e-10 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  8: 10:100005282[b37]C,T     10 100005282    ACC      A 9.30e-04 -0.147 0.134</span></span>
 <span><span class="co">#&gt;  9: 10:100007362[b37]G,C     10 100007362      C      G 8.16e-05  0.045 0.173</span></span>
 <span><span class="co">#&gt; 10: 10:100008436[b37]G,A     10 100008436      A      G 9.46e-04 -0.008 0.208</span></span>
 <span><span class="co">#&gt;         P</span></span>
@@ -146,68 +147,64 @@ is used for joining.</p>
 <span></span>
 <span><span class="co"># view </span></span>
 <span><span class="va">harmonised</span></span>
-<span><span class="co">#&gt; Key: &lt;CHR, BP&gt;</span></span>
-<span><span class="co">#&gt;        CHR        BP        SNP_incidence EA_incidence OA_incidence</span></span>
-<span><span class="co">#&gt;     &lt;char&gt;     &lt;int&gt;               &lt;char&gt;       &lt;char&gt;       &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:     10 100000625 10:100000625[b37]A,G            G            A</span></span>
-<span><span class="co">#&gt;  2:     10 100000645 10:100000645[b37]A,C            C            A</span></span>
-<span><span class="co">#&gt;  3:     10 100003242 10:100003242[b37]T,G            G            T</span></span>
-<span><span class="co">#&gt;  4:     10 100003785 10:100003785[b37]T,C            C            T</span></span>
-<span><span class="co">#&gt;  5:     10 100004360 10:100004360[b37]A,A            A            A</span></span>
-<span><span class="co">#&gt;  6:     10 100004906 10:100004906[b37]A,A            A            A</span></span>
-<span><span class="co">#&gt;  7:     10 100004996 10:100004996[b37]I,D            D            I</span></span>
-<span><span class="co">#&gt;  8:     10 100005282 10:100005282[b37]C,T            T            C</span></span>
-<span><span class="co">#&gt;  9:     10 100007362 10:100007362[b37]G,C            C            G</span></span>
-<span><span class="co">#&gt; 10:     10 100008436 10:100008436[b37]G,A            A            G</span></span>
-<span><span class="co">#&gt;     EAF_incidence BETA_incidence P_incidence      SNP_progression</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;          &lt;num&gt;       &lt;num&gt;               &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:      7.10e-05         -0.037       0.781 10:100000625[b37]A,G</span></span>
-<span><span class="co">#&gt;  2:      1.21e-01          0.045       0.961 10:100000645[b37]A,C</span></span>
-<span><span class="co">#&gt;  3:      5.04e-07         -0.037       0.480 10:100003242[b37]T,G</span></span>
-<span><span class="co">#&gt;  4:      1.55e-01         -0.008       0.743 10:100003785[b37]T,C</span></span>
-<span><span class="co">#&gt;  5:      8.38e-01          0.045       0.961 10:100004360[b37]A,A</span></span>
-<span><span class="co">#&gt;  6:      7.40e-01         -0.037       0.781 10:100004906[b37]A,A</span></span>
-<span><span class="co">#&gt;  7:      3.23e-10         -0.008       0.743 10:100004996[b37]I,D</span></span>
-<span><span class="co">#&gt;  8:      9.30e-04         -0.147       0.781 10:100005282[b37]C,T</span></span>
-<span><span class="co">#&gt;  9:      8.16e-05          0.045       0.961 10:100007362[b37]G,C</span></span>
-<span><span class="co">#&gt; 10:      9.46e-04         -0.008       0.743 10:100008436[b37]G,A</span></span>
-<span><span class="co">#&gt;     EA_progression OA_progression EAF_progression BETA_progression</span></span>
-<span><span class="co">#&gt;             &lt;char&gt;         &lt;char&gt;           &lt;num&gt;            &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:              G              A        7.10e-05           -0.037</span></span>
-<span><span class="co">#&gt;  2:              C              A        1.21e-01            0.045</span></span>
-<span><span class="co">#&gt;  3:              G              T        5.04e-07           -0.037</span></span>
-<span><span class="co">#&gt;  4:              C              T        1.55e-01           -0.008</span></span>
-<span><span class="co">#&gt;  5:              A              A        1.62e-01           -0.045</span></span>
-<span><span class="co">#&gt;  6:              A              A        2.60e-01            0.037</span></span>
-<span><span class="co">#&gt;  7:              D              I        3.23e-10           -0.008</span></span>
-<span><span class="co">#&gt;  8:              T              C        9.30e-04           -0.147</span></span>
-<span><span class="co">#&gt;  9:              C              G        8.16e-05            0.045</span></span>
-<span><span class="co">#&gt; 10:              A              G        9.46e-04           -0.008</span></span>
-<span><span class="co">#&gt;     P_progression   keep palindromic</span></span>
-<span><span class="co">#&gt;             &lt;num&gt; &lt;lgcl&gt;      &lt;lgcl&gt;</span></span>
-<span><span class="co">#&gt;  1:         0.781   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  2:         0.961   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  3:         0.480   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  4:         0.743   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  5:         0.961   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  6:         0.781   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  7:         0.743   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  8:         0.781   TRUE       FALSE</span></span>
-<span><span class="co">#&gt;  9:         0.961  FALSE        TRUE</span></span>
-<span><span class="co">#&gt; 10:         0.743   TRUE       FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt; Key: &lt;CHR_incidence, BP_incidence&gt;</span></span>
+<span><span class="co">#&gt;              SNP_incidence        SNP_progression CHR_incidence CHR_progression</span></span>
+<span><span class="co">#&gt;                     &lt;char&gt;                 &lt;char&gt;        &lt;char&gt;          &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:   10:100000625[b37]A,G   10:100000625[b37]A,G            10              10</span></span>
+<span><span class="co">#&gt;  2:   10:100000645[b37]A,C   10:100000645[b37]A,C            10              10</span></span>
+<span><span class="co">#&gt;  3:   10:100003242[b37]T,G   10:100003242[b37]T,G            10              10</span></span>
+<span><span class="co">#&gt;  4:   10:100003785[b37]T,C   10:100003785[b37]T,C            10              10</span></span>
+<span><span class="co">#&gt;  5:   10:100004360[b37]A,T   10:100004360[b37]A,T            10              10</span></span>
+<span><span class="co">#&gt;  6:   10:100004906[b37]C,A   10:100004906[b37]C,A            10              10</span></span>
+<span><span class="co">#&gt;  7:   10:100004996[b37]D,I   10:100004996[b37]D,I            10              10</span></span>
+<span><span class="co">#&gt;  8: 10:100005282[b37]A,ACC 10:100005282[b37]A,ACC            10              10</span></span>
+<span><span class="co">#&gt;  9:   10:100007362[b37]G,C   10:100007362[b37]G,C            10              10</span></span>
+<span><span class="co">#&gt; 10:   10:100008436[b37]G,A   10:100008436[b37]G,A            10              10</span></span>
+<span><span class="co">#&gt;     BP_incidence BP_progression EA_incidence EA_progression OA_incidence</span></span>
+<span><span class="co">#&gt;            &lt;int&gt;          &lt;int&gt;       &lt;char&gt;         &lt;char&gt;       &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:    100000625      100000625            G              G            A</span></span>
+<span><span class="co">#&gt;  2:    100000645      100000645            C              C            A</span></span>
+<span><span class="co">#&gt;  3:    100003242      100003242            G              G            T</span></span>
+<span><span class="co">#&gt;  4:    100003785      100003785            C              C            T</span></span>
+<span><span class="co">#&gt;  5:    100004360      100004360            T              T            A</span></span>
+<span><span class="co">#&gt;  6:    100004906      100004906            A              A            C</span></span>
+<span><span class="co">#&gt;  7:    100004996      100004996            I              I            D</span></span>
+<span><span class="co">#&gt;  8:    100005282      100005282          ACC            ACC            A</span></span>
+<span><span class="co">#&gt;  9:    100007362      100007362            C              C            G</span></span>
+<span><span class="co">#&gt; 10:    100008436      100008436            A              A            G</span></span>
+<span><span class="co">#&gt;     OA_progression EAF_incidence EAF_progression BETA_incidence</span></span>
+<span><span class="co">#&gt;             &lt;char&gt;         &lt;num&gt;           &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:              A      7.10e-05        7.10e-05         -0.037</span></span>
+<span><span class="co">#&gt;  2:              A      1.21e-01        1.21e-01          0.045</span></span>
+<span><span class="co">#&gt;  3:              T      5.04e-07        5.04e-07         -0.037</span></span>
+<span><span class="co">#&gt;  4:              T      1.55e-01        1.55e-01         -0.008</span></span>
+<span><span class="co">#&gt;  5:              A      8.38e-01        1.62e-01          0.045</span></span>
+<span><span class="co">#&gt;  6:              A      7.40e-01        7.40e-01         -0.037</span></span>
+<span><span class="co">#&gt;  7:              D      3.23e-10        1.00e+00         -0.008</span></span>
+<span><span class="co">#&gt;  8:              A      9.30e-04        9.30e-04         -0.147</span></span>
+<span><span class="co">#&gt;  9:              G      8.16e-05        8.16e-05          0.045</span></span>
+<span><span class="co">#&gt; 10:              G      9.46e-04        9.46e-04         -0.008</span></span>
+<span><span class="co">#&gt;     BETA_progression P_incidence P_progression palindromic   keep</span></span>
+<span><span class="co">#&gt;                &lt;num&gt;       &lt;num&gt;         &lt;num&gt;      &lt;lgcl&gt; &lt;lgcl&gt;</span></span>
+<span><span class="co">#&gt;  1:           -0.037       0.781         0.781       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  2:            0.045       0.961         0.961       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  3:           -0.037       0.480         0.480       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  4:           -0.008       0.743         0.743       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  5:           -0.045       0.961         0.961        TRUE  FALSE</span></span>
+<span><span class="co">#&gt;  6:           -0.037       0.781         0.781       FALSE  FALSE</span></span>
+<span><span class="co">#&gt;  7:            0.008       0.743         0.743       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  8:           -0.147       0.781         0.781       FALSE   TRUE</span></span>
+<span><span class="co">#&gt;  9:            0.045       0.961         0.961        TRUE  FALSE</span></span>
+<span><span class="co">#&gt; 10:           -0.008       0.743         0.743       FALSE   TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="evaluation-speed">Evaluation speed<a class="anchor" aria-label="anchor" href="#evaluation-speed"></a>
 </h2>
-<p>The motivation for the <code><a href="../reference/harmonise.html">harmonise()</a></code> function was the long
-run time with the <code>TwoSampleMR v0.5.7</code> package (issue <a href="https://github.com/MRCIEU/TwoSampleMR/issues/455" class="external-link">#455</a>) as
-well as having control of the column naming and standardisation. Number
-of variants for evaluation speed analysis was downsampled to 100,000, as
-otherwise it takes a very long time.</p>
+<p>The number of variants for evaluation speed analysis was downsampled
+to 100,000, as otherwise it takes a very long time.</p>
 <div class="figure" style="text-align: center">
-<img src="figures/microbenchmark_harmonise.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 9.8 million incidence SNPs harmonised against 4.3 million progression SNPs" width="80%"><p class="caption">
-Computation speed: Apple M2 Max 96GB 10 cores; 9.8 million incidence
-SNPs harmonised against 4.3 million progression SNPs
+<img src="figures/microbenchmark_harmonise.png" alt="Analysis with downsampled GWAS of 100,000 variants" width="80%"><p class="caption">
+Analysis with downsampled GWAS of 100,000 variants
 </p>
 </div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
