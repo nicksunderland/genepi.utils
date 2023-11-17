@@ -42,6 +42,13 @@ head(gwas_with_rsids)
 #> 4:         10          100003785             C            T  rs1359508
 #> 5:         10          100004360             A            G  rs1048754
 ```
+## Available builds
+
+Currently we have the latest dbSNP build 156 available for hg37 and hg38. 
+```{r builds, eval=TRUE}
+which_dbsnp_builds()
+```
+
 
 ## Monitoring progress
 

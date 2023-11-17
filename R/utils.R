@@ -189,3 +189,82 @@ generate_random_gwas_data <- function(n, seed=2023) {
 }
 
 
+#' @title Import data
+#' @description
+#' Imports data, either from a file path, or data.frame-like object. Input
+#' is converted to a data.table and an attribute `orig_type` is added
+#' with the original data type.
+#' @param dt a string (file path) or data.frame-like object
+#' @return a data.table
+#' @noRd
+#'
+import_table <- function(dt) {
+
+  # if the input is a character try as a path
+  if(is.character(dt)) {
+
+    # if valid path try to read in as data.table
+    if(file.exists(dt)) {
+
+      dt <- data.table::fread(dt, nThread=parallel::detectCores())
+
+    } else {
+
+      stop("If `dt` is a string then it needs to be a valid file path")
+
+    }
+  }
+
+  # after possible read in, if not data.frame-like object - stop
+  stopifnot("`dt` must be a data.frame like object" = inherits(dt, "data.frame"))
+
+  # work out which the original data type is
+  if(inherits(dt, "tbl_df")) {
+    df_type <- "tibble"
+  } else if(inherits(dt, "data.table")) {
+    df_type <- "data.table"
+  } else if(inherits(dt, "data.frame")) {
+    df_type <- "data.frame"
+  }
+
+  # covert to data.table
+  dt <- data.table::as.data.table(dt)
+
+  # add original input type as attribute
+  data.table::setattr(dt, "orig_type", df_type)
+
+  # return
+  return(dt)
+}
+
+
+#' @title Revert table type
+#' @description
+#' Reverts the table type to that provided at the initial import. i.e. that
+#' stored in the `orig_type` attribute.
+#' @param dt a data.table
+#' @return a data.frame-like object
+#' @noRd
+#'
+revert_table_type <- function(dt) {
+
+  # checks
+  stopifnot("`dt` must be a data.table" = inherits(dt, "data.table"))
+  stopifnot("`dt` must have attribute `orig_type`; are you sure the table was created with `import_table()`?" = !is.null(attr(dt, "orig_type")))
+
+  # work out which the original data type is and return
+  if(attr(dt, "orig_type") == "tbl_df") {
+
+    return(tibble::as.tibble(dt))
+
+  } else if(attr(dt, "orig_type") == "data.table") {
+
+    return(dt)
+
+  } else if(inherits(dt, "data.frame")) {
+
+    return(as.data.frame(dt))
+
+  }
+}
+

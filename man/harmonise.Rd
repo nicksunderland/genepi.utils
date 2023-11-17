@@ -34,7 +34,7 @@ and \href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSa
 the standardised column names and use pure data.table syntax for increased processing speed.
 }
 \references{
-\href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter} https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R
+\href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter} - https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R
 
-\href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR} https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R
+\href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR} - https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R
 }

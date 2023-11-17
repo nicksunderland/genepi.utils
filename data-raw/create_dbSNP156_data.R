@@ -11,16 +11,16 @@
 # The Data:
 # https://www.ncbi.nlm.nih.gov/projects/SNP/docs/dbSNP_VCF_Submission.pdf
 # download:
-#     https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
-# extract just the columns we want:
-#     bcftools query -f '%ID %CHROM %POS %REF %ALT\n' GCF_000001405.25.gz | bgzip -c > snp155_extracted.vcf.gz
+#     https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz (hg37) or GCF_000001405.40 (hg38)
+# extract just the columns we want: (on the HPC load modules bcftools and samtools)
+#     bcftools query -f '%ID %CHROM %POS %REF %ALT\n' GCF_000001405.25.gz | gzip -c > snp156_extracted.vcf.gz
 # rename to: snp156_extracted.vcf.gz.Z so that it works with zcat.... (?)
 # split into smaller files of 25M rows each
-#     zcat snp156_extracted.vcf.gz.Z | split -l 25000000 - split_file_
+#     gunzip -c snp156_extracted.vcf.gz | split -l 25000000 - split_file_
 # then run this r script to create binary fst files for each chromosome.
 
 # list the split files.
-snp_files <- list.files("/Users/xx20081/Documents/local_data/genome_reference/dbsnp/b37_dbsnp156", pattern = "split_file_*", full.names=TRUE)
+snp_files <- list.files("/Users/xx20081/Documents/local_data/genome_reference/dbsnp_raw", pattern = "split_file_*", full.names=TRUE)[38:47]
 
 chrom_data <- data.table::data.table()
 for(file in snp_files) {

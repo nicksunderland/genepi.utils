@@ -741,6 +741,171 @@ analysis_result <- function(method=NA_character_,
 
 
 
+#
+#
+#
+#
+# ##############################################
+# ### PAD progression collider bias analyses ###
+# ##############################################
+#
+# ##April Hartley
+# ##15/6/22
+# rm(list=ls())
+# require(SlopeHunter)
+# library(dplyr)
+# library(TwoSampleMR)
+# library(MendelianRandomization)
+# setwd("")
+# # MVP European only ----------------------------------------------------------------
+#
+# ##1. Slope-hunter
+# incidence<-read.table("", header=T, sep=" ")
+#
+# incidence <-incidence %>% rename(SNP=ID, EA.incidence=EFFECT_ALLELE, OA.incidence=OTHER_ALLELE,
+#                                  EAF.incidence=EAF, BETA.incidence=BETA, SE.incidence=SE, PVAL.incidence=PVAL,
+#                                  POS.incidence=POS, CHR.incidence=CHROM)
+#
+# progression<-read_prognosis(filename="",
+#                             gz = TRUE,
+#                             sep="\t",
+#                             eaf_col="EFF_ALL_FREQ",
+#                             effect_allele_col="EFFECT_ALL",
+#                             other_allele_col="OTHER_ALL",
+#                             pval_col = "PVALUE",
+#                             pos_col = "POSITION",
+#                             snp_col="MARKER",
+#                             beta_col = "EFFECT",
+#                             se_col = "STDERR",
+#                             chr_col="CHR")
+#
+# #Harmonisation
+# Data_harmonised <- harmonise_effects(incidence_dat = incidence,
+#                                      prognosis_dat = progression,
+#                                      by.pos = FALSE, pos_cols = c("POS.incidence", "POS.prognosis"),
+#                                      snp_cols=c("SNP", "SNP"),
+#                                      beta_cols = c("BETA.incidence", "BETA.prognosis"),
+#                                      se_cols=c("SE.incidence", "SE.prognosis"),
+#                                      EA_cols=c("EA.incidence", "EA.prognosis"),
+#                                      OA_cols=c("OA.incidence", "OA.prognosis")
+# )
+#
+#
+# Data_to_prune <- Data_harmonised[!Data_harmonised$remove, ]
+#
+# #incidence<-subset(incidence, (SNP %in% Data_to_prune$SNP)==TRUE)
+# #write.table(incidence, file="PAD_incidence_to_clump_european.txt",row.names=F, quote=F)
+# #manual clumping using Plink (r2 0.1, 250kb)
+# clumped<-read.table("PAD_CASE_CONTROL_EUROPEAN_CLUMPED.txt", header=T)
+# clumped$keep=1
+# Data_pruned<-merge(Data_to_prune, clumped, by="SNP", all=T)
+# Data_pruned<-subset(Data_pruned, Chr!="NA")
+# Data_pruned<-subset(Data_pruned, is.na(keep)==F)
+# Data_pruned<-subset(Data_pruned, duplicated(Data_pruned)==FALSE)
+#
+# #check consistency across incidence p-value thresholds
+# pvals<-c(5e-8,1e-5,1e-3,1e-2,5e-2)
+# coefs<-list()
+# for (i in 1:length(pvals)) {
+#   sh<-hunt(Data_pruned, snp_col = "SNP",
+#            xbeta_col = "BETA.incidence",
+#            xse_col = "SE.incidence",
+#            xp_col = "Pval.incidence",
+#            ybeta_col = "BETA.prognosis",
+#            yse_col = "SE.prognosis",
+#            yp_col = "Pval.prognosis",
+#            xp_thresh =pvals[i]
+#   )
+#   cf.sh=sh$b
+#   cf.se.sh=sh$bse
+#   entropy<-sh$entropy
+#   fit<-sh$Fit
+#   hunted<-table(fit$clusters)[1]
+#   pleiotropic<-table(fit$clusters)[2]
+#   table1<-cbind(pvals[i],cf.sh,cf.se.sh,entropy,hunted,pleiotropic)
+#   coefs[[i]]<-table1
+#
+# }
+#
+# coefficients<-do.call(rbind, coefs)
+# write.table(coefficients, file="slope_hunter_coefficients_european.txt",row.names=F, quote=F)
+# cf.sh<-coefficients[3,2]
+# cf.se.sh<-coefficients[3,3]
+#
+# ##2. Corrected Weighted Least Squares
+#
+# weighted_dudbridge<-mr_ivw(mr_input(bx = Data_pruned$BETA.incidence, bxse = Data_pruned$SE.incidence,
+#                                     by = Data_pruned$BETA.prognosis, byse = Data_pruned$SE.prognosis))
+#
+# Data_pruned$weights<-1/Data_pruned$SE.prognosis^2
+#
+# weighting<-(sum(Data_pruned$weights*Data_pruned$BETA.incidence^2))/
+#   ((sum(Data_pruned$weights*Data_pruned$BETA.incidence^2))-(sum(Data_pruned$weights*Data_pruned$SE.incidence^2)))
+#
+# cf.db<-weighted_dudbridge$Estimate*weighting
+# cf.se.db<-weighted_dudbridge$StdError*weighting
+#
+# ##3. MR
+# incidence<-read.table("", header=T, sep=" ")
+#
+# incidence <-incidence %>% rename(SNP=ID, effect_allele.exposure=EFFECT_ALLELE, other_allele.exposure=OTHER_ALLELE,
+#                                  eaf.exposure=EAF, beta.exposure=BETA, se.exposure=SE, pval.exposure=PVAL,
+#                                  pos.exposure=POS, chr.exposure=CHROM)
+# incidence<-subset(incidence, pval.exposure<=5e-8)
+# incidence<-subset(incidence, (SNP %in% clumped$SNP)==TRUE)
+# incidence$exposure<-"incidence"
+# incidence$id.exposure<-"incidence"
+# incidence<-subset(incidence, duplicated(incidence)==FALSE)
+# incidence$mr_keep.exposure=TRUE
+# progression<-read_outcome_data(filename="",
+#                                snps=incidence$SNP,
+#                                sep="\t",
+#                                eaf_col="EFF_ALL_FREQ",
+#                                effect_allele_col="EFFECT_ALL",
+#                                other_allele_col="OTHER_ALL",
+#                                pval_col = "PVALUE",
+#                                pos_col = "POSITION",
+#                                snp_col="MARKER",
+#                                beta_col = "EFFECT",
+#                                se_col = "STDERR",
+#                                chr_col="CHR")
+# dat<-harmonise_data(incidence, progression)
+# mr_res<-mr(dat, method_list = c("mr_ivw","mr_egger_regression","mr_simple_median",
+#                                 "mr_weighted_median","mr_weighted_mode","mr_raps"))
+# write.table(mr_res, file="MR_results.txt", row.names=F, quote=F)
+# mr_scatter_plot(mr_res,dat)
+#
+# cf.ivw<-mr_res[1,7]
+# cf.se.ivw<-mr_res[1,8]
+# cf.egger<-mr_res[2,7]
+# cf.se.egger<-mr_res[2,8]
+# cf.wmed<-mr_res[4,7]
+# cf.se.wmed<-mr_res[4,8]
+# cf.raps<-mr_res[6,7]
+# cf.se.raps<-mr_res[6,8]
+#
+# ##4. Apply all correctionfactors to plot
+# Data_harmonised<-subset(Data_harmonised, duplicated(Data_harmonised)==FALSE)
+# Data_harmonised$beta.corrected.ivw=(Data_harmonised$BETA.prognosis-(cf.ivw* Data_harmonised$BETA.incidence))
+# Data_harmonised$se.corrected.ivw=sqrt((Data_harmonised$SE.prognosis*Data_harmonised$SE.prognosis)+ ((cf.ivw*cf.ivw)*(Data_harmonised$SE.incidence*Data_harmonised$SE.incidence)) + ((Data_harmonised$BETA.incidence*Data_harmonised$BETA.incidence)*(cf.se.ivw * cf.se.ivw)) + ((Data_harmonised$SE.incidence*Data_harmonised$SE.incidence) * (cf.se.ivw * cf.se.ivw)))
+# Data_harmonised$pval.corrected.ivw<-pchisq((Data_harmonised$beta.corrected.ivw/Data_harmonised$se.corrected.ivw)^2, 1, lower.tail = FALSE)
+#
+# Data_harmonised$beta.corrected.egger=(Data_harmonised$BETA.prognosis-(cf.egger* Data_harmonised$BETA.incidence))
+# Data_harmonised$se.corrected.egger=sqrt((Data_harmonised$SE.prognosis*Data_harmonised$SE.prognosis)+ ((cf.egger*cf.egger)*(Data_harmonised$SE.incidence*Data_harmonised$SE.incidence)) + ((Data_harmonised$BETA.incidence*Data_harmonised$BETA.incidence)*(cf.se.egger * cf.se.egger)) + ((Data_harmonised$SE.incidence*Data_harmonised$SE.incidence) * (cf.se.egger * cf.se.egger)))
+# Data_harmonised$pval.corrected.egger<-pchisq((Data_harmonised$beta.corrected.egger/Data_harmonised$se.corrected.egger)^2, 1, lower.tail = FALSE)
+#
+# Data_harmonised$beta.corrected.wmed=(Data_harmonised$BETA.prognosis-(cf.wmed* Data_harmonised$BETA.incidence))
+# Data_harmonised$se.corrected.wmed=sqrt((Data_harmonised$SE.prognosis*Data_harmonised$SE.prognosis)+ ((cf.wmed*cf.wmed)*(Data_harmonised$SE.incidence*Data_harmonised$SE.incidence)) + ((Data_harmonised$BETA.incidence*Data_harmonised$BETA.incidence)*(cf.se.wmed * cf.se.wmed)) + ((Data_harmonised$SE.incidence*Data_harmonised$SE.incidence) * (cf.se.wmed * cf.se.wmed)))
+# Data_harmonised$pval.corrected.wmed<-pchisq((Data_harmonised$beta.corrected.wmed/Data_harmonised$se.corrected.wmed)^2, 1, lower.tail = FALSE)
+#
+# Data_harmonised$beta.corrected.raps=(Data_harmonised$BETA.prognosis-(cf.raps* Data_harmonised$BETA.incidence))
+# Data_harmonised$se.corrected.raps=sqrt((Data_harmonised$SE.prognosis*Data_harmonised$SE.prognosis)+ ((cf.raps*cf.raps)*(Data_harmonised$SE.incidence*Data_harmonised$SE.incidence)) + ((Data_harmonised$BETA.incidence*Data_harmonised$BETA.incidence)*(cf.se.raps * cf.se.raps)) + ((Data_harmonised$SE.incidence*Data_harmonised$SE.incidence) * (cf.se.raps * cf.se.raps)))
+# Data_harmonised$pval.corrected.raps<-pchisq((Data_harmonised$beta.corrected.raps/Data_harmonised$se.corrected.raps)^2, 1, lower.tail = FALSE)
+#
+# Data_harmonised$beta.corrected.sh=(Data_harmonised$BETA.prognosis-(cf.sh* Data_harmonised$BETA.incidence))
+# Data_harmonised$se.corrected.sh=sqrt((Data_harmonised$SE.prognosis*Data_harmonised$SE.prognosis)+ ((cf.sh*cf.sh)*(Data_harmonised$SE.inci
+
+
 
 
 

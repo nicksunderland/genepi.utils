@@ -5,7 +5,7 @@
 #' @param pos_col a string column name; base position
 #' @param ea_col a string column name; effect allele
 #' @param nea_col a string column name; non effect allele
-#' @param build a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)
+#' @param build a string, options: "b37_dbsnp156", "b38_dbsnp156" (corresponds to the appropriate data directory)
 #' @param flip a string, options: "report", "allow", "no_flip"
 #' @param alt_rsids a logical, whether to return additional alternate RSIDs
 #' @param verbose a logical, runtime reporting
@@ -30,23 +30,11 @@ chrpos_to_rsid <- function(dt,
                            dbsnp_dir = genepi.utils::which_dbsnp_directory(),
                            verbose=TRUE) {
 
-  # checks
-  if(is.character(dt)) {
-    if(file.exists(dt)) {
-      dt <- data.table::fread(dt, nThread=parallel::detectCores())
-    } else {
-      stop("If `dt` is a string then it needs to be a valid file path")
-    }
-  }
-  stopifnot("`dt` must be a data.frame like object" = inherits(dt, "data.frame"))
-  if(inherits(dt, "tbl_df")) {
-    df_type <- "tibble"
-  } else if(inherits(dt, "data.table")) {
-    df_type <- "data.table"
-  } else if(inherits(dt, "data.frame")) {
-    df_type <- "data.frame"
-  }
-  dt <- data.table::as.data.table(dt)
+  #-- Checks -----------------------------------------------------------
+
+  # import / convert input
+  dt <- import_table(dt)
+
   stopifnot("`chr_col` must be a column name in `dt`" = chr_col %in% colnames(dt))
   stopifnot("`pos_col` must be a column name in `dt`" = pos_col %in% colnames(dt))
   stopifnot("`pos_col` must be numeric/integer type" = is.numeric(dt[,get(pos_col)]))
@@ -64,11 +52,14 @@ chrpos_to_rsid <- function(dt,
     stopifnot("`chr_col`, if numeric, must be whole numbers" = all(dt[,get(chr_col)] %% 1 == 0))
   }
   stopifnot("`dbsnp_dir` must be a valid directory path" = dir.exists(dbsnp_dir))
-  build <- match.arg(build, c("b37_dbsnp156"))
+  available_builds <- list.dirs(dbsnp_dir, full.names=FALSE)[-1]
+  build <- match.arg(build, available_builds)
   flip  <- match.arg(flip, c("report", "allow", "no_flip"))
 
 
-  # data adjustment
+  #-- Processing ---------------------------------------------------------
+
+  # data adjustment - remove chromosome 'Chr6' --> '6' and recode X/Y
   # (?i) case-insensitive
   # ^ at the beginning of the string
   # (?:chr)? non-capture group, matches "chr" 0-1 times
@@ -85,8 +76,6 @@ chrpos_to_rsid <- function(dt,
 
   if(verbose) {
     message(paste("RSID mapping...\nChromosomes to process: ", paste0(names(dts), collapse=", ")))
-    # message(paste("Available cores: ", parallel::detectCores()))
-    # message("Full fst, fstcore & data.table parallelisation only available on MacOS if packages compiled with -fopenmp flags")
   }
 
   # set up progress bar
@@ -125,29 +114,22 @@ chrpos_to_rsid <- function(dt,
   }
 
   # return as same type as input
+  data.table::setattr(out_data, "orig_type", attr(dt,"orig_type"))
   if(alt_rsids) {
 
-    if(df_type=="tibble") {
-      out_data <- tibble::as_tibble(out_data)
-      out_alts <- tibble::as_tibble(out_alts)
-    } else if(df_type=="data.table") {
-      # pass, already data.table
-    } else if(inherits(dt, "data.frame")) {
-      out_data <- as.data.frame(out_data)
-      out_alts <- as.data.frame(out_alts)
-    }
+    out_data <- revert_table_type(out_data)
+
+    data.table::setattr(out_alts, "orig_type", attr(dt,"orig_type"))
+    out_alts <- revert_table_type(out_alts)
+
     return(list("data" = out_data, "alt_rsids" = out_alts))
 
   } else {
 
-    if(df_type=="tibble") {
-      out_data <- tibble::as_tibble(out_data)
-    } else if(df_type=="data.table") {
-      # pass, already data.table
-    } else if(inherits(dt, "data.frame")) {
-      out_data <- as.data.frame(out_data)
-    }
+    out_data <- revert_table_type(out_data)
+
     return(out_data)
+
   }
 }
 

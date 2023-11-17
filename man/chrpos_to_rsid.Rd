@@ -32,7 +32,7 @@ chrpos_to_rsid(
 
 \item{alt_rsids}{a logical, whether to return additional alternate RSIDs}
 
-\item{build}{a string, options: "b37_dbsnp156" (corresponds to the appropriate data directory)}
+\item{build}{a string, options: "b37_dbsnp156", "b38_dbsnp156" (corresponds to the appropriate data directory)}
 
 \item{dbsnp_dir}{a string file path to the dbSNP .fst file directory - see setup documentation.}
 
