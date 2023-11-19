@@ -5,8 +5,9 @@ articles:
   chrpos_to_rsid: chrpos_to_rsid.html
   clumping: clumping.html
   collider_bias: collider_bias.html
+  drug_target_proxy: drug_target_proxy.html
   harmonise: harmonise.html
   plotting: plotting.html
   standardise_gwas: standardise_gwas.html
-last_built: 2023-11-17T01:07Z
+last_built: 2023-11-19T15:33Z
 

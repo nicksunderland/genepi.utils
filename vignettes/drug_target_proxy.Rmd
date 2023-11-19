@@ -1,0 +1,83 @@
+---
+title: "Drug target proxies"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Drug target proxies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(genepi.utils)
+# 
+# #
+# # # exposure T2DM/GLP1R instrument significant variants - build38
+# # # https://ftp.ncbi.nlm.nih.gov/dbgap/studies/phs001672/analyses/phs001672.pha004945.txt
+# path_t2dm <- "/Users/xx20081/Downloads/phs001672.pha004945.txt"
+# gwas_gene <- data.table::fread(path_t2dm, skip="ID	Analysis ID")
+# gwas_gene[, EAF := 0.9999]
+# mapping = list(RSID="SNP ID",SNP="ID",CHR="Chr ID",BP="Chr Position",BETA="&beta;",SE="SE",P="P-value",N="Sample size",EA="Allele1",OA="Allele2",EAF="EAF")
+# gwas_gene <- genepi.utils::standardise_gwas(gwas_gene, mapping, build="GRCh38", drop=TRUE, populate_rsid=FALSE)[, Phenotype := "t2dm"]
+# gene_chr   <- "6"
+# gene_start <- 39048781
+# gene_end   <- 39091303
+# gene_flanks<- 500
+# build = "GRCh37"
+# clump      <- TRUE
+# clump_ref <- genepi.utils::which_1000G_reference("GRCh37")
+# p1   <- 5e-8
+# p2   <- 1
+# r2   <- 0.2
+# kb   <- 250
+# join_key = "RSID"
+# qtl_data <- data.table::data.table(RSID=c("rs10305420", "rs10305421", "rs10305432", "rs10305439", "rs10305441",
+#                                           "rs10305442", "rs10305445", "rs10305452", "rs10305457", "rs10305460",
+#                                           "rs10305472", "rs10305482", "rs10305492", "rs10305514", "rs10305518",
+#                                           "rs1042044", "rs112376728", "rs1126476", "rs12190704", "rs12201075",
+#                                           "rs12214482", "rs12214488", "rs12528717", "rs13202369", "rs13219169",
+#                                           "rs148605442", "rs150058270", "rs2003132", "rs2143734", "rs2235868",
+#                                           "rs2254336", "rs2268641", "rs2268644", "rs2268646", "rs2268647",
+#                                           "rs2268657", "rs2300613", "rs2300614", "rs2300615", "rs2300616",
+#                                           "rs2894420", "rs3765466", "rs3799707", "rs4254984", "rs4711571",
+#                                           "rs4711572", "rs4711573", "rs4711574", "rs4711575", "rs4714209",
+#                                           "rs4714210", "rs4714211", "rs6458093", "rs6906372", "rs7341356",
+#                                           "rs7341358", "rs7341360", "rs73734039", "rs742763", "rs75151020",
+#                                           "rs7765641", "rs7765879", "rs7766068", "rs7766228", "rs7766275",
+#                                           "rs7766663", "rs7769547", "rs78878024", "rs79492877", "rs80318896",
+#                                           "rs877446", "rs880347", "rs910162", "rs910163", "rs910165", "rs910166",
+#                                           "rs910170", "rs910171", "rs9296277", "rs9296278", "rs9296279",
+#                                           "rs9296281", "rs9296282", "rs9296283", "rs9296284", "rs9296287",
+#                                           "rs9296289", "rs9296291", "rs932443", "rs9357298", "rs9394573",
+#                                           "rs9470964"), BETA=sample(c(-0.1,0.1),92,replace = T), P = rep(1e-8, 92))
+# qtl_data2 <- data.table::data.table(RSID=c("rs10305420", "rs10305421", "rs10305432", "rs10305439", "rs10305441",
+#                                           "rs10305442", "rs10305445", "rs10305452", "rs10305457", "rs10305460",
+#                                           "rs10305472", "rs10305482", "rs10305492", "rs10305514", "rs10305518",
+#                                           "rs1042044", "rs112376728", "rs1126476", "rs12190704", "rs12201075",
+#                                           "rs12214482", "rs12214488", "rs12528717", "rs13202369", "rs13219169",
+#                                           "rs148605442", "rs150058270", "rs2003132", "rs2143734", "rs2235868",
+#                                           "rs2254336", "rs2268641", "rs2268644", "rs2268646", "rs2268647",
+#                                           "rs2268657", "rs2300613", "rs2300614", "rs2300615", "rs2300616",
+#                                           "rs2894420", "rs3765466", "rs3799707", "rs4254984", "rs4711571",
+#                                           "rs4711572", "rs4711573", "rs4711574", "rs4711575", "rs4714209",
+#                                           "rs4714210", "rs4714211", "rs6458093", "rs6906372", "rs7341356",
+#                                           "rs7341358", "rs7341360", "rs73734039", "rs742763", "rs75151020",
+#                                           "rs7765641", "rs7765879", "rs7766068", "rs7766228", "rs7766275",
+#                                           "rs7766663", "rs7769547", "rs78878024", "rs79492877", "rs80318896",
+#                                           "rs877446", "rs880347", "rs910162", "rs910163", "rs910165", "rs910166",
+#                                           "rs910170", "rs910171", "rs9296277", "rs9296278", "rs9296279",
+#                                           "rs9296281", "rs9296282", "rs9296283", "rs9296284", "rs9296287",
+#                                           "rs9296289", "rs9296291", "rs932443", "rs9357298", "rs9394573",
+#                                           "rs9470964"), BETA=sample(c(-0.1,0.1),92,replace = T), P = rep(1e-8, 92))
+# 
+# 
+# QTL_list <- list("gtex_v8"=QTL(qtl_data, 5e-8), "hba1c"=QTL(qtl_data2, 5e-8))
+# concordance = data.table::data.table("data_name_1"=c("gene","hba1c"), "data_name_2"=c("hba1c","gtex_v8"), "concordant"=c(TRUE,TRUE))
+
+```

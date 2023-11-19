@@ -114,41 +114,63 @@ which_dbsnp_builds <- function(build=NULL) {
 
 #' @title Set the 1000G reference path
 #' @param path path to the 1000G reference pfile
+#' @param build one of c("GRCh37", "GRCh38")
 #' @return NULL, updated config file
 #' @export
 #' @importFrom yaml read_yaml write_yaml
 #'
-set_1000G_reference <- function(path) {
+set_1000G_reference <- function(path, build="GRCh37") {
 
   stopifnot("`path` must be a valid pfile (.pvar) path (n.b. do not include the extension)" = file.exists(paste0(path,".pvar")))
   stopifnot("`path` must be a valid pfile (.psam) path (n.b. do not include the extension)" = file.exists(paste0(path,".psam")))
   stopifnot("`path` must be a valid pfile (.pgen) path (n.b. do not include the extension)" = file.exists(paste0(path,".pgen")))
+  build <- match.arg(build, c("GRCh37", "GRCh38"))
 
   config_path <- system.file("config.yml", package="genepi.utils")
 
   config <- yaml::read_yaml(config_path)
 
-  config[["pfile_1000G"]] <- path
+  if(build=="GRCh37") {
+
+    config[["pfile_1000G_GRCh37"]] <- path
+
+  } else if(build=="GRCh37") {
+
+    config[["pfile_1000G_GRCh38"]] <- path
+
+  }
 
   yaml::write_yaml(config, config_path)
 
-  message(paste0("1000G reference path set to: ", path))
+  message(paste0("1000G ", build, " reference path set to: ", path))
 
   invisible(path)
 }
 
 
-#' @title Get 1000G reference path
+#' @title Get 1000G reference path(s)
+#' @param build one of "GRCh37" or "GRCh38", or null to return both
 #' @return a string file path, the currently set 1000G reference path
 #' @export
 #'
-which_1000G_reference <- function() {
+which_1000G_reference <- function(build=NULL) {
 
   config_path <- system.file("config.yml", package="genepi.utils")
 
   config <- yaml::read_yaml(config_path)
 
-  return(config[["pfile_1000G"]])
+  if(!is.null(build)) {
+
+    build <- match.arg(build, c("GRCh37","GRCh38"))
+    path <- config[[paste0("pfile_1000G_", build)]]
+
+  } else {
+
+    path <- config[c("pfile_1000G_GRCh37", "pfile_1000G_GRCh38")]
+
+  }
+
+  return(path)
 }
 
 

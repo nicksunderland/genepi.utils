@@ -4,10 +4,12 @@
 \alias{set_1000G_reference}
 \title{Set the 1000G reference path}
 \usage{
-set_1000G_reference(path)
+set_1000G_reference(path, build = "GRCh37")
 }
 \arguments{
 \item{path}{path to the 1000G reference pfile}
+
+\item{build}{one of c("GRCh37", "GRCh38")}
 }
 \value{
 NULL, updated config file

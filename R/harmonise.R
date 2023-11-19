@@ -31,8 +31,8 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   gwas2 <- data.table::as.data.table(gwas2)
 
   # trim columns to only those needed
-  gwas1[, names(gwas1)[!names(gwas1) %in% req_cols] := NULL]
-  gwas2[, names(gwas2)[!names(gwas2) %in% req_cols] := NULL]
+  # gwas1[, names(gwas1)[!names(gwas1) %in% req_cols] := NULL]
+  # gwas2[, names(gwas2)[!names(gwas2) %in% req_cols] := NULL]
 
   # join
   if(merge=="chrpos") {

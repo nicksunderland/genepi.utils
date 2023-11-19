@@ -1,3 +1,4 @@
 dbsnp_directory: /Users/xx20081/Documents/local_data/genome_reference/dbsnp
 plink2: /usr/local/plink/plink2
-pfile_1000G: /Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup
+pfile_1000G_GRCh37: /Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup
+pfile_1000G_GRCh38: not_set_yet

@@ -59,6 +59,9 @@
       <a href="../articles/collider_bias.html">Collider bias</a>
     </li>
     <li>
+      <a href="../articles/drug_target_proxy.html">Drug target proxies</a>
+    </li>
+    <li>
       <a href="../articles/harmonise.html">Harmonising datasets</a>
     </li>
     <li>
@@ -138,6 +141,8 @@ plink directly, equivalent of running <code>plink2 --options</code>
 directly in your command line.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in .recacheSubclasses(def@className, def, env): undefined subclass</span></span>
+<span><span class="co">#&gt; "ndiMatrix" of class "replValueSp"; definition not updated</span></span>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
@@ -150,7 +155,11 @@ directly in your command line.</p>
 <span></span>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $pfile_1000G_GRCh37</span></span>
 <span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pfile_1000G_GRCh38</span></span>
+<span><span class="co">#&gt; [1] "not_set_yet"</span></span>
 <span></span>
 <span><span class="co"># check path to plink2 executable</span></span>
 <span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span></span>

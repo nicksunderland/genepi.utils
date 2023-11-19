@@ -2,13 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{which_1000G_reference}
 \alias{which_1000G_reference}
-\title{Get 1000G reference path}
+\title{Get 1000G reference path(s)}
 \usage{
-which_1000G_reference()
+which_1000G_reference(build = NULL)
+}
+\arguments{
+\item{build}{one of "GRCh37" or "GRCh38", or null to return both}
 }
 \value{
 a string file path, the currently set 1000G reference path
 }
 \description{
-Get 1000G reference path
+Get 1000G reference path(s)
 }

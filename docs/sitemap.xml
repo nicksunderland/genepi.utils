@@ -19,6 +19,9 @@
     <loc>/articles/collider_bias.html</loc>
   </url>
   <url>
+    <loc>/articles/drug_target_proxy.html</loc>
+  </url>
+  <url>
     <loc>/articles/example_1.html</loc>
   </url>
   <url>
@@ -46,6 +49,9 @@
     <loc>/reference/ColumnMapping.html</loc>
   </url>
   <url>
+    <loc>/reference/QTL.html</loc>
+  </url>
+  <url>
     <loc>/reference/analyse.html</loc>
   </url>
   <url>
@@ -56,6 +62,9 @@
   </url>
   <url>
     <loc>/reference/clump.html</loc>
+  </url>
+  <url>
+    <loc>/reference/drug_target_proxy.html</loc>
   </url>
   <url>
     <loc>/reference/dudbridge.html</loc>
@@ -92,6 +101,9 @@
   </url>
   <url>
     <loc>/reference/ivw_mr.html</loc>
+  </url>
+  <url>
+    <loc>/reference/lift.html</loc>
   </url>
   <url>
     <loc>/reference/manhattan.html</loc>

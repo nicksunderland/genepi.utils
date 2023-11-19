@@ -7,6 +7,7 @@ reference:
   - harmonise_gwases
   - ColumnMapping
   - format_gwas_output
+  - lift
   - get_map
   - input_formats
   - is.input_format
@@ -37,6 +38,13 @@ reference:
   - plot_p_threshold
   - plot_slopehunter
   - plot_slopehunter_iters
+
+- title: "Drug target proxies"
+  desc: >
+    Functions for creating genetically proxied drug target instruments.
+  contents:
+  - QTL
+  - drug_target_proxy
 
 - title: "Plotting"
   desc: >
