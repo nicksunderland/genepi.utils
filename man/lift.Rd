@@ -18,6 +18,8 @@ lift(
 \arguments{
 \item{gwas}{a data.table, or file path, chr, pos, snp name, effect allele, non-effect allele columns}
 
+\item{from}{which build to lift from, one of c("Hg18", "Hg19", "Hg38")}
+
 \item{to}{which build to lift over to, one of c("Hg18", "Hg19", "Hg38")}
 
 \item{snp_col}{Name of SNP column name. Optional. Uses less certain method of matching if not available}
@@ -29,10 +31,6 @@ lift(
 \item{ea_col}{Name of effect allele column name. Optional. Might lead to duplicated rows if not presented}
 
 \item{oa_col}{Name of other allele column name. Optional. Might lead to duplicated rows if not presented}
-
-\item{build}{The possible builds, one of c("Hg18", "Hg19", "Hg38")}
-
-\item{build_fallback}{Whether to try "position" (fast) or "biomart" (more accurate if you have rsids) based approaches instead}
 }
 \value{
 data.table with updated position columns

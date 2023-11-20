@@ -14,70 +14,182 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Statins - a simple example
+
 ```{r setup}
 library(genepi.utils)
-# 
-# #
-# # # exposure T2DM/GLP1R instrument significant variants - build38
-# # # https://ftp.ncbi.nlm.nih.gov/dbgap/studies/phs001672/analyses/phs001672.pha004945.txt
-# path_t2dm <- "/Users/xx20081/Downloads/phs001672.pha004945.txt"
-# gwas_gene <- data.table::fread(path_t2dm, skip="ID	Analysis ID")
-# gwas_gene[, EAF := 0.9999]
-# mapping = list(RSID="SNP ID",SNP="ID",CHR="Chr ID",BP="Chr Position",BETA="&beta;",SE="SE",P="P-value",N="Sample size",EA="Allele1",OA="Allele2",EAF="EAF")
-# gwas_gene <- genepi.utils::standardise_gwas(gwas_gene, mapping, build="GRCh38", drop=TRUE, populate_rsid=FALSE)[, Phenotype := "t2dm"]
-# gene_chr   <- "6"
-# gene_start <- 39048781
-# gene_end   <- 39091303
-# gene_flanks<- 500
-# build = "GRCh37"
-# clump      <- TRUE
-# clump_ref <- genepi.utils::which_1000G_reference("GRCh37")
-# p1   <- 5e-8
-# p2   <- 1
-# r2   <- 0.2
-# kb   <- 250
-# join_key = "RSID"
-# qtl_data <- data.table::data.table(RSID=c("rs10305420", "rs10305421", "rs10305432", "rs10305439", "rs10305441",
-#                                           "rs10305442", "rs10305445", "rs10305452", "rs10305457", "rs10305460",
-#                                           "rs10305472", "rs10305482", "rs10305492", "rs10305514", "rs10305518",
-#                                           "rs1042044", "rs112376728", "rs1126476", "rs12190704", "rs12201075",
-#                                           "rs12214482", "rs12214488", "rs12528717", "rs13202369", "rs13219169",
-#                                           "rs148605442", "rs150058270", "rs2003132", "rs2143734", "rs2235868",
-#                                           "rs2254336", "rs2268641", "rs2268644", "rs2268646", "rs2268647",
-#                                           "rs2268657", "rs2300613", "rs2300614", "rs2300615", "rs2300616",
-#                                           "rs2894420", "rs3765466", "rs3799707", "rs4254984", "rs4711571",
-#                                           "rs4711572", "rs4711573", "rs4711574", "rs4711575", "rs4714209",
-#                                           "rs4714210", "rs4714211", "rs6458093", "rs6906372", "rs7341356",
-#                                           "rs7341358", "rs7341360", "rs73734039", "rs742763", "rs75151020",
-#                                           "rs7765641", "rs7765879", "rs7766068", "rs7766228", "rs7766275",
-#                                           "rs7766663", "rs7769547", "rs78878024", "rs79492877", "rs80318896",
-#                                           "rs877446", "rs880347", "rs910162", "rs910163", "rs910165", "rs910166",
-#                                           "rs910170", "rs910171", "rs9296277", "rs9296278", "rs9296279",
-#                                           "rs9296281", "rs9296282", "rs9296283", "rs9296284", "rs9296287",
-#                                           "rs9296289", "rs9296291", "rs932443", "rs9357298", "rs9394573",
-#                                           "rs9470964"), BETA=sample(c(-0.1,0.1),92,replace = T), P = rep(1e-8, 92))
-# qtl_data2 <- data.table::data.table(RSID=c("rs10305420", "rs10305421", "rs10305432", "rs10305439", "rs10305441",
-#                                           "rs10305442", "rs10305445", "rs10305452", "rs10305457", "rs10305460",
-#                                           "rs10305472", "rs10305482", "rs10305492", "rs10305514", "rs10305518",
-#                                           "rs1042044", "rs112376728", "rs1126476", "rs12190704", "rs12201075",
-#                                           "rs12214482", "rs12214488", "rs12528717", "rs13202369", "rs13219169",
-#                                           "rs148605442", "rs150058270", "rs2003132", "rs2143734", "rs2235868",
-#                                           "rs2254336", "rs2268641", "rs2268644", "rs2268646", "rs2268647",
-#                                           "rs2268657", "rs2300613", "rs2300614", "rs2300615", "rs2300616",
-#                                           "rs2894420", "rs3765466", "rs3799707", "rs4254984", "rs4711571",
-#                                           "rs4711572", "rs4711573", "rs4711574", "rs4711575", "rs4714209",
-#                                           "rs4714210", "rs4714211", "rs6458093", "rs6906372", "rs7341356",
-#                                           "rs7341358", "rs7341360", "rs73734039", "rs742763", "rs75151020",
-#                                           "rs7765641", "rs7765879", "rs7766068", "rs7766228", "rs7766275",
-#                                           "rs7766663", "rs7769547", "rs78878024", "rs79492877", "rs80318896",
-#                                           "rs877446", "rs880347", "rs910162", "rs910163", "rs910165", "rs910166",
-#                                           "rs910170", "rs910171", "rs9296277", "rs9296278", "rs9296279",
-#                                           "rs9296281", "rs9296282", "rs9296283", "rs9296284", "rs9296287",
-#                                           "rs9296289", "rs9296291", "rs932443", "rs9357298", "rs9394573",
-#                                           "rs9470964"), BETA=sample(c(-0.1,0.1),92,replace = T), P = rep(1e-8, 92))
-# 
-# 
-# QTL_list <- list("gtex_v8"=QTL(qtl_data, 5e-8), "hba1c"=QTL(qtl_data2, 5e-8))
-# concordance = data.table::data.table("data_name_1"=c("gene","hba1c"), "data_name_2"=c("hba1c","gtex_v8"), "concordant"=c(TRUE,TRUE))
+library(ieugwasr)
 
+# HMG-CoA reductase gene plus flanking area
+hmgcoar_chr <- 5
+hmgcoar_start <- 74632154
+hmgcoar_end <- 74657929
+flanking <- 5e5
+clumping_window <- 2.5e5
+
+# IEU LDL GWAS id
+ldl_gwas_id <- "ieu-b-110"
+
+# LDL variants
+gwas_ldl_hmgcoar <- associations(variants = paste0(hmgcoar_chr,":",hmgcoar_start-flanking-clumping_window,"-",hmgcoar_end+flanking+clumping_window), id=ldl_gwas_id)
+
+# standardise
+gwas_ldl_hmgcoar <- standardise_gwas(gwas_ldl_hmgcoar, "ieugwasr", drop=TRUE, build="GRCh37")
 ```
+
+```{r create_instrument, warning=FALSE, message=FALSE}
+# extract the variants for the instrument
+statin_instrument <- drug_target_proxy(gwas_ldl_hmgcoar, 
+                                       gene_chr = "5",
+                                       gene_start = 74632154,
+                                       gene_end = 74657929,
+                                       gene_flanks = 5e5,
+                                       build = "GRCh37",
+                                       clump = TRUE, 
+                                       clump_ref = which_1000G_reference("GRCh37"),
+                                       p1 = 5e-8, 
+                                       r2 = 0.2, 
+                                       kb = 250)
+
+# take only those that pass the tresholding
+statin_instrument <- statin_instrument[pass==TRUE, ]
+```
+
+```{r mi_gwas, warning=FALSE, message=FALSE}
+library(TwoSampleMR)
+
+# get myocardial infarction instruments
+mi_instruments <- associations(variants = statin_instrument$RSID, id = "ukb-d-I9_MI")
+
+# format statin instrument for TwoSampleMR
+statin_instrument[, phenotype := "LDL (HMG-CoA-R / statin proxy)"]
+hmgcoar_2SMR <- TwoSampleMR::format_data(statin_instrument |> as.data.frame(), 
+                                         type = "exposure",
+                                         phenotype_col = "phenotype",
+                                         snp_col = "RSID",
+                                         beta_col = "BETA",
+                                         se_col = "SE",
+                                         eaf_col = "EAF",
+                                         effect_allele_col = "EA",
+                                         other_allele_col = "OA",
+                                         pval_col = "P",
+                                         id_col = "phenotype")
+
+# format MI instrument for TwoSampleMR
+mi_2SMR <- TwoSampleMR::format_data(mi_instruments, 
+                                    type = "outcome",
+                                    phenotype_col = "trait",
+                                    snp_col = "target_snp",
+                                    beta_col = "beta",
+                                    se_col = "se",
+                                    eaf_col = "eaf",
+                                    effect_allele_col = "ea",
+                                    other_allele_col = "nea",
+                                    pval_col = "p",
+                                    id_col = "id")
+  
+# harmonise
+dat <- TwoSampleMR::harmonise_data(hmgcoar_2SMR, mi_2SMR)
+
+# run MR
+res <- mr(dat)
+
+# plot 
+plot <- mr_scatter_plot(res, dat)
+
+# view result
+res
+```
+
+```{r save_plot, include=FALSE, eval=FALSE}
+png("figures/hmgcoar_mr_plot.png", width=600, height=600, units="px")
+plot
+dev.off()
+```
+
+```{r view_plot, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("figures/hmgcoar_mr_plot.png")
+```
+
+
+## Statins - an eQTL example
+
+```{r create_instrument2, warning=FALSE, message=FALSE}
+# extract eQTL data for the variants
+hmgcar_eqtl <- QTL("/Users/xx20081/Documents/local_data/gtex_v8/gtex_v8_chr5.tsv.gz", p_val=1, join_key="RSID_b37")
+
+# set the concordance for beta effects in LDL and HMGCoAR
+concordance <- data.table::data.table("data_name_1" = c(""), data_name_2=c("hmgcoar_gtex"), concordant=c(TRUE))
+
+# extract the variants for the instrument
+statin_instrument_dat <- drug_target_proxy(gwas_ldl_hmgcoar, 
+                                       gene_chr = "5",
+                                       gene_start = 74632154,
+                                       gene_end = 74657929,
+                                       gene_flanks = 5e5,
+                                       build = "GRCh37",
+                                       clump = TRUE, 
+                                       clump_ref = which_1000G_reference("GRCh37"),
+                                       p1 = 5e-8, 
+                                       r2 = 0.2, 
+                                       kb = 250, 
+                                       QTL_list = list("hmgcoar_gtex"=hmgcar_eqtl), 
+                                       concordance = concordance)
+
+# plot
+plot3 <- plot_drug_proxy_instrument(statin_instrument_dat, remove=c("gwas_pthresh", "clumping"))
+```
+
+```{r save_plot3, include=FALSE, eval=FALSE}
+png("figures/hmgcoar_instrument_plot.png", width=600, height=500, units="px")
+plot3
+dev.off()
+```
+
+```{r view_plot3, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("figures/hmgcoar_instrument_plot.png")
+```
+
+```{r mi_gwas2, warning=FALSE, message=FALSE}
+# take only those that pass the tresholding
+statin_instrument2 <- statin_instrument_dat[pass==TRUE, ]
+
+# format new statin instrument for TwoSampleMR
+statin_instrument2[, phenotype := "LDL (HMG-CoA-R with Gtex / statin proxy)"]
+hmgcoar2_2SMR <- TwoSampleMR::format_data(statin_instrument2 |> as.data.frame(), 
+                                         type = "exposure",
+                                         phenotype_col = "phenotype",
+                                         snp_col = "RSID",
+                                         beta_col = "BETA",
+                                         se_col = "SE",
+                                         eaf_col = "EAF",
+                                         effect_allele_col = "EA",
+                                         other_allele_col = "OA",
+                                         pval_col = "P",
+                                         id_col = "phenotype")
+
+  
+# harmonise
+dat2 <- TwoSampleMR::harmonise_data(hmgcoar2_2SMR, mi_2SMR)
+
+# run MR
+res2 <- mr(dat2)
+
+# plot 
+plot2 <- mr_scatter_plot(res2, dat2)
+
+# view result
+res2
+```
+
+```{r save_plot2, include=FALSE, eval=FALSE}
+png("figures/hmgcoar_gtex_mr_plot.png", width=600, height=600, units="px")
+plot2
+dev.off()
+```
+
+```{r view_plot2, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("figures/hmgcoar_gtex_mr_plot.png")
+```
+
+

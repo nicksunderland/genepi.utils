@@ -45,6 +45,7 @@ reference:
   contents:
   - QTL
   - drug_target_proxy
+  - plot_drug_proxy_instrument
 
 - title: "Plotting"
   desc: >

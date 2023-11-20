@@ -9,7 +9,7 @@ drug_target_proxy(
   gene_chr,
   gene_start,
   gene_end,
-  gene_flanks = 500,
+  gene_flanks = 5e+05,
   build = "GRCh37",
   clump = TRUE,
   clump_ref = which_1000G_reference("GRCh37"),
@@ -19,7 +19,8 @@ drug_target_proxy(
   kb = 250,
   join_key = "RSID",
   QTL_list = list(),
-  concordance = data.table::data.table()
+  concordance = data.table::data.table(data_name_1 = character(), data_name_2 =
+    character(), concordant = logical())
 )
 }
 \arguments{

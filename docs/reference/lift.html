@@ -96,6 +96,10 @@ small segments of the genome).</p>
 <dd><p>a data.table, or file path, chr, pos, snp name, effect allele, non-effect allele columns</p></dd>
 
 
+<dt>from</dt>
+<dd><p>which build to lift from, one of c("Hg18", "Hg19", "Hg38")</p></dd>
+
+
 <dt>to</dt>
 <dd><p>which build to lift over to, one of c("Hg18", "Hg19", "Hg38")</p></dd>
 
@@ -118,14 +122,6 @@ small segments of the genome).</p>
 
 <dt>oa_col</dt>
 <dd><p>Name of other allele column name. Optional. Might lead to duplicated rows if not presented</p></dd>
-
-
-<dt>build</dt>
-<dd><p>The possible builds, one of c("Hg18", "Hg19", "Hg38")</p></dd>
-
-
-<dt>build_fallback</dt>
-<dd><p>Whether to try "position" (fast) or "biomart" (more accurate if you have rsids) based approaches instead</p></dd>
 
 </dl></div>
     <div id="value">

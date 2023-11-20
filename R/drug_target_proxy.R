@@ -47,7 +47,7 @@ drug_target_proxy <- function(gwas_gene,
                               gene_chr,
                               gene_start,
                               gene_end,
-                              gene_flanks = 500,
+                              gene_flanks = 5e5,
                               build = "GRCh37",
                               clump = TRUE,
                               clump_ref = which_1000G_reference("GRCh37"),
@@ -57,9 +57,9 @@ drug_target_proxy <- function(gwas_gene,
                               kb    = 250,
                               join_key = "RSID",
                               QTL_list    = list(),
-                              concordance = data.table::data.table()) {
+                              concordance = data.table::data.table(data_name_1=character(), data_name_2=character(), concordant=logical())) {
 
-  index = gene_thresh = data_name_1 = data_name_2 = concordant = pass = NULL
+  index = pthresh = data_name_1 = data_name_2 = concordant = clumping = pass = NULL
 
   # checks
   stopifnot("`gene_chr` must be a character, in-line with standardise_gwas() CHR column typing" = is.character(gene_chr))
@@ -80,6 +80,10 @@ drug_target_proxy <- function(gwas_gene,
   gene_region <- gwas_gene[CHR==gene_chr &
                            BP > (gene_start-flank) &
                            BP < (gene_end+flank), ]
+  if(nrow(gene_region)==0) {
+    msg <- paste0("After applying gene region filtering [",gene_chr,":",gene_start-flank,"-",gene_end+flank,"] no variants remained")
+    stop(msg)
+  }
 
   # run clumping and code result
   # clump_outcomes <- c("Not performed"=1, "Index variant"=2, "Clumped variant"=3, "Not in reference"=4, "internal_code_error"=5)
@@ -117,10 +121,10 @@ drug_target_proxy <- function(gwas_gene,
   # gene_region[, gene_thresh := data.table::fcase(P >= p1, factor(1, gene_pval_outcomes, names(gene_pval_outcomes)),
   #                                                P <  p1, factor(2, gene_pval_outcomes, names(gene_pval_outcomes)),
   #                                                default  =  factor(3, gene_pval_outcomes, names(gene_pval_outcomes)))]
-  gene_region[, gene_thresh := P < p1]
+  gene_region[, pthresh := P < p1]
 
   # rename
-  data.table::setnames(gene_region, names(gene_region), paste0(names(gene_region), "_gene"))
+  # data.table::setnames(gene_region, names(gene_region), paste0(names(gene_region), "_gene"))
 
   # use QTL data if provided
   if(length(QTL_list)>0) {
@@ -133,7 +137,7 @@ drug_target_proxy <- function(gwas_gene,
     }
 
     # merge the QTL data
-    data.table::setkeyv(gene_region, paste0(join_key, "_gene"))
+    data.table::setkeyv(gene_region, join_key)
     for(i in seq_along(QTL_list)) {
 
       # the QTL name
@@ -164,30 +168,50 @@ drug_target_proxy <- function(gwas_gene,
     } # end QTL list processing
 
 
+
+
+
+
     # TODO: HARMONISE here
     ######
     ######
+
+
+
+
+
 
     # assess BETA directions
     for(j in 1:nrow(concordance)) {
 
         # output column name
-        col_name <- paste0("direction_", concordance[j, data_name_1], "_", concordance[j, data_name_2])
+        col_name <- ifelse(concordance[j, data_name_1]=="",
+                           paste0("direction_gwas_", concordance[j, data_name_2]),
+                           ifelse(concordance[j, data_name_2]=="",
+                                  paste0("direction_", concordance[j, data_name_1], "_gwas"),
+                                  paste0("direction_", concordance[j, data_name_1], "_", concordance[j, data_name_2])))
+
+        # beta col names
+        beta_col1 <- ifelse(concordance[j, data_name_1]=="", "BETA", paste0("BETA_", concordance[j, data_name_1]))
+        beta_col2 <- ifelse(concordance[j, data_name_2]=="", "BETA", paste0("BETA_", concordance[j, data_name_2]))
 
         # code whether the desired direction
         gene_region[, (col_name) := ifelse(rep(concordance[j, concordant], nrow(gene_region)),
                                            # looking for same direction BETAs
-                                           sign(get(paste0("BETA_", concordance[j, data_name_1]))) == sign(get(paste0("BETA_", concordance[j, data_name_2]))),
+                                           sign(get(beta_col1)) == sign(get(beta_col2)),
                                            # looking for opposite direction BETAs
-                                           sign(get(paste0("BETA_", concordance[j, data_name_1]))) != sign(get(paste0("BETA_", concordance[j, data_name_2]))))]
+                                           sign(get(beta_col1)) != sign(get(beta_col2)))]
 
     }
 
   } # end QTL list > 1
 
   # assess overall instrument criteria
-  criteria_cols <- names(gene_region)[grepl("^(pthresh_|direction_)", names(gene_region))]
+  criteria_cols <- names(gene_region)[grepl("^(pthresh|direction)", names(gene_region))]
   gene_region[, pass := all(.SD),, by=1:nrow(gene_region), .SDcols=criteria_cols]
+  if(clump) {
+    gene_region[clumping==FALSE | is.na(clumping), pass := FALSE]
+  }
   data.table::setorder(gene_region, -pass)
 
   # return
@@ -196,7 +220,67 @@ drug_target_proxy <- function(gwas_gene,
 
 
 
+#' @title Plot the drug proxy instrument
+#' @param dat a data.table, output from `drug_target_proxy()``
+#' @param remove a character vector, one or more of c("gwas_pthresh", "clumping")
+#' @return a ggplot
+#' @export
+#'
+plot_drug_proxy_instrument <- function(dat, remove=c("gwas_pthresh", "clumping")) {
 
+  remove <- match.arg(remove, c("gwas_pthresh", "clumping"), several.ok=TRUE)
+
+  data_cols <- c("P", "BP", "RSID", "SNP", "BETA")
+  pivot_cols <- c("clumping", "pass",
+                  names(dat)[grepl("^pthresh",names(dat))],
+                  names(dat)[grepl("^direction",names(dat))])
+
+  if("gwas_pthresh" %in% remove) {
+    plot_dat <- dat[pthresh==TRUE, ]
+  }
+  if("clumping" %in% remove) {
+    plot_dat <- dat[clumping==TRUE, ]
+  }
+
+  plot_dat <- dat[pthresh==TRUE & clumping==TRUE, ]
+
+  plot_dat <- data.table::melt(plot_dat, id.vars=data_cols, measure.vars=pivot_cols)
+
+  plot_dat <- stats::na.omit(plot_dat)
+
+  ordering <- plot_dat[, .("num_passing" = sum(value)), by="variable" ][order(num_passing), variable]
+  plot_dat[, variable := factor(variable, levels = c("pass", as.character(ordering[ordering!="pass"])))]
+
+  # Selection steps
+  p_steps <- ggplot2::ggplot(data = plot_dat,
+                       mapping = ggplot2::aes(x = RSID,
+                                              y = variable,
+                                              fill = value)) +
+    ggplot2::geom_tile(color = "gray") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust=1)) +
+    ggplot2::coord_equal() +
+    ggplot2::labs(x = "Variant", y = "Selection step", fill = "Pass")
+
+
+  # Manhattan
+  log10P <- expression(paste("-log"[10], plain(P)))
+  p_manhattan <- ggplot2::ggplot(data = dat,
+                                 mapping = ggplot2::aes(x = BP,
+                                                        y = -log10(P),
+                                                        color = pass)) +
+    ggplot2::geom_point() +
+    ggplot2::geom_abline(slope=0, intercept = -log10(5e-8), linetype="dotted") +
+    ggplot2::labs(x = "Chromosome position", y = log10P, color = "Pass")
+
+  # Combined plot
+  p <- ggpubr::ggarrange(NULL, p_manhattan, NULL, p_steps, ncol=1,
+                         heights = c(0.10, 1, 0.05, 1),
+                         vjust = 2,
+
+                         labels = c("Gene region", "", "Variant selection"))
+
+  return(p)
+}
 
 
 

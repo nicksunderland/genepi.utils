@@ -27,9 +27,9 @@ Imports:
     viridis,
     tibble,
     MendelianRandomization,
-    rtracklayer,
     GenomicRanges,
-    IRanges
+    IRanges,
+    rtracklayer
 Suggests: 
     knitr,
     rmarkdown,

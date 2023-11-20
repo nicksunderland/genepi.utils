@@ -6,14 +6,13 @@
 #' small segments of the genome).
 #' @references https://github.com/MRCIEU/GwasDataImport
 #' @param gwas a data.table, or file path, chr, pos, snp name, effect allele, non-effect allele columns
-#' @param build The possible builds, one of c("Hg18", "Hg19", "Hg38")
+#' @param from which build to lift from, one of c("Hg18", "Hg19", "Hg38")
 #' @param to which build to lift over to, one of c("Hg18", "Hg19", "Hg38")
 #' @param chr_col Name of chromosome column name. Required
 #' @param pos_col Name of position column name. Required
 #' @param snp_col Name of SNP column name. Optional. Uses less certain method of matching if not available
 #' @param ea_col Name of effect allele column name. Optional. Might lead to duplicated rows if not presented
 #' @param oa_col Name of other allele column name. Optional. Might lead to duplicated rows if not presented
-#' @param build_fallback Whether to try "position" (fast) or "biomart" (more accurate if you have rsids) based approaches instead
 #' @return data.table with updated position columns
 #' @export
 #' @importFrom rtracklayer import.chain liftOver
@@ -37,6 +36,7 @@ lift <- function(gwas,
   from <- match.arg(from, builds)
   to   <- match.arg(to, builds)
   stopifnot("`to` must not be the same as `from`" = to!=from)
+  stopifnot("Column name(s) not found in `gwas`" = all(c(chr_col,pos_col,ea_col,oa_col) %in% names(gwas)))
 
   # import and convert
   gwas <- import_table(gwas)
