@@ -10,43 +10,37 @@
 #' @param gwas1 a data.frame like object, GWAS 1
 #' @param gwas1_trait a string, suffix to add to gwas1 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
 #' @param gwas2_trait a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
-#' @param merge a string, either `chrpos` for merging by CHR and BP (position) columns, or `snp` for merging by SNP column
+#' @param merge a character vector of the columns to join on; e.g. c("CHR","BP"); can be NULL, in which case the gwases must have keys set
 #' @param gwas2 a data.frame like object, GWAS 2
 #' @return a data.table, the harmonised dataset
 #' @export
 #'
-harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progression", merge="chrpos") {
+harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progression", merge=NULL) {
 
   CHR_1 = BP_1 = SNP_2 = SNP_1 = keep = to_swap = EA_1 = OA_1 = EA_2 = OA_2 = EA2tmp = BETA_2 = EAF_2 = palindromic = OK = ii = NULL
 
   # checks
-  merge <- match.arg(merge, c("chrpos", "snp"))
-  stopifnot("`gwas[1|2]` must be a data.frame like object" = inherits(gwas1, "data.frame") & inherits(gwas2, "data.frame"))
+  if(is.null(merge)) {
+    stopifnot("If `merge` is NULL then `gwas1` and `gwas2` must have appropriate keys set" = data.table::haskey(gwas1) & data.table::haskey(gwas2))
+  } else {
+    stopifnot("`merge` column(s) not found in `gwas1`" = merge %in% names(gwas1))
+    stopifnot("`merge` column(s) not found in `gwas2`" = merge %in% names(gwas2))
+    data.table::setkeyv(gwas1, merge)
+    data.table::setkeyv(gwas2, merge)
+  }
+  stopifnot("`gwas[1|2]` must be a data.table object" = inherits(gwas1, "data.table") & inherits(gwas2, "data.table"))
   req_cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","P")
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas1`" = all(req_cols %in% colnames(gwas1)))
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas2`" = all(req_cols %in% colnames(gwas2)))
 
-  # to data.table format
-  gwas1 <- data.table::as.data.table(gwas1)
-  gwas2 <- data.table::as.data.table(gwas2)
-
-  # trim columns to only those needed
-  # gwas1[, names(gwas1)[!names(gwas1) %in% req_cols] := NULL]
-  # gwas2[, names(gwas2)[!names(gwas2) %in% req_cols] := NULL]
-
   # join
-  if(merge=="chrpos") {
+  h <- data.table::merge.data.table(gwas1, gwas2, by.x=data.table::key(gwas1), by.y=data.table::key(gwas2), all=FALSE, suffixes=c("_1","_2"))
 
-    h <- data.table::merge.data.table(gwas1, gwas2, by=c("CHR","BP"), all=FALSE, suffixes=c("_1","_2"))
-    data.table::setnames(h, c("CHR","BP"), c("CHR_1","BP_1"))
-    h[, c("CHR_2","BP_2") := list(CHR_1,BP_1)]
-
-  } else if(merge=="snp") {
-
-    h <- data.table::merge.data.table(gwas1, gwas2, by=c("SNP"), all=FALSE, suffixes=c("_1","_2"))
-    data.table::setnames(h, "SNP", "SNP_1")
-    h[, SNP_2 := SNP_1]
-
+  # duplicate the join cols - one for each gwas, if the same
+  if(all(data.table::key(gwas1) == data.table::key(gwas2))) {
+    gwas_1_key <- data.table::key(gwas1)
+    data.table::setnames(h, (gwas_1_key), paste0(gwas_1_key, "_1"))
+    h[, paste0(gwas_1_key, "_2") := .SD, .SDcols = paste0(gwas_1_key, "_1")]
   }
 
   # report loss of variants
@@ -135,8 +129,14 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   # set output names and order
   corder <- c(t(outer(c("SNP","CHR","BP","EA","OA","EAF","BETA","P"), c("_1","_2"), paste0)), "palindromic","keep")
   data.table::setcolorder(h, corder)
-  data.table::setnames(h, names(h), sub("1$", gwas1_trait, names(h)))
-  data.table::setnames(h, names(h), sub("2$", gwas2_trait, names(h)))
+  if(gwas1_trait!=""){
+    gwas1_trait <- paste0("_",gwas1_trait)
+  }
+  if(gwas2_trait!=""){
+    gwas2_trait <- paste0("_",gwas2_trait)
+  }
+  data.table::setnames(h, names(h), sub("_1$", gwas1_trait, names(h)))
+  data.table::setnames(h, names(h), sub("_2$", gwas2_trait, names(h)))
 
   # set logging attribute
   attr(h, "info") <- jinfo

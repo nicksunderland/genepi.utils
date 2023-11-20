@@ -96,31 +96,48 @@
 
     
     
+<p>Drug targets can be genetically proxied by using variants within a
+gene region combined with other evidence of functional relevance. More
+example, variants in the target of statin therapy, HMG-CoA-reductase,
+can be used to investigate the potential benefits of statin therapy on
+outcomes such as heart attacks. Of course there is a lot of clinical
+trial data regarding this specific scenario, however the formulation of
+the problem can be extended to less well studies drugs and potential
+targets for which medication is yet to be developed for.</p>
 <div class="section level2">
 <h2 id="statins---a-simple-example">Statins - a simple example<a class="anchor" aria-label="anchor" href="#statins---a-simple-example"></a>
 </h2>
+<p>First we start by defining the gene region and obtaining the
+association statistics for the variants within it on the exposure of
+choice (here LDL cholesterol).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in .recacheSubclasses(def@className, def, env): undefined subclass</span></span>
-<span><span class="co">#&gt; "ndiMatrix" of class "replValueSp"; definition not updated</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/MRCIEU/ieugwasr" class="external-link">ieugwasr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; API: public: http://gwas-api.mrcieu.ac.uk/</span></span>
 <span></span>
 <span><span class="co"># HMG-CoA reductase gene plus flanking area</span></span>
 <span><span class="va">hmgcoar_chr</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span><span class="va">hmgcoar_start</span> <span class="op">&lt;-</span> <span class="fl">74632154</span></span>
 <span><span class="va">hmgcoar_end</span> <span class="op">&lt;-</span> <span class="fl">74657929</span></span>
 <span><span class="va">flanking</span> <span class="op">&lt;-</span> <span class="fl">5e5</span></span>
-<span><span class="va">clumping_window</span> <span class="op">&lt;-</span> <span class="fl">2.5e5</span></span>
 <span></span>
 <span><span class="co"># IEU LDL GWAS id</span></span>
 <span><span class="va">ldl_gwas_id</span> <span class="op">&lt;-</span> <span class="st">"ieu-b-110"</span></span>
 <span></span>
 <span><span class="co"># LDL variants</span></span>
-<span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">hmgcoar_chr</span>,<span class="st">":"</span>,<span class="va">hmgcoar_start</span><span class="op">-</span><span class="va">flanking</span><span class="op">-</span><span class="va">clumping_window</span>,<span class="st">"-"</span>,<span class="va">hmgcoar_end</span><span class="op">+</span><span class="va">flanking</span><span class="op">+</span><span class="va">clumping_window</span><span class="op">)</span>, id<span class="op">=</span><span class="va">ldl_gwas_id</span><span class="op">)</span></span>
+<span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">hmgcoar_chr</span>,<span class="st">":"</span>,<span class="va">hmgcoar_start</span><span class="op">-</span><span class="va">flanking</span>,<span class="st">"-"</span>,<span class="va">hmgcoar_end</span><span class="op">+</span><span class="va">flanking</span><span class="op">)</span>, id<span class="op">=</span><span class="va">ldl_gwas_id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># standardise</span></span>
 <span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas_ldl_hmgcoar</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="instrument-creation">Instrument creation<a class="anchor" aria-label="anchor" href="#instrument-creation"></a>
+</h3>
+<p>Next we use the function
+<code><a href="../reference/drug_target_proxy.html">genepi.utils::drug_target_proxy()</a></code> to define the variants
+that will make up our instrument. In the simplest form, this takes the
+exposure association statistics, the gene definition, and clumping
+parameters, then returns significant, clumped, variants within the gene.
+Later we will see how to provide other GWAS data and QTL data to further
+refine the variants making up the drug-proxy instrument.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract the variants for the instrument</span></span>
 <span><span class="va">statin_instrument</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_target_proxy.html">drug_target_proxy</a></span><span class="op">(</span><span class="va">gwas_ldl_hmgcoar</span>, </span>
@@ -137,6 +154,13 @@
 <span></span>
 <span><span class="co"># take only those that pass the tresholding</span></span>
 <span><span class="va">statin_instrument</span> <span class="op">&lt;-</span> <span class="va">statin_instrument</span><span class="op">[</span><span class="va">pass</span><span class="op">==</span><span class="cn">TRUE</span>, <span class="op">]</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="mr">MR<a class="anchor" aria-label="anchor" href="#mr"></a>
+</h3>
+<p>Assessing the instrument is the a case of running the MR of the
+instrument variants on the outcome of interest (here myocardial
+infarction).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/MRCIEU/TwoSampleMR" class="external-link">TwoSampleMR</a></span><span class="op">)</span></span>
 <span></span>
@@ -180,33 +204,35 @@
 <span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/mr_scatter_plot.html" class="external-link">mr_scatter_plot</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">dat</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># view result</span></span>
-<span><span class="va">res</span></span>
-<span><span class="co">#&gt;   id.exposure  id.outcome               outcome                       exposure</span></span>
-<span><span class="co">#&gt; 1      7QGGzv ukb-d-I9_MI Myocardial infarction LDL (HMG-CoA-R / statin proxy)</span></span>
-<span><span class="co">#&gt; 2      7QGGzv ukb-d-I9_MI Myocardial infarction LDL (HMG-CoA-R / statin proxy)</span></span>
-<span><span class="co">#&gt; 3      7QGGzv ukb-d-I9_MI Myocardial infarction LDL (HMG-CoA-R / statin proxy)</span></span>
-<span><span class="co">#&gt; 4      7QGGzv ukb-d-I9_MI Myocardial infarction LDL (HMG-CoA-R / statin proxy)</span></span>
-<span><span class="co">#&gt; 5      7QGGzv ukb-d-I9_MI Myocardial infarction LDL (HMG-CoA-R / statin proxy)</span></span>
-<span><span class="co">#&gt;                      method nsnp           b          se         pval</span></span>
-<span><span class="co">#&gt; 1                  MR Egger   63 0.026977581 0.005036313 1.363788e-06</span></span>
-<span><span class="co">#&gt; 2           Weighted median   63 0.009769155 0.002741810 3.665975e-04</span></span>
-<span><span class="co">#&gt; 3 Inverse variance weighted   63 0.008433752 0.001837546 4.439190e-06</span></span>
-<span><span class="co">#&gt; 4               Simple mode   63 0.008986714 0.005257031 9.236589e-02</span></span>
-<span><span class="co">#&gt; 5             Weighted mode   63 0.011447942 0.003179063 6.310781e-04</span></span></code></pre></div>
-<p><img src="figures/hmgcoar_mr_plot.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="va">res</span></span></code></pre></div>
+<p><img src="figures/hmgcoar_mr_plot.png" width="90%" style="display: block; margin: auto;"></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="statins---an-eqtl-example">Statins - an eQTL example<a class="anchor" aria-label="anchor" href="#statins---an-eqtl-example"></a>
 </h2>
+<p>We can refine the drug-proxy instrument by provding other QTL data
+supporting a role for the particular gene of interest. Here we create a
+<code><a href="../reference/QTL.html">QTL()</a></code> object and pass it to
+the<code><a href="../reference/drug_target_proxy.html">drug_target_proxy()</a></code> function. The <code><a href="../reference/QTL.html">QTL()</a></code>
+object is simply a (S3) container for a set of summary statistics and a
+P-value threshold to apply. This is joined to the main gene association
+statistics and common variants passing both P-value thresholding tests
+are retained. Internally, the <code><a href="../reference/drug_target_proxy.html">drug_target_proxy()</a></code> function
+ensures effects are harmonised prior to merging.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract eQTL data for the variants</span></span>
-<span><span class="va">hmgcar_eqtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/QTL.html">QTL</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Documents/local_data/gtex_v8/gtex_v8_chr5.tsv.gz"</span>, p_val<span class="op">=</span><span class="fl">1</span>, join_key<span class="op">=</span><span class="st">"RSID_b37"</span><span class="op">)</span></span>
+<span><span class="va">hmgcar_eqtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/QTL.html">QTL</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Documents/local_data/gtex_v8/gtex_v8_chr5.tsv.gz"</span>, </span>
+<span>                   p_val<span class="op">=</span><span class="fl">0.05</span>, </span>
+<span>                   join_key<span class="op">=</span><span class="st">"RSID_b37"</span><span class="op">)</span></span>
+<span><span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">hmgcar_eqtl</span><span class="op">$</span><span class="va">data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SNP_b38"</span>, <span class="st">"BP_b37"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SNP"</span>, <span class="st">"BP"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">hmgcar_eqtl</span><span class="op">$</span><span class="va">data</span><span class="op">[</span>, <span class="va">CHR</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">CHR</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># set the concordance for beta effects in LDL and HMGCoAR</span></span>
 <span><span class="va">concordance</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="st">"data_name_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span><span class="op">)</span>, data_name_2<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hmgcoar_gtex"</span><span class="op">)</span>, concordant<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># extract the variants for the instrument</span></span>
-<span><span class="va">statin_instrument_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_target_proxy.html">drug_target_proxy</a></span><span class="op">(</span><span class="va">gwas_ldl_hmgcoar</span>, </span>
+<span><span class="va">statin_instrument_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_target_proxy.html">drug_target_proxy</a></span><span class="op">(</span>gwas_gene <span class="op">=</span> <span class="va">gwas_ldl_hmgcoar</span>, </span>
 <span>                                       gene_chr <span class="op">=</span> <span class="st">"5"</span>,</span>
 <span>                                       gene_start <span class="op">=</span> <span class="fl">74632154</span>,</span>
 <span>                                       gene_end <span class="op">=</span> <span class="fl">74657929</span>,</span>
@@ -216,12 +242,15 @@
 <span>                                       clump_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="st">"GRCh37"</span><span class="op">)</span>,</span>
 <span>                                       p1 <span class="op">=</span> <span class="fl">5e-8</span>, </span>
 <span>                                       r2 <span class="op">=</span> <span class="fl">0.2</span>, </span>
-<span>                                       kb <span class="op">=</span> <span class="fl">250</span>, </span>
+<span>                                       kb <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>                                       join_key <span class="op">=</span> <span class="st">"RSID"</span>,</span>
 <span>                                       QTL_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"hmgcoar_gtex"</span><span class="op">=</span><span class="va">hmgcar_eqtl</span><span class="op">)</span>, </span>
 <span>                                       concordance <span class="op">=</span> <span class="va">concordance</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># plot</span></span>
 <span><span class="va">plot3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_drug_proxy_instrument.html">plot_drug_proxy_instrument</a></span><span class="op">(</span><span class="va">statin_instrument_dat</span>, remove<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gwas_pthresh"</span>, <span class="st">"clumping"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>We can view the instrument assessment steps with the function
+<code><a href="../reference/plot_drug_proxy_instrument.html">plot_drug_proxy_instrument()</a></code>.</p>
 <p><img src="figures/hmgcoar_instrument_plot.png" width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># take only those that pass the tresholding</span></span>
@@ -252,26 +281,116 @@
 <span><span class="va">plot2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/mr_scatter_plot.html" class="external-link">mr_scatter_plot</a></span><span class="op">(</span><span class="va">res2</span>, <span class="va">dat2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># view result</span></span>
-<span><span class="va">res2</span></span>
-<span><span class="co">#&gt;   id.exposure  id.outcome               outcome</span></span>
-<span><span class="co">#&gt; 1      fLiph1 ukb-d-I9_MI Myocardial infarction</span></span>
-<span><span class="co">#&gt; 2      fLiph1 ukb-d-I9_MI Myocardial infarction</span></span>
-<span><span class="co">#&gt; 3      fLiph1 ukb-d-I9_MI Myocardial infarction</span></span>
-<span><span class="co">#&gt; 4      fLiph1 ukb-d-I9_MI Myocardial infarction</span></span>
-<span><span class="co">#&gt; 5      fLiph1 ukb-d-I9_MI Myocardial infarction</span></span>
-<span><span class="co">#&gt;                                   exposure                    method nsnp</span></span>
-<span><span class="co">#&gt; 1 LDL (HMG-CoA-R with Gtex / statin proxy)                  MR Egger   28</span></span>
-<span><span class="co">#&gt; 2 LDL (HMG-CoA-R with Gtex / statin proxy)           Weighted median   28</span></span>
-<span><span class="co">#&gt; 3 LDL (HMG-CoA-R with Gtex / statin proxy) Inverse variance weighted   28</span></span>
-<span><span class="co">#&gt; 4 LDL (HMG-CoA-R with Gtex / statin proxy)               Simple mode   28</span></span>
-<span><span class="co">#&gt; 5 LDL (HMG-CoA-R with Gtex / statin proxy)             Weighted mode   28</span></span>
-<span><span class="co">#&gt;             b          se         pval</span></span>
-<span><span class="co">#&gt; 1 0.025513641 0.006584951 0.0006479296</span></span>
-<span><span class="co">#&gt; 2 0.011764586 0.003173732 0.0002098438</span></span>
-<span><span class="co">#&gt; 3 0.008009375 0.002409936 0.0008890176</span></span>
-<span><span class="co">#&gt; 4 0.009290461 0.005006711 0.0744581613</span></span>
-<span><span class="co">#&gt; 5 0.011682854 0.003421682 0.0020343945</span></span></code></pre></div>
-<p><img src="figures/hmgcoar_gtex_mr_plot.png" width="100%" style="display: block; margin: auto;"></p>
+<span><span class="va">res2</span></span></code></pre></div>
+<p>Evidence for statin therapy.</p>
+<p><img src="figures/hmgcoar_gtex_mr_plot.png" width="90%" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level2">
+<h2 id="other-instruments">Other instruments<a class="anchor" aria-label="anchor" href="#other-instruments"></a>
+</h2>
+<div class="section level3">
+<h3 id="glp1r-agonists">GLP1R agonists<a class="anchor" aria-label="anchor" href="#glp1r-agonists"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># GLP1R gene plus flanking area</span></span>
+<span><span class="va">glp1r_chr</span> <span class="op">&lt;-</span> <span class="st">"6"</span></span>
+<span><span class="va">glp1r_start</span> <span class="op">&lt;-</span> <span class="fl">39016574</span></span>
+<span><span class="va">glp1r_end</span> <span class="op">&lt;-</span> <span class="fl">39055519</span></span>
+<span><span class="va">flanking</span> <span class="op">&lt;-</span> <span class="fl">5e5</span></span>
+<span></span>
+<span><span class="co"># standardise  T2DM summary stats downloaded from Knowlegde Portal - transancestry, 2022</span></span>
+<span><span class="va">gwas_t2dm_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Downloads/DIAMANTE/DIAMANTE-TA.sumstat.txt.gz"</span>, </span>
+<span>                                    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SNP<span class="op">=</span><span class="st">"chrposID"</span>,CHR<span class="op">=</span><span class="st">"chromosome(b37)"</span>,BP<span class="op">=</span><span class="st">"position(b37)"</span>,EA<span class="op">=</span><span class="st">"effect_allele"</span>, OA<span class="op">=</span><span class="st">"other_allele"</span>, EAF<span class="op">=</span><span class="st">"MR-MEGA_p-value_association"</span>, BETA<span class="op">=</span><span class="st">"Fixed-effects_beta"</span>, SE<span class="op">=</span><span class="st">"Fixed-effects_SE"</span>, P<span class="op">=</span><span class="st">"Fixed-effects_p-value"</span>, RSID<span class="op">=</span><span class="st">"rsID"</span><span class="op">)</span>, </span>
+<span>                                    drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># UKBB HbA1c IEU GWAS id</span></span>
+<span><span class="va">hb1a1c_gwas_id</span> <span class="op">&lt;-</span> <span class="st">"ebi-a-GCST90002244"</span> <span class="co"># "ebi-a-GCST90014006" UKBB no EAF data</span></span>
+<span></span>
+<span><span class="co"># extract HbA1c associations in the same region</span></span>
+<span><span class="va">gwas_hba1c_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">glp1r_chr</span>,<span class="st">":"</span>,<span class="va">glp1r_start</span><span class="op">-</span><span class="va">flanking</span>,<span class="st">"-"</span>,<span class="va">glp1r_end</span><span class="op">+</span><span class="va">flanking</span><span class="op">)</span>, id<span class="op">=</span><span class="va">hb1a1c_gwas_id</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># standardise</span></span>
+<span><span class="va">gwas_hba1c_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas_hba1c_glp1r</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># create a QTL object for the HbA1c data</span></span>
+<span><span class="va">hba1c_qtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/QTL.html">QTL</a></span><span class="op">(</span><span class="va">gwas_hba1c_glp1r</span>, p_val<span class="op">=</span><span class="fl">0.5</span>, join_key<span class="op">=</span><span class="st">"RSID"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># create an eQTL object for the GTexV8 data</span></span>
+<span><span class="va">glp1r_eqtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/QTL.html">QTL</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Documents/local_data/gtex_v8/gtex_v8_chr6.tsv.gz"</span>, p_val<span class="op">=</span><span class="fl">1</span>, join_key<span class="op">=</span><span class="st">"RSID_b37"</span><span class="op">)</span></span>
+<span><span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/setattr.html" class="external-link">setnames</a></span><span class="op">(</span><span class="va">glp1r_eqtl</span><span class="op">$</span><span class="va">data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SNP_b38"</span>, <span class="st">"BP_b37"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SNP"</span>, <span class="st">"BP"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">glp1r_eqtl</span><span class="op">$</span><span class="va">data</span><span class="op">[</span>, <span class="va">CHR</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">CHR</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># set the concordance for beta effects in HbA1c and GLP1R - FALSE as high HbA1c should relate to less GLP1R expression</span></span>
+<span><span class="va">concordance</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></span><span class="op">(</span><span class="st">"data_name_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hba1c_qtl"</span><span class="op">)</span>, data_name_2<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glp1r_eqtl"</span><span class="op">)</span>, concordant<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># extract the variants for the instrument</span></span>
+<span><span class="va">incretin_instrument_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drug_target_proxy.html">drug_target_proxy</a></span><span class="op">(</span>gwas_gene <span class="op">=</span> <span class="va">gwas_t2dm_glp1r</span>, </span>
+<span>                                           gene_chr <span class="op">=</span> <span class="va">glp1r_chr</span>,</span>
+<span>                                           gene_start <span class="op">=</span> <span class="va">glp1r_start</span>,</span>
+<span>                                           gene_end <span class="op">=</span> <span class="va">glp1r_end</span>,</span>
+<span>                                           gene_flanks <span class="op">=</span> <span class="va">flanking</span>,</span>
+<span>                                           build <span class="op">=</span> <span class="st">"GRCh37"</span>,</span>
+<span>                                           clump <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                                           clump_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="st">"GRCh37"</span><span class="op">)</span>,</span>
+<span>                                           p1 <span class="op">=</span> <span class="fl">5e-6</span>, </span>
+<span>                                           r2 <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>                                           kb <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>                                           join_key <span class="op">=</span> <span class="st">"RSID"</span>,</span>
+<span>                                           QTL_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"hba1c_qtl"</span><span class="op">=</span><span class="va">hba1c_qtl</span>,</span>
+<span>                                                           <span class="st">"glp1r_eqtl"</span><span class="op">=</span><span class="va">glp1r_eqtl</span><span class="op">)</span>, </span>
+<span>                                           concordance <span class="op">=</span> <span class="va">concordance</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot</span></span>
+<span><span class="va">plot3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_drug_proxy_instrument.html">plot_drug_proxy_instrument</a></span><span class="op">(</span><span class="va">incretin_instrument_dat</span>, remove<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gwas_pthresh"</span>, <span class="st">"clumping"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/glp1r_instrument_plot.png" width="90%" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># take only those that pass the tresholding</span></span>
+<span><span class="va">incretin_instrument</span> <span class="op">&lt;-</span> <span class="va">incretin_instrument_dat</span><span class="op">[</span><span class="va">pass</span><span class="op">==</span><span class="cn">TRUE</span>, <span class="op">]</span></span>
+<span></span>
+<span><span class="co"># get heart failure  infarction instruments</span></span>
+<span><span class="va">hf_instruments</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="va">incretin_instrument</span><span class="op">$</span><span class="va">RSID</span>, id <span class="op">=</span> <span class="st">"ebi-a-GCST90018806"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># format MI instrument for TwoSampleMR</span></span>
+<span><span class="va">hf_2SMR</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/format_data.html" class="external-link">format_data</a></span><span class="op">(</span><span class="va">hf_instruments</span>, </span>
+<span>                                    type <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>                                    phenotype_col <span class="op">=</span> <span class="st">"trait"</span>,</span>
+<span>                                    snp_col <span class="op">=</span> <span class="st">"target_snp"</span>,</span>
+<span>                                    beta_col <span class="op">=</span> <span class="st">"beta"</span>,</span>
+<span>                                    se_col <span class="op">=</span> <span class="st">"se"</span>,</span>
+<span>                                    eaf_col <span class="op">=</span> <span class="st">"eaf"</span>,</span>
+<span>                                    effect_allele_col <span class="op">=</span> <span class="st">"ea"</span>,</span>
+<span>                                    other_allele_col <span class="op">=</span> <span class="st">"nea"</span>,</span>
+<span>                                    pval_col <span class="op">=</span> <span class="st">"p"</span>,</span>
+<span>                                    id_col <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># format new incretin instrument for TwoSampleMR</span></span>
+<span><span class="va">incretin_instrument</span><span class="op">[</span>, <span class="va">phenotype</span> <span class="op">:=</span> <span class="st">"T2DM (GLP1R; with HbA1c &amp; Gtex evidence)"</span><span class="op">]</span></span>
+<span><span class="va">glp1r_2SMR</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/format_data.html" class="external-link">format_data</a></span><span class="op">(</span><span class="va">incretin_instrument</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                                         type <span class="op">=</span> <span class="st">"exposure"</span>,</span>
+<span>                                         phenotype_col <span class="op">=</span> <span class="st">"phenotype"</span>,</span>
+<span>                                         snp_col <span class="op">=</span> <span class="st">"RSID"</span>,</span>
+<span>                                         beta_col <span class="op">=</span> <span class="st">"BETA"</span>,</span>
+<span>                                         se_col <span class="op">=</span> <span class="st">"SE"</span>,</span>
+<span>                                         eaf_col <span class="op">=</span> <span class="st">"EAF"</span>,</span>
+<span>                                         effect_allele_col <span class="op">=</span> <span class="st">"EA"</span>,</span>
+<span>                                         other_allele_col <span class="op">=</span> <span class="st">"OA"</span>,</span>
+<span>                                         pval_col <span class="op">=</span> <span class="st">"P"</span>,</span>
+<span>                                         id_col <span class="op">=</span> <span class="st">"phenotype"</span><span class="op">)</span></span>
+<span></span>
+<span>  </span>
+<span><span class="co"># harmonise</span></span>
+<span><span class="va">dat3</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/harmonise_data.html" class="external-link">harmonise_data</a></span><span class="op">(</span><span class="va">glp1r_2SMR</span>, <span class="va">hf_2SMR</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># run MR</span></span>
+<span><span class="va">res3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/mr.html" class="external-link">mr</a></span><span class="op">(</span><span class="va">dat3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot </span></span>
+<span><span class="va">plot5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/mr_scatter_plot.html" class="external-link">mr_scatter_plot</a></span><span class="op">(</span><span class="va">res3</span>, <span class="va">dat3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># view result</span></span>
+<span><span class="va">res3</span></span></code></pre></div>
+<p><img src="figures/glp1r_gtex_mr_plot.png" width="90%" style="display: block; margin: auto;"></p>
+</div>
 </div>
   </div>
 

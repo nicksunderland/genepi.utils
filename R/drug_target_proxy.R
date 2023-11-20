@@ -111,16 +111,7 @@ drug_target_proxy <- function(gwas_gene,
 
   }
 
-  # run variant thresholding and code result
-  # variant_gteq_gene_thresh <- paste0("P \u2265 ", p1)
-  # variant_lt_gene_thresh   <- paste0("P \u003C ", p1)
-  # gene_pval_outcomes <- list()
-  # gene_pval_outcomes[[variant_gteq_gene_thresh]] <- 1
-  # gene_pval_outcomes[[variant_lt_gene_thresh]] <- 2
-  # gene_pval_outcomes[["internal_code_error"]] <- 3
-  # gene_region[, gene_thresh := data.table::fcase(P >= p1, factor(1, gene_pval_outcomes, names(gene_pval_outcomes)),
-  #                                                P <  p1, factor(2, gene_pval_outcomes, names(gene_pval_outcomes)),
-  #                                                default  =  factor(3, gene_pval_outcomes, names(gene_pval_outcomes)))]
+  # run variant thresholding
   gene_region[, pthresh := P < p1]
 
   # rename
@@ -150,34 +141,22 @@ drug_target_proxy <- function(gwas_gene,
       qtl_data <- QTL_list[[i]]$data
 
       # rename
-      data.table::setnames(qtl_data, names(qtl_data), paste0(names(qtl_data), "_", qtl_name))
+      # data.table::setnames(qtl_data, names(qtl_data), paste0(names(qtl_data), "_", qtl_name))
 
       # set the join key, default is the main gwas_gene join_key
       if(!is.null(QTL_list[[i]]$join_key)) {
-        data.table::setkeyv(qtl_data, paste0(QTL_list[[i]]$join_key, "_", qtl_name))
+        data.table::setkeyv(qtl_data, QTL_list[[i]]$join_key)
       } else {
         data.table::setkeyv(qtl_data, paste0(join_key, "_", qtl_name))
       }
 
-      # merge the datasets
-      gene_region <- gene_region[qtl_data]
+      # merge the datasets and harmonise
+      gene_region <- harmonise(gene_region, qtl_data, gwas1_trait = "", gwas2_trait = qtl_name)
 
       # code P
       gene_region[, paste0("pthresh_", qtl_name) := get(paste0("P_", qtl_name)) < qtl_thresh]
 
     } # end QTL list processing
-
-
-
-
-
-
-    # TODO: HARMONISE here
-    ######
-    ######
-
-
-
 
 
 
@@ -281,62 +260,6 @@ plot_drug_proxy_instrument <- function(dat, remove=c("gwas_pthresh", "clumping")
 
   return(p)
 }
-
-
-
-
-
-
-  #
-  # variant_gteq_qtl0_thresh <- paste0("P \u2265 ", qtl0_p1)
-  # variant_lt_qtl0_thresh   <- paste0("P \u003C ", qtl0_p1)
-  # qtl0_pval_outcomes <- list()
-  # qtl0_pval_outcomes[[variant_gteq_qtl0_thresh]] <- 1
-  # qtl0_pval_outcomes[[variant_lt_qtl0_thresh]] <- 2
-  # qtl0_pval_outcomes[["Not in data"]] <- 3
-  # qtl0_pval_outcomes[["internal_code_error"]] <- 4
-  # if(!is.null(gwas_qtl0)) {
-  #
-  #   # join
-  #
-  #
-  # } else {
-  #   # code not used QTL0
-  # }
-  #
-  #
-  #
-  #
-  #
-  # # concordance of QTL0
-  # if(!is.null(gwas_qtl0) & concordance) {
-  #
-  # } else {
-  #   # code not used QTL0
-  # }
-  #
-  #
-  #
-  #
-  #
-  # # use QTL gwwas
-  # # use options - gtex versions as string, or the actual gwas d,t.
-  # variant_gteq_qtl_thresh <- paste0("P \u2265 ", qtl_p1)
-  # variant_lt_qtl_thresh   <- paste0("P \u003C ", qtl_p1)
-  # qtl_pval_outcomes <- list()
-  # qtl_pval_outcomes[[variant_gteq_qtl_thresh]] <- 1
-  # qtl_pval_outcomes[[variant_lt_qtl_thresh]] <- 2
-  # qtl_pval_outcomes[["Not in data"]] <- 3
-  # qtl_pval_outcomes[["internal_code_error"]] <- 4
-  #
-  #
-
-
-  # which key to join on
-  # add key param - vector of col names
-
-
-
 
 
 
