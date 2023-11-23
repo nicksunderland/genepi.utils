@@ -59,6 +59,7 @@ drug_target_proxy <- function(gwas_gene,
                               QTL_list    = list(),
                               concordance = data.table::data.table(data_name_1=character(), data_name_2=character(), concordant=logical())) {
 
+  # silence R CMD checks
   index = pthresh = data_name_1 = data_name_2 = concordant = clumping = pass = NULL
 
   # checks
@@ -207,6 +208,10 @@ drug_target_proxy <- function(gwas_gene,
 #'
 plot_drug_proxy_instrument <- function(dat, remove=c("gwas_pthresh", "clumping")) {
 
+  # silence R CMD checks
+  pthresh = clumping = value = num_passing = variable = RSID = pass = NULL
+
+  # checks
   remove <- match.arg(remove, c("gwas_pthresh", "clumping"), several.ok=TRUE)
 
   data_cols <- c("P", "BP", "RSID", "SNP", "BETA")
@@ -227,7 +232,7 @@ plot_drug_proxy_instrument <- function(dat, remove=c("gwas_pthresh", "clumping")
 
   plot_dat <- stats::na.omit(plot_dat)
 
-  ordering <- plot_dat[, .("num_passing" = sum(value)), by="variable" ][order(num_passing), variable]
+  ordering <- plot_dat[, list("num_passing" = sum(value)), by="variable" ][order(num_passing), variable]
   plot_dat[, variable := factor(variable, levels = c("pass", as.character(ordering[ordering!="pass"])))]
 
   # Selection steps

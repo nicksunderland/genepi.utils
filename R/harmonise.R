@@ -10,7 +10,7 @@
 #' @param gwas1 a data.frame like object, GWAS 1
 #' @param gwas1_trait a string, suffix to add to gwas1 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
 #' @param gwas2_trait a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
-#' @param merge a character vector of the columns to join on; e.g. c("CHR","BP"); can be NULL, in which case the gwases must have keys set
+#' @param merge a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set
 #' @param gwas2 a data.frame like object, GWAS 2
 #' @return a data.table, the harmonised dataset
 #' @export
@@ -21,26 +21,31 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
 
   # checks
   if(is.null(merge)) {
-    stopifnot("If `merge` is NULL then `gwas1` and `gwas2` must have appropriate keys set" = data.table::haskey(gwas1) & data.table::haskey(gwas2))
+    stopifnot("If `merge` is NULL then `gwas1` and `gwas2` must be data.table and have appropriate keys set" = data.table::haskey(gwas1) & data.table::haskey(gwas2))
+    gwas1_key <- data.table::key(gwas1)
+    gwas2_key <- data.table::key(gwas2)
   } else {
-    stopifnot("`merge` column(s) not found in `gwas1`" = merge %in% names(gwas1))
-    stopifnot("`merge` column(s) not found in `gwas2`" = merge %in% names(gwas2))
-    data.table::setkeyv(gwas1, merge)
-    data.table::setkeyv(gwas2, merge)
+    gwas1_key <- names(merge)
+    gwas2_key <- unname(merge)
+    stopifnot("`merge` column(s) not found in `gwas1`" = all(gwas1_key %in% colnames(gwas1)))
+    stopifnot("`merge` column(s) not found in `gwas2`" = all(gwas2_key %in% names(gwas2)))
   }
-  stopifnot("`gwas[1|2]` must be a data.table object" = inherits(gwas1, "data.table") & inherits(gwas2, "data.table"))
+  stopifnot("`gwas[1|2]` must be a data.frame-like object" = inherits(gwas1, "data.frame") & inherits(gwas2, "data.frame"))
   req_cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","P")
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas1`" = all(req_cols %in% colnames(gwas1)))
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas2`" = all(req_cols %in% colnames(gwas2)))
 
-  # join
-  h <- data.table::merge.data.table(gwas1, gwas2, by.x=data.table::key(gwas1), by.y=data.table::key(gwas2), all=FALSE, suffixes=c("_1","_2"))
+  # as data.table
+  gwas1 <- data.table::as.data.table(gwas1)
+  gwas2 <- data.table::as.data.table(gwas2)
+
+  # join; exclude all variants not in both datasets
+  h <- data.table::merge.data.table(gwas1, gwas2, by.x=gwas1_key, by.y=gwas2_key, all=FALSE, suffixes=c("_1","_2"))
 
   # duplicate the join cols - one for each gwas, if the same
-  if(all(data.table::key(gwas1) == data.table::key(gwas2))) {
-    gwas_1_key <- data.table::key(gwas1)
-    data.table::setnames(h, (gwas_1_key), paste0(gwas_1_key, "_1"))
-    h[, paste0(gwas_1_key, "_2") := .SD, .SDcols = paste0(gwas_1_key, "_1")]
+  if(all(gwas1_key == gwas2_key)) {
+    data.table::setnames(h, (gwas1_key), paste0(gwas1_key, "_1"))
+    h[, paste0(gwas2_key, "_2") := .SD, .SDcols = paste0(gwas1_key, "_1")]
   }
 
   # report loss of variants
@@ -52,7 +57,7 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
 
     msg <- paste0("Harmonisation: removed ", max(c(nrow(gwas1), nrow(gwas2))) - nrow(h), " variants. ",
                   "gwas1 (n=", nrow(gwas1),")", " gwas2 (n=", nrow(gwas2),")", " harmonised (n=", nrow(h),")\n")
-    warning(msg)
+    message(msg)
 
   }
 
@@ -90,7 +95,7 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   h[ii==TRUE, OA_2 := flip_alleles(OA_2)]
   jinfo[['flipped_alleles']] <- sum(h$ii)
 
-  # If still DON'T match (e.g. A/C Vs. G/T, which - after flipping in the previous step - becomes A/C Vs. C/A) then try swapping
+  # If still don't match (e.g. A/C Vs. G/T, which - after flipping in the previous step - becomes A/C Vs. C/A) then try swapping
   h[                        , OK      := alleles_ok(EA_1, OA_1, EA_2, OA_2)]
   h[                        , ii      := !palindromic & !OK]
   h[                        , to_swap := possible_swap(EA_1, OA_1, EA_2, OA_2)]
@@ -105,8 +110,7 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   h[, OK   := alleles_ok(EA_1, OA_1, EA_2, OA_2)]
   h[, keep := keep & OK & !palindromic]
 
-  # recode SNP string if contains allele info
-  # capture things like:
+  # recode SNP/chr:pos:allele ID string if this contains allele info i.e. capture things like:
   # 12:432412[b37]A,T
   # 12:432412:A:T
   # 12_432412_A_T
@@ -139,7 +143,7 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   data.table::setnames(h, names(h), sub("_2$", gwas2_trait, names(h)))
 
   # set logging attribute
-  attr(h, "info") <- jinfo
+  data.table::setattr(h, "info", jinfo)
 
   # return
   return(h)

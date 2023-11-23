@@ -29,14 +29,13 @@ reference:
   desc: >
     Functions for analysing collider / index event bias and adjust GWAS data for this bias.
   contents:
-  - ColliderBias
-  - analyse
+  - analyse_collider_bias
   - slopehunter
   - dudbridge
-  - ivw_mr
-  - apply_correction
-  - plot_p_threshold
-  - plot_slopehunter
+  - ivw_mr_collider_bias
+  - apply_collider_correction
+  - plot_slope
+  - plot_correction_stability
   - plot_slopehunter_iters
 
 - title: "Drug target proxies"

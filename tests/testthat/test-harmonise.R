@@ -22,7 +22,7 @@ test_that("harmonise", {
   )
   gwas2[, SNP := paste0(CHR,":",BP,"[b37]",OA,",",EA)]
 
-  h <- harmonise(gwas1, gwas2, gwas1_trait="in", gwas2_trait="pr", merge="chrpos")
+  h <- harmonise(gwas1, gwas2, gwas1_trait="in", gwas2_trait="pr", merge=c("CHR"="CHR", "BP"="BP"))
 
   # expected output; scenarios
   # 1 - no changes

@@ -14,16 +14,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-An example of using the `ColliderBias()` class and associated functions to investigate the degree of index event (collider) bias in your GWAS progression data. We start with independent variants from the incident GWAS of interest - this will will require pre-processing with appropriate clumping parameters. All variants from the progression GWAS are included in the initial step. We then create the `ColliderBias()` object which will further standardise the data and perform harmonisation.
+An example of using the collider bias functions to investigate the degree of index event (collider) bias in your GWAS progression data. We start with independent variants from the incident GWAS of interest - this will will require pre-processing with appropriate clumping parameters. All variants from the progression GWAS are included in the initial step. 
+```{r hidden_paths, include=FALSE, eval=F}
+clumped_incidence_path <- "/Users/xx20081/Documents/local_data/hermes_incidence/clumped/hf_incidence_pheno1_eur.clumps.gz"
+progression_path <- "/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz"
+```
 
 ```{r setup, eval=F}
 library(genepi.utils)
 
-gwas_clumped_incidence <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_incidence/clumped/hf_incidence_pheno1_eur.clumps.gz")
-gwas_progression <- data.table::fread("/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz")
-
-collider_object <- ColliderBias(gwas_clumped_incidence, gwas_progression)
-
+# read in the data
+gwas_clumped_incidence <- data.table::fread(clumped_incidence_path)
+gwas_progression <- data.table::fread(progression_path)
 ```
 
 ## Slope-hunter
@@ -92,14 +94,16 @@ Running the Slope-hunter algorithm requires initialising parameters.
 
 The standard error of the slope is estimated with bootstrapping, 100 samples in the case below.
 
-```{r run_slopehunter, eval=F}
-result <- slopehunter(x          = collider_object, 
+```{r run_slopehunter, eval=FALSE}
+result <- slopehunter(gwas_i     = gwas_clumped_incidence,
+                      gwas_p     = gwas_progression,
+                      merge      = c("CHR"="CHR", "BP"="BP"), 
                       ip         = 0.001,
                       pi0        = 0.6,
                       sxy1       = 1e-5,
                       bootstraps = 100)
 
-result
+str(result)
 ```
 
 
@@ -108,7 +112,8 @@ result
 We can visualise the iterative EM algorithm like so. The variants are allocated to either cluster 1 (incidence only) or cluster 2 (incidence and progression) based on how well they conform to defined bivariate distributions for each cluster. The key point is that the incidence-only distribution has a linear relationship between incidence and progression betas, with no constant term - i.e. we search for a straight line passing through the origin. At each iteration the distribution parameters are recalculated (variance / s.dev / cov) and variant reassigned to either cluster 1 or 2, until the model converges.
 
 ```{r plot_gif, eval=FALSE}
-p <- plot_slopehunter_iters(collider_object,
+p <- plot_slopehunter_iters(gwas_i = gwas_clumped_incidence,
+                            gwas_p = gwas_progression,
                             ip     = 0.001,
                             pi0    = 0.6,
                             sxy1   = 1e-5,
@@ -120,61 +125,15 @@ p
 ```{r save_gif, include=FALSE, eval=FALSE}
 gganimate::anim_save("figures/slopehunter.gif")
 ```
-```{r show_gif, echo=FALSE, out.width="90%", fig.align='center'}
+```{r show_gif, echo=FALSE, out.width="90%", fig.align='center', eval=TRUE}
 knitr::include_graphics("figures/slopehunter.gif")
 ```
 
-The algorithm can be sensitive to the incidence p-value threshold `ip`. Too high and null variants without any effect on incidence will be included. Too low and the clusters will become small and variants will smaller effects on incidence will be removed. It is a good idea to investigate the stability of the adjustment factor estimate to difference in `ip` threshold. To do this, create a collider object with a range of `ip` values. Then plot using `plot_slopehunter()`.
-
-```{r plot_pvals, eval=FALSE}
-collider_object <- ColliderBias(gwas_i = gwas_clumped_incidence, 
-                                gwas_p = gwas_progression, 
-                                ip     = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001), 
-                                bootstraps = 0)
-
-p <- plot_slopehunter(collider_object)
-p
-```
-```{r save_pvals, include=FALSE, eval=FALSE}
-png("figures/slopehunter_pvalues.png", width=600, height=600, units="px")
-p
-dev.off()
-```
-```{r show_pvals, echo=FALSE, out.width="98%", fig.align='center'}
-knitr::include_graphics("figures/slopehunter_pvalues.png")
-```
-
-
-## Dudbridge - corrected weighted least-squares
-
-TBC
-
-### Background
-
-### Run 
-```{r run_dudbridge, eval=F}
-result <- dudbridge(collider_object)
-
-result
-```
-
-## IVW Mendelian Randomisation
-
-TBC
-
-### Background
-
-### Run 
-```{r run_ivw_mr, eval=F}
-result <- ivw_mr(collider_object)
-
-result
-```
-
-
 ## Overall assessment
 
-We can run many combinations of the above analyses by defining sets of parameters in the ColliderBias object. Note: be careful with large numbers of parameters as this will quickly lead to large numbers of combinations. e.g.  
+The algorithms can be sensitive to the incidence p-value threshold `ip`. Too high and null variants without any effect on incidence will be included. Too low and variants will small, but potentially significant, effects on incidence will be removed. It is a good idea to investigate the stability of the adjustment factor estimate to difference in `ip` threshold.
+
+We can run many combinations of the above analyses by defining sets/vectors of parameters. Note: be careful with large numbers of parameters as this will quickly lead to large numbers of combinations. e.g.  
 
 * methods = c("slopehunter")  
 * ip = c(0.05,0.001,0.00001)  
@@ -183,26 +142,43 @@ We can run many combinations of the above analyses by defining sets of parameter
 
 ...will lead to 27 separate analyses.  
 
-We can use the `analyse()` function to run all combinations of methods and parameters. Here is the (in-)stability of the b-slope with different p-values (`ip`) in the Slope-hunter and IVW-MR methods.
+We can use the `analyse_collider_bias()` function to run all combinations of methods and parameters. Here is the (in-)stability of the b-slope with different p-values (`ip`).
 
-```{r run_all, eval=F}
-collider_object <- analyse(x          = collider_object, 
-                           methods    = c("slopehunter","ivw_mr"),
-                           ip         = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001),
-                           pi0        = 0.6,
-                           sxy1       = 1e-5,
-                           bootstraps = 100)
+```{r plot_pvals, eval=FALSE}
+results <- analyse_collider_bias(gwas_i = gwas_clumped_incidence,
+                                 gwas_p = gwas_progression,
+                                 merge  = c("CHR"="CHR", "BP"="BP"),
+                                 methods= c("slopehunter", "ivw_mr_collider_bias", "dudbridge"),
+                                 ip     = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001),
+                                 pi0    = c(0.6),
+                                 sxy1   = c(1e-05),
+                                 bootstraps = 100)
 
-p <- plot_p_threshold(collider_object)
+p <- plot_slope(results)
+p
+```
+```{r save_pvals, include=FALSE, eval=FALSE}
+png("figures/collider_slopes.png", width=600, height=600, units="px")
+p
+dev.off()
+```
+```{r show_pvals, echo=FALSE, out.width="98%", fig.align='center'}
+knitr::include_graphics("figures/collider_slopes.png")
+```
+
+Plotted another way with `plot_correction_stability()`.
+
+```{r stability, eval=F}
+p <- plot_correction_stability(results)
 p
 ```
 ```{r save_all_pvals, include=FALSE, eval=FALSE}
-png("figures/slopehunter_all_methods_pvalues.png", width=600, height=600, units="px")
+png("figures/collider_stability.png", width=600, height=600, units="px")
 p
 dev.off()
 ```
 ```{r show_all_pvals, echo=FALSE, out.width="98%", fig.align='center'}
-knitr::include_graphics("figures/slopehunter_all_methods_pvalues.png")
+knitr::include_graphics("figures/collider_stability.png")
 ```
 
 
@@ -213,8 +189,51 @@ Once the parameters have been set and `b` estimate of the correction calculated 
 $$
 \beta_{GP} = \beta_{GP}^{'} - b_{1}\beta_{GI}
 $$
-```{r apply_correction, eval=F}
-corrected_gwas <- apply_correction(collider_object, b=-0.62897804, se=0.09785357)
+```{r get_incidence, include=F, eval=F}
+# read in the incidence GWAS - hidden from HTML output
+gwas_incidence <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz")
+```
 
-str(corrected_gwas)
+```{r apply_correction, eval=F}
+# apply correction
+corrected_gwas <- apply_collider_correction(gwas_i = gwas_incidence, 
+                                            gwas_p = gwas_progression,
+                                            merge  = c("CHR"="CHR", "BP"="BP"),
+                                            b_correction_factor = -0.6558253,
+                                            b_std_err = 0.09785357)
+
+# calculate difference in raw and adjusted betas; and effect on genome wide significance
+corrected_gwas[, beta_diff := BETA_progression - adjusted_beta]
+sig_change_levels <- c("Dropped hit", "New hit", "No change")
+corrected_gwas[, sig_change:= data.table::fcase(P_progression < 5e-8 & adjusted_p >= 5e-8, factor("Dropped hit", levels=sig_change_levels),
+                                                P_progression >=5e-8 & adjusted_p <  5e-8, factor("New hit", levels=sig_change_levels),
+                                                default = factor("No change", levels=sig_change_levels))]
+
+# plot difference
+p <- ggplot2::ggplot(data    = corrected_gwas,
+                     mapping = ggplot2::aes(x=factor(""), y = beta_diff)) +
+  ggplot2::geom_point(mapping = ggplot2::aes(shape = sig_change, 
+                                             fill  = adjusted_beta, 
+                                             color = sig_change), alpha=0.95, position = position_jitter(seed = 1, width = 0.1)) +
+  viridis::scale_fill_viridis() +
+  ggplot2::scale_shape_manual(name = "Change in genome wide significance", 
+                              values = c("Dropped hit"=25, "New hit"=24, "No change"=21), drop = FALSE) +
+  ggplot2::scale_color_manual(name = "Change in genome wide significance",
+                              values = c("Dropped hit"="red", "New hit"="green", "No change"="#44015410"), drop = FALSE) +
+  ggplot2::geom_violin(alpha = 0.3, fill="purple", color="#44015410") +
+  ggplot2::theme_bw(base_size = 14) +
+  ggplot2::labs(title = 'Slope-hunter adjustment',
+                x = expression("\u03B2"[progression-SNPs]),
+                y = expression("\u03B2"[adjustment]), 
+                color = "Change in genome wide significance", 
+                fill = "BETA magnitude")
+```
+
+```{r save_adj, include=FALSE, eval=FALSE}
+png("figures/collider_adjustment.png", width=800, height=650, units="px")
+p
+dev.off()
+```
+```{r show_adj, echo=FALSE, out.width="98%", fig.align='center'}
+knitr::include_graphics("figures/collider_adjustment.png")
 ```

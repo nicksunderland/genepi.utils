@@ -2,13 +2,12 @@
 % Please edit documentation in R/collider_bias.R
 \name{slopehunter}
 \alias{slopehunter}
-\alias{slopehunter.ColliderBias}
-\title{SlopeHunter method}
+\title{Slope-hunter collider bias method}
 \usage{
-slopehunter(x, ip, pi0, sxy1, bootstraps, seed)
-
-\method{slopehunter}{ColliderBias}(
-  x = NULL,
+slopehunter(
+  gwas_i,
+  gwas_p,
+  merge = c(CHR = "CHR", BP = "BP"),
   ip = 0.001,
   pi0 = 0.6,
   sxy1 = 1e-05,
@@ -17,7 +16,11 @@ slopehunter(x, ip, pi0, sxy1, bootstraps, seed)
 )
 }
 \arguments{
-\item{x}{a ColliderBias object}
+\item{gwas_i}{a data.frame like object, clumped incidence GWAS summary statistics in \code{standardise_gwas()} format}
+
+\item{gwas_p}{a data.frame like object, progression GWAS summary statistics in \code{standardise_gwas()} format}
+
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 
 \item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
 
@@ -25,14 +28,18 @@ slopehunter(x, ip, pi0, sxy1, bootstraps, seed)
 
 \item{sxy1}{a numeric, the initial (guess) of the covariance between incidence and progression BETAs}
 
-\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)}
+\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor
+(can be zero, in which case no SE is returned)}
 
 \item{seed}{an integer, seed for reproducibility}
 }
 \value{
-a list with the method parameters and results
+an S3 ColliderBiasResult object
 }
 \description{
+The Slope-hunter method has it's own R package and does not need to be re-implemented.
+I have re-written it here primarily for my own learning and to implement new plotting functions,
+such as the iteration plotting output. \cr
 Run the SlopeHunter expectation-maximization method to estimate the bias adjustment
 factor. The algorithm uses model-based clustering and proposes that the distributions
 of the incidence(GI) and progression (GP) BETAs can be written like so:  \cr

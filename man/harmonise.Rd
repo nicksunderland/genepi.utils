@@ -9,7 +9,7 @@ harmonise(
   gwas2,
   gwas1_trait = "incidence",
   gwas2_trait = "progression",
-  merge = "chrpos"
+  merge = NULL
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ harmonise(
 
 \item{gwas2_trait}{a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.}
 
-\item{merge}{a string, either \code{chrpos} for merging by CHR and BP (position) columns, or \code{snp} for merging by SNP column}
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 }
 \value{
 a data.table, the harmonised dataset

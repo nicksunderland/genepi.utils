@@ -72,15 +72,13 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span><span class="va">x</span>, <span class="va">ip</span>, <span class="va">pi0</span>, <span class="va">sxy1</span>, <span class="va">bootstraps</span>, <span class="va">seed</span>, <span class="va">x_lims</span>, <span class="va">y_lims</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S3 method for ColliderBias</span></span>
-<span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_slopehunter_iters</span><span class="op">(</span></span>
+<span>  <span class="va">gwas_i</span>,</span>
+<span>  <span class="va">gwas_p</span>,</span>
+<span>  merge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>CHR <span class="op">=</span> <span class="st">"CHR"</span>, BP <span class="op">=</span> <span class="st">"BP"</span><span class="op">)</span>,</span>
 <span>  ip <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  pi0 <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>  sxy1 <span class="op">=</span> <span class="fl">1e-05</span>,</span>
-<span>  bootstraps <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">2023</span>,</span>
 <span>  x_lims <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  y_lims <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -89,8 +87,16 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
-<dd><p>a ColliderBias object</p></dd>
+    <dl><dt>gwas_i</dt>
+<dd><p>a data.frame like object, clumped incidence GWAS summary statistics in <code><a href="standardise_gwas.html">standardise_gwas()</a></code> format</p></dd>
+
+
+<dt>gwas_p</dt>
+<dd><p>a data.frame like object, progression GWAS summary statistics in <code><a href="standardise_gwas.html">standardise_gwas()</a></code> format</p></dd>
+
+
+<dt>merge</dt>
+<dd><p>a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set</p></dd>
 
 
 <dt>ip</dt>
@@ -103,10 +109,6 @@
 
 <dt>sxy1</dt>
 <dd><p>a numeric, the initial (guess) of the covariance between incidence and progression BETAs</p></dd>
-
-
-<dt>bootstraps</dt>
-<dd><p>a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)</p></dd>
 
 
 <dt>seed</dt>

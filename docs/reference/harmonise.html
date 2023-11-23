@@ -85,7 +85,7 @@ the standardised column names and use pure data.table syntax for increased proce
 <span>  <span class="va">gwas2</span>,</span>
 <span>  gwas1_trait <span class="op">=</span> <span class="st">"incidence"</span>,</span>
 <span>  gwas2_trait <span class="op">=</span> <span class="st">"progression"</span>,</span>
-<span>  merge <span class="op">=</span> <span class="st">"chrpos"</span></span>
+<span>  merge <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -108,7 +108,7 @@ the standardised column names and use pure data.table syntax for increased proce
 
 
 <dt>merge</dt>
-<dd><p>a string, either <code>chrpos</code> for merging by CHR and BP (position) columns, or <code>snp</code> for merging by SNP column</p></dd>
+<dd><p>a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set</p></dd>
 
 </dl></div>
     <div id="value">

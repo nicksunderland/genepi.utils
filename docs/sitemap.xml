@@ -55,6 +55,12 @@
     <loc>/reference/analyse.html</loc>
   </url>
   <url>
+    <loc>/reference/analyse_collider_bias.html</loc>
+  </url>
+  <url>
+    <loc>/reference/apply_collider_correction.html</loc>
+  </url>
+  <url>
     <loc>/reference/apply_correction.html</loc>
   </url>
   <url>
@@ -103,6 +109,9 @@
     <loc>/reference/ivw_mr.html</loc>
   </url>
   <url>
+    <loc>/reference/ivw_mr_collider_bias.html</loc>
+  </url>
+  <url>
     <loc>/reference/lift.html</loc>
   </url>
   <url>
@@ -112,10 +121,16 @@
     <loc>/reference/miami.html</loc>
   </url>
   <url>
+    <loc>/reference/plot_correction_stability.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot_drug_proxy_instrument.html</loc>
   </url>
   <url>
     <loc>/reference/plot_p_threshold.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_slope.html</loc>
   </url>
   <url>
     <loc>/reference/plot_slopehunter.html</loc>

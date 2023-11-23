@@ -2,32 +2,32 @@
 % Please edit documentation in R/collider_bias.R
 \name{plot_slopehunter_iters}
 \alias{plot_slopehunter_iters}
-\alias{plot_slopehunter_iters.ColliderBias}
 \title{Create an animation of Slope-hunter iterations}
 \usage{
-plot_slopehunter_iters(x, ip, pi0, sxy1, bootstraps, seed, x_lims, y_lims)
-
-\method{plot_slopehunter_iters}{ColliderBias}(
-  x,
+plot_slopehunter_iters(
+  gwas_i,
+  gwas_p,
+  merge = c(CHR = "CHR", BP = "BP"),
   ip = 0.001,
   pi0 = 0.6,
   sxy1 = 1e-05,
-  bootstraps = 0,
   seed = 2023,
   x_lims = NULL,
   y_lims = NULL
 )
 }
 \arguments{
-\item{x}{a ColliderBias object}
+\item{gwas_i}{a data.frame like object, clumped incidence GWAS summary statistics in \code{standardise_gwas()} format}
+
+\item{gwas_p}{a data.frame like object, progression GWAS summary statistics in \code{standardise_gwas()} format}
+
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 
 \item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
 
 \item{pi0}{a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only}
 
 \item{sxy1}{a numeric, the initial (guess) of the covariance between incidence and progression BETAs}
-
-\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor (can be zero)}
 
 \item{seed}{an integer, seed for reproducibility}
 
