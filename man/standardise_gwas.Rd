@@ -10,7 +10,11 @@ standardise_gwas(
   drop = FALSE,
   fill = FALSE,
   build = "GRCh37",
-  populate_rsid = FALSE
+  populate_rsid = FALSE,
+  filters = list(BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 10", P_invalid =
+    "!is.infinite(P)", SE_invalid = "!is.infinite(SE)", CHR_missing = "!is.na(CHR)",
+    BP_missing = "!is.na(BP)", BETA_missing = "!is.na(BETA)", SE_missing = "!is.na(SE)",
+    P_missing = "!is.na(P)", EAF_missing = "!is.na(P)")
 )
 }
 \arguments{
@@ -25,6 +29,11 @@ standardise_gwas(
 \item{build}{a string, one of GRCh37 or GRCh38}
 
 \item{populate_rsid}{either FALSE or a valid argument for chrpos_to_rsid \code{build}, e.g. b37_dbsnp156}
+
+\item{filters}{a list of conditions (as strings) to be evaluated as data.table (quoting column names not necessary) row filters. These
+must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example: \cr
+\code{filters=list('abs(BETA)<10', 'EAF>0.01 & EAF<0.99')} \cr
+...will filter for rows with BETA value between -10 and +10 and EAF between 1\% and 99\%.}
 }
 \value{
 a standardised data.table

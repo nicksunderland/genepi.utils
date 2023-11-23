@@ -78,7 +78,11 @@
 <span>  drop <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fill <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  build <span class="op">=</span> <span class="st">"GRCh37"</span>,</span>
-<span>  populate_rsid <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  populate_rsid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  filters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BETA_invalid <span class="op">=</span> <span class="st">"!is.infinite(BETA) &amp; abs(BETA) &lt; 10"</span>, P_invalid <span class="op">=</span></span>
+<span>    <span class="st">"!is.infinite(P)"</span>, SE_invalid <span class="op">=</span> <span class="st">"!is.infinite(SE)"</span>, CHR_missing <span class="op">=</span> <span class="st">"!is.na(CHR)"</span>,</span>
+<span>    BP_missing <span class="op">=</span> <span class="st">"!is.na(BP)"</span>, BETA_missing <span class="op">=</span> <span class="st">"!is.na(BETA)"</span>, SE_missing <span class="op">=</span> <span class="st">"!is.na(SE)"</span>,</span>
+<span>    P_missing <span class="op">=</span> <span class="st">"!is.na(P)"</span>, EAF_missing <span class="op">=</span> <span class="st">"!is.na(P)"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -106,6 +110,12 @@
 
 <dt>populate_rsid</dt>
 <dd><p>either FALSE or a valid argument for chrpos_to_rsid <code>build</code>, e.g. b37_dbsnp156</p></dd>
+
+
+<dt>filters</dt>
+<dd><p>a list of conditions (as strings) to be evaluated as data.table (quoting column names not necessary) row filters. These
+must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example: <br><code>filters=list('abs(BETA)&lt;10', 'EAF&gt;0.01 &amp; EAF&lt;0.99')</code> <br>
+...will filter for rows with BETA value between -10 and +10 and EAF between 1% and 99%.</p></dd>
 
 </dl></div>
     <div id="value">
