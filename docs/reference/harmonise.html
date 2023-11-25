@@ -92,11 +92,11 @@ the standardised column names and use pure data.table syntax for increased proce
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>gwas1</dt>
-<dd><p>a data.frame like object, GWAS 1</p></dd>
+<dd><p>a data.frame like object or file path, GWAS 1</p></dd>
 
 
 <dt>gwas2</dt>
-<dd><p>a data.frame like object, GWAS 2</p></dd>
+<dd><p>a data.frame like object or file path, GWAS 2</p></dd>
 
 
 <dt>gwas1_trait</dt>
@@ -108,7 +108,7 @@ the standardised column names and use pure data.table syntax for increased proce
 
 
 <dt>merge</dt>
-<dd><p>a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set</p></dd>
+<dd><p>a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set</p></dd>
 
 </dl></div>
     <div id="value">

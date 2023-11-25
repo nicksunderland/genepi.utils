@@ -37,6 +37,8 @@ reference:
   - plot_slope
   - plot_correction_stability
   - plot_slopehunter_iters
+  - ColliderBiasResult
+  - collider_results_to_data_table
 
 - title: "Drug target proxies"
   desc: >

@@ -113,9 +113,10 @@
 
 
 <dt>filters</dt>
-<dd><p>a list of conditions (as strings) to be evaluated as data.table (quoting column names not necessary) row filters. These
-must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example: <br><code>filters=list('abs(BETA)&lt;10', 'EAF&gt;0.01 &amp; EAF&lt;0.99')</code> <br>
-...will filter for rows with BETA value between -10 and +10 and EAF between 1% and 99%.</p></dd>
+<dd><p>a named list of conditions (as strings) to be evaluated as data.table row filters (quoting column names not necessary).
+These must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example:
+<code>filters=list('abs(BETA)&lt;10', 'EAF&gt;0.01 &amp; EAF&lt;0.99')</code> ...will filter for rows with BETA value between -10 and +10 and EAF between
+1% and 99%.</p></dd>
 
 </dl></div>
     <div id="value">

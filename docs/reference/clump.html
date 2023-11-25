@@ -104,7 +104,8 @@ The path to the reference (without the plink extensions) should be passed as the
 <span>  r2 <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  kb <span class="op">=</span> <span class="fl">250</span>,</span>
 <span>  plink2 <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  plink_ref <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  plink_ref <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  logging <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -136,6 +137,10 @@ The path to the reference (without the plink extensions) should be passed as the
 
 <dt>plink_ref</dt>
 <dd><p>a string, path to the pfile genome reference</p></dd>
+
+
+<dt>logging</dt>
+<dd><p>a logical, whether to set the plink logging information as attributes (<code>log</code>, <code>missing_id</code>, <code>missing_allele</code>) on the returned data.table</p></dd>
 
 </dl></div>
     <div id="value">

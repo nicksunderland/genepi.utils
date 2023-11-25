@@ -20,15 +20,15 @@ parameters. All variants from the progression GWAS are included in the initial s
 
 ```{r hidden_paths, include=FALSE, eval=F}
 clumped_incidence_path <- "/Users/xx20081/Documents/local_data/hermes_incidence/clumped/hf_incidence_pheno1_eur.clumps.gz"
-progression_path <- "/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz"
+progression_path       <- "/Users/xx20081/Documents/local_data/results/progression_meta_analysis/all/meta.all.allcause_death.autosomes.gz"
 ```
 
 ```{r setup, eval=F}
 library(genepi.utils)
 
 # read in the data
-gwas_clumped_incidence <- data.table::fread(clumped_incidence_path)
-gwas_progression <- data.table::fread(progression_path)
+gwas_clumped_incidence <- data.table::fread(clumped_incidence_path)[index==TRUE, ] # take only the index SNPs 
+gwas_progression       <- data.table::fread(progression_path)
 ```
 
 ## Slope-hunter
@@ -146,7 +146,7 @@ We can run many combinations of the above analyses by defining sets/vectors of p
 
 ...will lead to 27 separate analyses.  
 
-We can use the `analyse_collider_bias()` function to run all combinations of methods and parameters. Here is the (in-)stability of the b-slope with different p-values (`ip`).
+We can use the `analyse_collider_bias()` function to run all combinations of methods and parameters. Here is the stability of the b-slope with different p-values (`ip`).
 
 ```{r plot_pvals, eval=FALSE}
 results <- analyse_collider_bias(gwas_i = gwas_clumped_incidence,
@@ -218,7 +218,7 @@ p <- ggplot2::ggplot(data    = corrected_gwas,
                      mapping = ggplot2::aes(x=factor(""), y = beta_diff)) +
   ggplot2::geom_point(mapping = ggplot2::aes(shape = sig_change, 
                                              fill  = adjusted_beta, 
-                                             color = sig_change), alpha=0.95, position = position_jitter(seed = 1, width = 0.1)) +
+                                             color = sig_change), alpha=0.95, position = ggplot2::position_jitter(seed = 1, width = 0.1)) +
   viridis::scale_fill_viridis() +
   ggplot2::scale_shape_manual(name = "Change in genome wide significance", 
                               values = c("Dropped hit"=25, "New hit"=24, "No change"=21), drop = FALSE) +

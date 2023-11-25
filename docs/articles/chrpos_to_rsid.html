@@ -192,21 +192,16 @@ the structure of the output to a named <code><a href="https://rdrr.io/r/base/lis
 <span>                                                alt_rsids<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; RSID mapping...</span></span>
 <span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'purrr'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:genepi.utils':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     lift</span></span>
 <span><span class="co">#&gt; RSID coverage 100% (5/5), of which 0% (0/5) where found flipping alleles</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
 <span><span class="co">#&gt; List of 2</span></span>
 <span><span class="co">#&gt;  $ data     :Classes 'data.table' and 'data.frame':  5 obs. of  5 variables:</span></span>
+<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;   ..$ chromosome        : int [1:5] 10 10 10 10 10</span></span>
 <span><span class="co">#&gt;   ..$ base_pair_location: int [1:5] 100000625 100000645 100002841 100003785 100004360</span></span>
 <span><span class="co">#&gt;   ..$ effect_allele     : chr [1:5] "G" "C" "CT" "C" ...</span></span>
 <span><span class="co">#&gt;   ..$ other_allele      : chr [1:5] "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
 <span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span>
 <span><span class="co">#&gt;  $ alt_rsids:Classes 'data.table' and 'data.frame':  0 obs. of  6 variables:</span></span>
@@ -239,11 +234,11 @@ them to <code>NULL</code>.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   5 obs. of  5 variables:</span></span>
+<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;  $ chromosome        : int  10 10 10 10 10</span></span>
 <span><span class="co">#&gt;  $ base_pair_location: int  100000625 100000645 100002841 100003785 100004360</span></span>
 <span><span class="co">#&gt;  $ effect_allele     : chr  "G" "C" "CT" "C" ...</span></span>
 <span><span class="co">#&gt;  $ other_allele      : chr  "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
 <span><span class="co">#&gt;  - attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
 <p>Alleles are not always aligned to the reference and so we allow
@@ -267,11 +262,11 @@ orientation use <code>flip="no_flip"</code>.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   5 obs. of  6 variables:</span></span>
+<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;  $ chromosome        : int  10 10 10 10 10</span></span>
 <span><span class="co">#&gt;  $ base_pair_location: int  100000625 100000645 100002841 100003785 100004360</span></span>
 <span><span class="co">#&gt;  $ effect_allele     : chr  "G" "C" "CT" "C" ...</span></span>
 <span><span class="co">#&gt;  $ other_allele      : chr  "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;  $ rsid_flip_match   : logi  FALSE FALSE FALSE FALSE FALSE</span></span>
 <span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
 <span><span class="co">#&gt;  - attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
@@ -296,11 +291,11 @@ coding at any particular base position.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
 <span><span class="co">#&gt; List of 2</span></span>
 <span><span class="co">#&gt;  $ data     :Classes 'data.table' and 'data.frame':  5 obs. of  5 variables:</span></span>
+<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs2135792004" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;   ..$ chromosome        : int [1:5] 10 10 10 10 10</span></span>
 <span><span class="co">#&gt;   ..$ base_pair_location: int [1:5] 100000625 100000645 100002841 100003785 100004360</span></span>
 <span><span class="co">#&gt;   ..$ effect_allele     : chr [1:5] "G" "C" "I" "C" ...</span></span>
 <span><span class="co">#&gt;   ..$ other_allele      : chr [1:5] "A" "A" "D" "T" ...</span></span>
-<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs2135792004" "rs1359508" ...</span></span>
 <span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
 <span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span>
 <span><span class="co">#&gt;  $ alt_rsids:Classes 'data.table' and 'data.frame':  0 obs. of  6 variables:</span></span>

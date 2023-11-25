@@ -106,8 +106,8 @@ initial step.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># read in the data</span></span>
-<span><span class="va">gwas_clumped_incidence</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">clumped_incidence_path</span><span class="op">)</span></span>
-<span><span class="va">gwas_progression</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">progression_path</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">gwas_clumped_incidence</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">clumped_incidence_path</span><span class="op">)</span><span class="op">[</span><span class="va">index</span><span class="op">==</span><span class="cn">TRUE</span>, <span class="op">]</span> <span class="co"># take only the index SNPs </span></span>
+<span><span class="va">gwas_progression</span>       <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">progression_path</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="slope-hunter">Slope-hunter<a class="anchor" aria-label="anchor" href="#slope-hunter"></a>
 </h2>
@@ -166,8 +166,9 @@ proposes that the distributions of the incidence(GI) and progression
 <li>Cluster 4: SNPs that cause neither incidence or progression
 (gray)</li>
 </ul>
-<p>The values are the probabilities that a SNP belongs to the respective
-clusters.</p>
+<p>The values: <span class="math display">\[{\pi_{1}, \pi_{2}, \pi_{3},
+\pi_{4}}\]</span> … are the probabilities that a SNP belongs to the
+respective clusters.</p>
 <p>The first thing to note is that we can filter out SNPs from cluster 3
 and 4 by only including SNPs with a significant association (P-value)
 with incidence - this is the <code>ip</code> parameter. The problem is
@@ -228,7 +229,7 @@ reassigned to either cluster 1 or 2, until the model converges.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter_iters.html">plot_slopehunter_iters</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                            gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
-<span>                            ip     <span class="op">=</span> <span class="fl">0.001</span>,</span>
+<span>                            ip     <span class="op">=</span> <span class="fl">0.0001</span>,</span>
 <span>                            pi0    <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>                            sxy1   <span class="op">=</span> <span class="fl">1e-5</span>,</span>
 <span>                            x_lims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span><span class="op">)</span>, </span>
@@ -261,8 +262,8 @@ e.g. </p>
 </ul>
 <p>…will lead to 27 separate analyses.</p>
 <p>We can use the <code><a href="../reference/analyse_collider_bias.html">analyse_collider_bias()</a></code> function to run
-all combinations of methods and parameters. Here is the (in-)stability
-of the b-slope with different p-values (<code>ip</code>).</p>
+all combinations of methods and parameters. Here is the stability of the
+b-slope with different p-values (<code>ip</code>).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse_collider_bias.html">analyse_collider_bias</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                                 gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
@@ -314,7 +315,7 @@ and progression datasets (the harmonised dataset).</p>
 <span>                     mapping <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="st">""</span><span class="op">)</span>, y <span class="op">=</span> <span class="va">beta_diff</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>mapping <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="va">sig_change</span>, </span>
 <span>                                             fill  <span class="op">=</span> <span class="va">adjusted_beta</span>, </span>
-<span>                                             color <span class="op">=</span> <span class="va">sig_change</span><span class="op">)</span>, alpha<span class="op">=</span><span class="fl">0.95</span>, position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_jitter.html" class="external-link">position_jitter</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span>, width <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>                                             color <span class="op">=</span> <span class="va">sig_change</span><span class="op">)</span>, alpha<span class="op">=</span><span class="fl">0.95</span>, position <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_jitter.html" class="external-link">position_jitter</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span>, width <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html" class="external-link">scale_fill_viridis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_shape_manual</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Change in genome wide significance"</span>, </span>
 <span>                              values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dropped hit"</span><span class="op">=</span><span class="fl">25</span>, <span class="st">"New hit"</span><span class="op">=</span><span class="fl">24</span>, <span class="st">"No change"</span><span class="op">=</span><span class="fl">21</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>

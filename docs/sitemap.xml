@@ -46,6 +46,9 @@
     <loc>/reference/ColliderBias.html</loc>
   </url>
   <url>
+    <loc>/reference/ColliderBiasResult.html</loc>
+  </url>
+  <url>
     <loc>/reference/ColumnMapping.html</loc>
   </url>
   <url>
@@ -68,6 +71,9 @@
   </url>
   <url>
     <loc>/reference/clump.html</loc>
+  </url>
+  <url>
+    <loc>/reference/collider_results_to_data_table.html</loc>
   </url>
   <url>
     <loc>/reference/drug_target_proxy.html</loc>

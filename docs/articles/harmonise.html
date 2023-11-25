@@ -100,9 +100,10 @@
 <h2 id="run">Run<a class="anchor" aria-label="anchor" href="#run"></a>
 </h2>
 <p>Harmonise two datasets. Ensure that both GWAS inputs are standardised
-with <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code>. A rsID is not required, however
-the datasets should have the same SNP naming convention as this column
-is used for joining.</p>
+with <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> and that the appropriate columns to
+join on are specified in the <code>merge</code> argument - usually
+either <code>c("CHR"="CHR","BP"="BP")</code> or
+<code>c("RSID"="RSID")</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in .recacheSubclasses(def@className, def, env): undefined subclass</span></span>

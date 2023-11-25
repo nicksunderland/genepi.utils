@@ -9,7 +9,7 @@
 #' @param bse a numeric, the standard error of the correction factor
 #' @param entropy a numeric, the entropy - output from the Slope-hunter method
 #' @return an S3 object of class ColliderBiasResult
-#' @noRd
+#' @export
 #'
 ColliderBiasResult <- function(method = NA_character_,
                                ip     = NA_real_,
