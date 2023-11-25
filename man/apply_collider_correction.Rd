@@ -22,7 +22,7 @@ apply_collider_correction(
 
 \item{b_std_err}{a numeric, the correction factor standard error to apply}
 
-\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 
 \item{keep_palindromic}{a logical, whether to allow palindromic alleles to be adjusted and returned}
 }

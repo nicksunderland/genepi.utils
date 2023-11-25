@@ -11,7 +11,8 @@ clump(
   r2 = 0.1,
   kb = 250,
   plink2 = genepi.utils::which_plink2(),
-  plink_ref = genepi.utils::which_1000G_reference()
+  plink_ref = genepi.utils::which_1000G_reference(),
+  logging = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ clump(
 \item{plink2}{a string, path to the plink executable}
 
 \item{plink_ref}{a string, path to the pfile genome reference}
+
+\item{logging}{a logical, whether to set the plink logging information as attributes (\code{log}, \code{missing_id}, \code{missing_allele}) on the returned data.table}
 }
 \value{
 a data.table with additional columns \code{index} (logical, whether the variant is an index SNP) and \code{clump} (integer, the clump the variant belongs to)

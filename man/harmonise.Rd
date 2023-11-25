@@ -13,15 +13,15 @@ harmonise(
 )
 }
 \arguments{
-\item{gwas1}{a data.frame like object, GWAS 1}
+\item{gwas1}{a data.frame like object or file path, GWAS 1}
 
-\item{gwas2}{a data.frame like object, GWAS 2}
+\item{gwas2}{a data.frame like object or file path, GWAS 2}
 
 \item{gwas1_trait}{a string, suffix to add to gwas1 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.}
 
 \item{gwas2_trait}{a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.}
 
-\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 }
 \value{
 a data.table, the harmonised dataset

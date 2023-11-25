@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 
 ## Run
 
-Harmonise two datasets. Ensure that both GWAS inputs are standardised with `standardise_gwas()`. A rsID is not required, however the datasets
-should have the same SNP naming convention as this column is used for joining.
+Harmonise two datasets. Ensure that both GWAS inputs are standardised with `standardise_gwas()` and that the appropriate columns to join on
+are specified in the `merge` argument - usually either `c("CHR"="CHR","BP"="BP")` or `c("RSID"="RSID")`.
 
 ```{r setup}
 library(genepi.utils)

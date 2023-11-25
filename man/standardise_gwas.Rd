@@ -30,10 +30,10 @@ standardise_gwas(
 
 \item{populate_rsid}{either FALSE or a valid argument for chrpos_to_rsid \code{build}, e.g. b37_dbsnp156}
 
-\item{filters}{a list of conditions (as strings) to be evaluated as data.table (quoting column names not necessary) row filters. These
-must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example: \cr
-\code{filters=list('abs(BETA)<10', 'EAF>0.01 & EAF<0.99')} \cr
-...will filter for rows with BETA value between -10 and +10 and EAF between 1\% and 99\%.}
+\item{filters}{a named list of conditions (as strings) to be evaluated as data.table row filters (quoting column names not necessary).
+These must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example:
+\code{filters=list('abs(BETA)<10', 'EAF>0.01 & EAF<0.99')} ...will filter for rows with BETA value between -10 and +10 and EAF between
+1\% and 99\%.}
 }
 \value{
 a standardised data.table

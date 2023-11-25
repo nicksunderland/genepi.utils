@@ -7,17 +7,21 @@
 #' the standardised column names and use pure data.table syntax for increased processing speed.
 #' @references [Slopehunter](https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R) - https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R
 #' @references [TwoSampleMR](https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R) - https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R
-#' @param gwas1 a data.frame like object, GWAS 1
+#' @param gwas1 a data.frame like object or file path, GWAS 1
 #' @param gwas1_trait a string, suffix to add to gwas1 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
 #' @param gwas2_trait a string, suffix to add to gwas2 column names e.g. progression --> columns CHR_progression, BP_progression, ..., etc.
-#' @param merge a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set
-#' @param gwas2 a data.frame like object, GWAS 2
+#' @param merge a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set
+#' @param gwas2 a data.frame like object or file path, GWAS 2
 #' @return a data.table, the harmonised dataset
 #' @export
 #'
 harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progression", merge=NULL) {
 
   CHR_1 = BP_1 = SNP_2 = SNP_1 = keep = to_swap = EA_1 = OA_1 = EA_2 = OA_2 = EA2tmp = BETA_2 = EAF_2 = palindromic = OK = ii = NULL
+
+  # get the gwas from file or object
+  gwas1 <- import_table(gwas1)
+  gwas2 <- import_table(gwas2)
 
   # checks
   if(is.null(merge)) {
@@ -30,14 +34,9 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
     stopifnot("`merge` column(s) not found in `gwas1`" = all(gwas1_key %in% colnames(gwas1)))
     stopifnot("`merge` column(s) not found in `gwas2`" = all(gwas2_key %in% names(gwas2)))
   }
-  stopifnot("`gwas[1|2]` must be a data.frame-like object" = inherits(gwas1, "data.frame") & inherits(gwas2, "data.frame"))
   req_cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","P")
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas1`" = all(req_cols %in% colnames(gwas1)))
   stopifnot("At least columns SNP, CHR, BP, EA, OA, EAF, BETA, and P must be present in `gwas2`" = all(req_cols %in% colnames(gwas2)))
-
-  # as data.table
-  gwas1 <- data.table::as.data.table(gwas1)
-  gwas2 <- data.table::as.data.table(gwas2)
 
   # join; exclude all variants not in both datasets
   h <- data.table::merge.data.table(gwas1, gwas2, by.x=gwas1_key, by.y=gwas2_key, all=FALSE, suffixes=c("_1","_2"))

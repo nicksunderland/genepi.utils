@@ -21,6 +21,7 @@
 #' @param kb a integer, the window for clumping
 #' @param plink2 a string, path to the plink executable
 #' @param plink_ref a string, path to the pfile genome reference
+#' @param logging a logical, whether to set the plink logging information as attributes (`log`, `missing_id`, `missing_allele`) on the returned data.table
 #' @return a data.table with additional columns `index` (logical, whether the variant is an index SNP) and `clump` (integer, the clump the variant belongs to)
 #' @export
 #'
@@ -30,16 +31,16 @@ clump <- function(gwas,
                   r2 = 0.1,
                   kb = 250,
                   plink2    = genepi.utils::which_plink2(),
-                  plink_ref = genepi.utils::which_1000G_reference()) {
+                  plink_ref = genepi.utils::which_1000G_reference(),
+                  logging = TRUE) {
 
   SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = NULL
 
-  # checks
-  stopifnot("`gwas` must be a data.frame like object" = inherits(gwas, "data.frame"))
-  stopifnot("At least columns RSID, EA, OA, and P must be present in the `gwas`" = all(c("RSID","EA","OA","P") %in% colnames(gwas)))
-
   # to data.table format
-  gwas <- data.table::as.data.table(gwas)
+  gwas <- import_table(gwas)
+
+  # checks
+  stopifnot("At least columns RSID, EA, OA, and P must be present in the `gwas`" = all(c("RSID","EA","OA","P") %in% colnames(gwas)))
 
   # init files
   plink_input  <- tempfile()
@@ -70,10 +71,6 @@ clump <- function(gwas,
   # the clumped plink output
   clumped <- data.table::fread(paste0(plink_output,".clumps"), nThread=parallel::detectCores())
 
-  # remove the temp files
-  unlink(plink_input)
-  unlink(plink_output)
-
   # add index
   clumped[, clump := seq_len(.N)]
 
@@ -95,6 +92,46 @@ clump <- function(gwas,
 
   # flag the clump members as not the index SNP and with the clump number
   gwas[clumped_long, c("index", "clump") := list(FALSE, i.clump)]
+
+  # the (potential) plink clumping log files that might be produced
+  # TODO: check if there are others
+  log_files <- list(
+    "log"            = paste0(plink_output,".log"),
+    "missing_id"     = paste0(plink_output,".clumps.missing_id"),
+    "missing_allele" = paste0(plink_output,".clumps.missing_allele")
+  )
+
+  # assess each log file
+  for(i in seq_along(log_files)) {
+
+    if(file.exists(log_files[[i]])) {
+
+      # if logging flag - read and append logs
+      if(logging) {
+        # data.table logs
+        if(names(log_files)[[i]] %in% c("missing_id", "missing_allele")) {
+
+          log_info <- data.table::fread(log_files[[i]], sep="\t", header=FALSE, nThread=parallel::detectCores())
+
+        # string / text logs
+        } else {
+
+          log_info <- paste(readLines(log_files[[i]]), collapse="\n")
+
+        }
+
+        # append info as data.table attribute
+        data.table::setattr(gwas, names(log_files)[[i]], log_info)
+      }
+
+      # clean up log files
+      unlink(log_files[[i]])
+    }
+  }
+
+  # clean up the rest
+  unlink(plink_input)
+  unlink(plink_output)
 
   # return
   return(gwas)

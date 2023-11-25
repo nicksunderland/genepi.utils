@@ -1,6 +1,6 @@
 #' @title Chromosome & position data to variant RSID
 #'
-#' @param dt a data.frame like object with at least columns (chrom<chr>, pos<int>, ea<chr>, nea<chr>)
+#' @param dt a data.frame like object, or file path, with at least columns (chrom<chr>, pos<int>, ea<chr>, nea<chr>)
 #' @param chr_col a string column name; chromosome position
 #' @param pos_col a string column name; base position
 #' @param ea_col a string column name; effect allele
@@ -9,7 +9,8 @@
 #' @param flip a string, options: "report", "allow", "no_flip"
 #' @param alt_rsids a logical, whether to return additional alternate RSIDs
 #' @param verbose a logical, runtime reporting
-#' @param dbsnp_dir a string file path to the dbSNP .fst file directory - see setup documentation.
+#' @param dbsnp_dir a string file path to the dbSNP .fst file directory - see setup documentation
+#' @param parallel_cores an integer, the number of cores/workers to set up the `future::multisession` with
 #'
 #' @return a data.table with an RSID column (or a list: 1-data.table; 2-list of alternate rsids IDs)
 #' @export
@@ -28,7 +29,8 @@ chrpos_to_rsid <- function(dt,
                            alt_rsids=FALSE,
                            build="b37_dbsnp156",
                            dbsnp_dir = genepi.utils::which_dbsnp_directory(),
-                           verbose=TRUE) {
+                           parallel_cores = parallel::detectCores(),
+                           verbose = TRUE) {
 
   #-- Checks -----------------------------------------------------------
 
@@ -78,14 +80,22 @@ chrpos_to_rsid <- function(dt,
     message(paste("RSID mapping...\nChromosomes to process: ", paste0(names(dts), collapse=", ")))
   }
 
-  # set up progress bar
-  p <- progressr::progressor(steps = 7*length(dts)) # going to update 7 times in the function
-
   # set up parallel processing and process each chromosome independently
-  out <- furrr::future_map(.x = dts,
-                           .f = process_chromosome,
-                           chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, dbsnp_dir=dbsnp_dir, flip=flip, alt_rsids=alt_rsids, p=p,
-                           .options=furrr::furrr_options(seed=TRUE))
+  future::plan(future::multisession, workers=parallel_cores)
+  progressr::with_progress({
+
+    # set up progress bar
+    p <- progressr::progressor(steps = 7*length(dts)) # going to update 7 times in the function
+
+    # run each chromosome in parallel
+    # out[[1]] is the RSID data
+    # out[[2]] is the alternative RSID data (other RSIDs for the same CHR:BP:A1:A2)
+    out <- furrr::future_map(.x = dts,
+                             .f = process_chromosome,
+                             chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, dbsnp_dir=dbsnp_dir, flip=flip, alt_rsids=alt_rsids, p=p,
+                             .options=furrr::furrr_options(seed=TRUE))
+
+  })
 
   # deal with alternative RSIDs if requested
   if(alt_rsids) {
@@ -100,6 +110,9 @@ chrpos_to_rsid <- function(dt,
   # put back the original chromosome column and remove the temporary one
   out_data[, (chr_col) := chr_col_orig]
   out_data[, chr_col_orig := NULL]
+
+  # RSID to the front
+  data.table::setcolorder(out_data, c("RSID", names(out_data)[names(out_data) != "RSID"]))
 
   # report
   msg <- paste0("RSID coverage ", round(100*sum(!is.na(out_data[["RSID"]]))/nrow(out_data), digits=2), "% (", sum(!is.na(out_data[["RSID"]])), "/", nrow(out_data), ")")
@@ -118,7 +131,6 @@ chrpos_to_rsid <- function(dt,
   if(alt_rsids) {
 
     out_data <- revert_table_type(out_data)
-
     data.table::setattr(out_alts, "orig_type", attr(dt,"orig_type"))
     out_alts <- revert_table_type(out_alts)
 

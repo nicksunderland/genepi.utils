@@ -46,14 +46,22 @@ standardise_gwas <- function(gwas,
   # get the mapping
   mapping <- get_gwas_mapping(input_format)
 
+  # get the gwas from file or object
+  gwas <- import_table(gwas)
+
+  # set attribute for starting number of rows
+  data.table::setattr(gwas, "input rows", nrow(gwas))
+
   # apply the standardisation procedures
-  gwas <- get_input_gwas(gwas) |>
-    change_column_names(mapping, drop, fill) |>
-    standardise_columns() |>
-    filter_invalid_values(filters) |>
-    standardise_alleles(build) |>
-    health_check() |>
-    populate_rsid(populate_rsid)
+  gwas <- change_column_names(gwas, mapping, drop, fill)
+  gwas <- standardise_columns(gwas)
+  gwas <- filter_invalid_values(gwas, filters)
+  gwas <- standardise_alleles(gwas, build)
+  gwas <- health_check(gwas)
+  gwas <- populate_rsid(gwas, populate_rsid)
+
+  # set attribute for final number of valid rows
+  data.table::setattr(gwas, "valid rows", nrow(gwas))
 
   # return the standardised gwas
   return(gwas)
@@ -74,7 +82,15 @@ change_column_names <- function(gwas, columns = list(), drop=FALSE, fill=FALSE, 
 
   if(fill) {
 
-    gwas[, unlist(unname(columns))[!unlist(unname(columns)) %in% names(gwas)] := NA]
+    missing_cols <- unlist(unname(columns))[!unlist(unname(columns)) %in% names(gwas)]
+
+    if(length(missing_cols) > 0) {
+
+      message(paste0("[+] adding missing column(s) [", paste0(missing_cols, collapse=", "), "] specified in mapping but not found in gwas data  (see `fill` option)"))
+      gwas[, (missing_cols) := NA]
+      data.table::setattr(gwas, "added columns", missing_cols)
+
+    }
 
   } else {
 
@@ -94,11 +110,17 @@ change_column_names <- function(gwas, columns = list(), drop=FALSE, fill=FALSE, 
 
   if(drop) {
 
-    gwas[, names(gwas)[!names(gwas) %in% names(columns)] := NULL]
+    unwanted <- names(gwas)[!names(gwas) %in% names(columns)]
+
+    if(length(unwanted) > 0) {
+
+      message(paste0("[-] dropping unwanted column(s) [", paste0(unwanted, collapse=", "), "] found in gwas data but not specified in mapping (see `drop` option)"))
+      gwas[, (unwanted) := NULL]
+      data.table::setattr(gwas, "dropped columns", unwanted)
+
+    }
 
   }
-
-
 
   return(gwas)
 }
@@ -187,6 +209,8 @@ standardise_columns <- function(gwas) {
 #'
 convert_z_to_p <- function(gwas) {
 
+  message("[+] converting Z to P")
+
   gwas[, P := 2 * stats::pnorm(-abs(Z))]
 
   return(gwas)
@@ -202,6 +226,8 @@ convert_z_to_p <- function(gwas) {
 #' @noRd
 #'
 convert_or_to_beta <- function(gwas) {
+
+  message("[+] converting OR to BETA")
 
   gwas[, BETA := log(OR)]
 
@@ -251,6 +277,11 @@ filter_invalid_values <- function(gwas, filters=NULL) {
   # apply some filters if provided
   if(!is.null(filters)) {
 
+    # order the filters so that removal of NAs is first, in order to minimise
+    # problems later calling conditions that might throw errors when called
+    # with NA values
+    filters <- c(grep("is\\.na", filters, value=TRUE), setdiff(filters, grep("is\\.na", filters, value=TRUE)))
+
     # assess each filter
     for(i in seq_along(filters)) {
 
@@ -262,19 +293,30 @@ filter_invalid_values <- function(gwas, filters=NULL) {
         filter_name <- filter_names[i]
       }
 
-      # number of rows before filtering
-      nrow_pre <- nrow(gwas)
-
       # parse the string / filter expression
       filter_expr <- parse(text = filters[[i]])
 
+      # apply filter / create row index logical mask
+      filter_true <- gwas[, eval(filter_expr)]
+
+      # if the filter has generated NAs, report which filter errored and stop
+      if(any(is.na(filter_true))) {
+        na_idx <- which(is.na(filter_true))
+        msg <- paste0("filter ", filter_name, " [", filter_expr, "] is invalid as it produced ", length(na_idx), " NAs. Please use an 'is.na()' filter, adjust your current filter, and/or adjust your input file. Example error rows:")
+        warning(msg)
+        print(head(gwas[na_idx, ]))
+        stop("Filter error")
+      }
+
+      # add the filter to attributes and report number of rows filtered
+      data.table::setattr(gwas, paste0(filter_name, " [", filter_expr, "] rows removed"), sum(!filter_true))
+
       # apply the filter to the data.table only if any() fail the filter;
       # otherwise leave the table alone (i.e. don't copy it in memory / reassign with `<-`)
-      filter_true <- gwas[, eval(filter_expr)]
       if(any(!filter_true)) {
 
         gwas <- gwas[filter_true, ]
-        message(paste0("[-] ", nrow_pre-nrow(gwas), " rows removed with filter '", filter_name, "'"))
+        message(paste0("[-] ", sum(!filter_true), " rows removed with filter '", filter_name, "' [", filter_expr, "]" ))
 
       }
 
@@ -454,32 +496,6 @@ harmonise_gwases <- function(...) {
 }
 
 
-#' @title Get / format the input GWAS
-#' @param gwas a file path, or data.frame like object
-#' @return a data.table
-#' @noRd
-#'
-get_input_gwas <- function(gwas) {
-
-  if(is.character(gwas)) {
-
-    stopifnot("`gwas` must be a valid file path is supplied as a character" = file.exists(gwas))
-    gwas <- data.table::fread(gwas, nThread=parallel::detectCores())
-
-  } else if(inherits(gwas, "data.frame")) {
-
-    gwas <- data.table::as.data.table(gwas)
-
-  } else {
-
-    stop("`gwas` must be a valid file path or data.frame like object")
-
-  }
-
-  return(gwas)
-}
-
-
 #' @title Get the GWAS mapping
 #' @param input_format a file path, or data.frame like object
 #' @return a data.table
@@ -519,7 +535,7 @@ format_gwas_output <- function(file_gwas, output_file, output_format="default") 
 
   mapping <- get_gwas_mapping(output_format)
 
-  gwas <- get_input_gwas(gwas) |>
+  gwas <- import_table(gwas) |>
     change_column_names(mapping, drop=FALSE, opposite_mapping=TRUE)
 
   data.table::fwrite(gwas, output_file, sep="\t", nThread=parallel::detectCores())

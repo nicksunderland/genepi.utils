@@ -14,11 +14,12 @@ chrpos_to_rsid(
   alt_rsids = FALSE,
   build = "b37_dbsnp156",
   dbsnp_dir = genepi.utils::which_dbsnp_directory(),
+  parallel_cores = parallel::detectCores(),
   verbose = TRUE
 )
 }
 \arguments{
-\item{dt}{a data.frame like object with at least columns (chrom\if{html}{\out{<chr>}}, pos\if{html}{\out{<int>}}, ea\if{html}{\out{<chr>}}, nea\if{html}{\out{<chr>}})}
+\item{dt}{a data.frame like object, or file path, with at least columns (chrom\if{html}{\out{<chr>}}, pos\if{html}{\out{<int>}}, ea\if{html}{\out{<chr>}}, nea\if{html}{\out{<chr>}})}
 
 \item{chr_col}{a string column name; chromosome position}
 
@@ -34,7 +35,9 @@ chrpos_to_rsid(
 
 \item{build}{a string, options: "b37_dbsnp156", "b38_dbsnp156" (corresponds to the appropriate data directory)}
 
-\item{dbsnp_dir}{a string file path to the dbSNP .fst file directory - see setup documentation.}
+\item{dbsnp_dir}{a string file path to the dbSNP .fst file directory - see setup documentation}
+
+\item{parallel_cores}{an integer, the number of cores/workers to set up the \code{future::multisession} with}
 
 \item{verbose}{a logical, runtime reporting}
 }

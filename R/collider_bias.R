@@ -36,6 +36,48 @@ ColliderBiasResult <- function(method = NA_character_,
   )
 }
 
+#' @title ColliderBiasResult to data.table
+#' @param results a ColliderBiasResult object, or list of ColliderBiasResult objects
+#' @export
+collider_results_to_data_table <- function(results) UseMethod("collider_results_to_data_table")
+#' @rdname collider_results_to_data_table
+#' @export
+collider_results_to_data_table.ColliderBiasResult <- function(results) {
+  # convert to list if singular
+  collider_results_to_data_table(list(results))
+}
+#' @rdname collider_results_to_data_table
+#' @export
+collider_results_to_data_table.list <- function(results) {
+
+  # if not all class ColliderBiasResult, error
+  if (!is.list(results) || !all(sapply(results, inherits, "ColliderBiasResult"))) {
+
+    stop("Input must be a ColliderBiasResult object or a list of ColliderBiasResult objects.")
+
+  }
+
+  # convert
+  dt <- lapply(results, function(res) {
+
+    # remove the large data.table as don't want this
+    res$fit <- NULL
+
+    # remove class, make just a list
+    class(res) <- "list"
+
+    # return as a data.table the rest of the list elements
+    return(data.table::as.data.table(res))
+
+  }) |>
+    # rbind
+    data.table::rbindlist()
+
+  # return the full data.table
+  return(dt)
+}
+
+
 #' @title Slope-hunter collider bias method
 #' @description
 #' The Slope-hunter method has it's own R package and does not need to be re-implemented.
@@ -747,16 +789,8 @@ plot_correction_stability <- function(results) {
   # silence RMD checks
   ip = b = bse = method = NULL
 
-  # remove the fit data and remove class
-  results <- lapply(results, function(res) {
-    res$fit <- NULL
-    class(res) <- "list"
-    res
-  })
-
-  # create data.frame
-  dt_list <- Map(data.table::as.data.table, results)
-  plot_dat <- data.table::rbindlist(dt_list)
+  # the collider results
+  plot_dat <- collider_results_to_data_table(results)
   plot_dat[, ip := ifelse(is.na(ip), 0, ip)]
 
   # labels

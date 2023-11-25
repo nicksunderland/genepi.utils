@@ -19,7 +19,7 @@ ivw_mr_collider_bias(
 
 \item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
 
-\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2,"BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
+\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
 
 \item{...}{parameter sink, additional ignored parameters}
 }
