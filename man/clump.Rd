@@ -11,7 +11,7 @@ clump(
   r2 = 0.1,
   kb = 250,
   plink2 = genepi.utils::which_plink2(),
-  plink_ref = genepi.utils::which_1000G_reference(),
+  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37"),
   logging = TRUE
 )
 }

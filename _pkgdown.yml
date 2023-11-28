@@ -18,6 +18,8 @@ reference:
   contents:
   - clump
   - harmonise
+  - ld_matrix
+  - harmonise_ld_dat
 
 - title: "RSID mapping"
   desc: >

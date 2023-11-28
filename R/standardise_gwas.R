@@ -82,12 +82,12 @@ change_column_names <- function(gwas, columns = list(), drop=FALSE, fill=FALSE, 
 
   if(fill) {
 
-    missing_cols <- unlist(unname(columns))[!unlist(unname(columns)) %in% names(gwas)]
+    missing_cols <- unlist(columns)[!unlist(unname(columns)) %in% names(gwas)]
 
     if(length(missing_cols) > 0) {
 
-      message(paste0("[+] adding missing column(s) [", paste0(missing_cols, collapse=", "), "] specified in mapping but not found in gwas data  (see `fill` option)"))
-      gwas[, (missing_cols) := NA]
+      message(paste0("[+] adding missing column(s) [", paste0(names(missing_cols),"=",missing_cols, collapse=", "), "] specified in mapping but not found in gwas data  (see `fill` option)"))
+      gwas[, unname(missing_cols) := NA]
       data.table::setattr(gwas, "added columns", missing_cols)
 
     }

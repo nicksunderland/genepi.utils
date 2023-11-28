@@ -23,6 +23,8 @@ ColliderBiasResult(
 
 \item{pi0}{a numeric, the initialising Pi value for the Slope-hunter method}
 
+\item{pi}{a numeric, the final Pi value, proportion of SNPs in the Gi SNP cluster}
+
 \item{sxy1}{a numeric, the initialising SNPip Cov value for the Slope-hunter method}
 
 \item{b}{a numeric, the estimated correction factor}
@@ -30,6 +32,8 @@ ColliderBiasResult(
 \item{bse}{a numeric, the standard error of the correction factor}
 
 \item{entropy}{a numeric, the entropy - output from the Slope-hunter method}
+
+\item{fit}{a data.table, the raw points data for plotting table columns \code{c("SNP_incidence","BETA_incidence","BETA_progression","CLUSTER")}}
 }
 \value{
 an S3 object of class ColliderBiasResult

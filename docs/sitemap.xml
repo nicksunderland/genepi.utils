@@ -31,6 +31,9 @@
     <loc>/articles/index.html</loc>
   </url>
   <url>
+    <loc>/articles/ld_matrix.html</loc>
+  </url>
+  <url>
     <loc>/articles/plotting.html</loc>
   </url>
   <url>
@@ -103,6 +106,9 @@
     <loc>/reference/harmonise_gwases.html</loc>
   </url>
   <url>
+    <loc>/reference/harmonise_ld_dat.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
@@ -116,6 +122,9 @@
   </url>
   <url>
     <loc>/reference/ivw_mr_collider_bias.html</loc>
+  </url>
+  <url>
+    <loc>/reference/ld_matrix.html</loc>
   </url>
   <url>
     <loc>/reference/lift.html</loc>

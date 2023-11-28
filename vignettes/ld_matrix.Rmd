@@ -1,0 +1,71 @@
+---
+title: "LD matrix"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LD matrix}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Setup
+
+See the setup process for the PLINK2 executable and reference file in the [Clumping](https://nicksunderland.github.io/genepi.utils/articles/clumping.html) vignette.
+
+
+```{r setup}
+library(genepi.utils)
+
+# the gwas data
+gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+
+# ensure annotated with rsID
+gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid="b37_dbsnp156")
+
+# check path to reference
+which_1000G_reference("GRCh37")
+
+# check path to plink2 executable
+which_plink2()
+```
+
+## LD matrix
+
+Generate the LD matrix. 
+
+```{r ld_matrix}
+# produce LD matrix 
+ld_mat <- ld_matrix(gwas[1:9, "RSID"],
+                    plink2    = genepi.utils::which_plink2(),
+                    plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"))
+
+# view result
+print(ld_mat)
+```
+
+
+## Harmonise data against LD matrix alleles
+
+```{r ld_matrix_info2}
+# harmonised data 
+harm <- harmonise(gwas, data.table::copy(gwas), gwas1_trait="exposure", gwas2_trait="outcome", merge=c("RSID"="RSID"))
+
+# mess up the alleles vs reference
+harm <- harm[RSID_exposure=="rs7899632", c("EA_exposure","EA_outcome","OA_exposure","OA_outcome") := list("A","A","G","G")]
+harm[RSID_exposure=="rs7899632", ][]
+
+# re-harmonise
+harm_result <- harmonise_ld_dat(harm, ld_mat, gwas1_trait="exposure", gwas2_trait="outcome")
+
+# harmonised data
+harm_result[["harm"]][RSID_exposure=="rs7899632", ][]
+
+# LD matrix
+harm_result[["ld_mat"]]
+```

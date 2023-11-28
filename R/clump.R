@@ -31,7 +31,7 @@ clump <- function(gwas,
                   r2 = 0.1,
                   kb = 250,
                   plink2    = genepi.utils::which_plink2(),
-                  plink_ref = genepi.utils::which_1000G_reference(),
+                  plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
                   logging = TRUE) {
 
   SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = NULL
@@ -49,7 +49,7 @@ clump <- function(gwas,
   # write the data out; plink wants A1/A2 coding
   data.table::setnames(gwas, c("EA","OA"), c("A1","A2"))
   gwas[, c("SNP", "SNP_store") := list(RSID, SNP)]
-  data.table::fwrite(gwas, plink_input, sep="\t", nThread=parallel::detectCores())
+  data.table::fwrite(gwas, plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
 
   # revert coding now it's written out
   data.table::setnames(gwas, c("A1","A2"), c("EA","OA"))

@@ -61,17 +61,22 @@ chrpos_to_rsid <- function(dt,
 
   #-- Processing ---------------------------------------------------------
 
-  # data adjustment - remove chromosome 'Chr6' --> '6' and recode X/Y
-  # (?i) case-insensitive
-  # ^ at the beginning of the string
-  # (?:chr)? non-capture group, matches "chr" 0-1 times
-  # ([0-9XYMT]+) capture group //1, matches 1 or more occurances of group [0-9XYMT]
-  # \\1 replace with string found in capture group 1
+  # data adjustments
+  # 1) remove chromosome 'Chr6' --> '6' and recode X/Y
+  #    (?i) case-insensitive
+  #    ^ at the beginning of the string
+  #    (?:chr)? non-capture group, matches "chr" 0-1 times
+  #    ([0-9XYMT]+) capture group //1, matches 1 or more occurances of group [0-9XYMT]
+  #    \\1 replace with string found in capture group 1
   chr_col_orig = "chr_col_orig"
   dt[, (chr_col_orig) := get(chr_col)]
   dt[, (chr_col) := sub("(?i)^(?:chr)?([0-9XY]+)", toupper("\\1"), toupper(get(chr_col)))]
-  # replace X[23] and Y[24]
+  # 2) replace X[23] and Y[24]
   dt[, (chr_col) := ifelse(get(chr_col)=="X","23",ifelse(get(chr_col)=="Y","24",get(chr_col)))]
+  # 3) delete the RSID column ahead of re-adding it, if it exists
+  if("RSID" %in% names(dt)) {
+    dt[, "RSID" := NULL]
+  }
 
   # split the dt into a list of data.tables, by chromosome
   dts <- split(dt, by=chr_col)

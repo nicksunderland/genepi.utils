@@ -7,6 +7,8 @@
 #' @param sxy1 a numeric, the initialising SNPip Cov value for the Slope-hunter method
 #' @param b a numeric, the estimated correction factor
 #' @param bse a numeric, the standard error of the correction factor
+#' @param pi a numeric, the final Pi value, proportion of SNPs in the Gi SNP cluster
+#' @param fit a data.table, the raw points data for plotting table columns `c("SNP_incidence","BETA_incidence","BETA_progression","CLUSTER")`
 #' @param entropy a numeric, the entropy - output from the Slope-hunter method
 #' @return an S3 object of class ColliderBiasResult
 #' @export
