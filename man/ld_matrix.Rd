@@ -24,5 +24,8 @@ ld_matrix(
 an LD matrix
 }
 \description{
-Calculate LD matrix
+Based on the ieugwasr function (see reference)
+}
+\references{
+\href{https://github.com/MRCIEU/ieugwasr/blob/33e4629f4dacd635c68e690bb5648de529c333cc/R/ld_matrix.R#L92C1-L92C16}{ieugwasr::ld_matrix_local()}
 }

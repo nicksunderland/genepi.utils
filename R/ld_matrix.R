@@ -1,4 +1,7 @@
 #' @title Calculate LD matrix
+#' @description
+#' Based on the ieugwasr function (see reference)
+#' @references [ieugwasr::ld_matrix_local()](https://github.com/MRCIEU/ieugwasr/blob/33e4629f4dacd635c68e690bb5648de529c333cc/R/ld_matrix.R#L92C1-L92C16)
 #' @param variants data.frame like object, or file path, with at least column `RSID`
 #' @inheritParams clump
 #' @return an LD matrix
@@ -68,6 +71,9 @@ ld_matrix <- function(variants,
 
 
 #' @title Re-harmonise against LD matrix reference alleles
+#' @description
+#' Based on the TwoSampleMR function (see reference)
+#' @references [TwoSampleMR::harmonise_ld_dat()](https://github.com/MRCIEU/TwoSampleMR/blob/cbd03e6ac58a81922248eb1265cb3ee36b9a76ce/R/other_formats.R#L76)
 #' @param harm a data.table, output from `harmonise()`
 #' @param ld_mat a matrix, output from `ld_matrix()`
 #' @inheritParams harmonise

@@ -19,5 +19,8 @@ harmonise_ld_dat(harm, ld_mat, gwas1_trait = "", gwas2_trait = "")
 a two-element \code{list(harm=harm, ld_mat=ld_mat)}
 }
 \description{
-Re-harmonise against LD matrix reference alleles
+Based on the TwoSampleMR function (see reference)
+}
+\references{
+\href{https://github.com/MRCIEU/TwoSampleMR/blob/cbd03e6ac58a81922248eb1265cb3ee36b9a76ce/R/other_formats.R#L76}{TwoSampleMR::harmonise_ld_dat()}
 }
