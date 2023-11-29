@@ -26,10 +26,7 @@ Imports:
     gganimate,
     viridis,
     tibble,
-    MendelianRandomization,
-    GenomicRanges,
-    IRanges,
-    rtracklayer
+    MendelianRandomization
 Suggests: 
     knitr,
     rmarkdown,

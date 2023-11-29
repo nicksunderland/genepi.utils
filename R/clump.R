@@ -93,6 +93,9 @@ clump <- function(gwas,
   # flag the clump members as not the index SNP and with the clump number
   gwas[clumped_long, c("index", "clump") := list(FALSE, i.clump)]
 
+  # code clump as a factor
+  gwas[, clump := factor(clump, levels=sort(unique(gwas$clump)))]
+
   # the (potential) plink clumping log files that might be produced
   # TODO: check if there are others
   log_files <- list(
