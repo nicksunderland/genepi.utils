@@ -32,6 +32,9 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 Remotes:
-    https://github.com/MRCIEU/TwoSampleMR
+    https://github.com/MRCIEU/TwoSampleMR,
+    bioc::GenomicRanges,
+    bioc::IRanges,
+    bioc::rtracklayer
 VignetteBuilder: knitr
 Config/testthat/edition: 3
