@@ -115,6 +115,13 @@ gtex_gene_data <- unique(gtex_gene_data, by="gene_id")[, tissue := NULL]
 # join the gene name
 gtex_data[gtex_gene_data, GENE_NAME := i.gene_name, on=c("GENE_ID"="gene_id")]
 
+# lift genes over to b37
+gtex_gene_data[, c("CHR","SNP","gene_start_b38","gene_end_b38") := list(sub("chr","",gene_chr), NA, gene_start, gene_end)]
+gtex_gene_data <- genepi.utils::lift(gtex_gene_data, from="Hg38", to="Hg19", snp_col = "SNP", chr_col = "CHR", pos_col = "gene_start", ea_col = NULL, oa_col = NULL)
+gtex_gene_data <- genepi.utils::lift(gtex_gene_data, from="Hg38", to="Hg19", snp_col = "SNP", chr_col = "CHR", pos_col = "gene_end", ea_col = NULL, oa_col = NULL)
+data.table::setnames(gtex_gene_data, c("gene_start","gene_end"), c("gene_start_b37","gene_end_b37"))
+gtex_gene_data[, c("SNP","CHR") := NULL]
+
 # annotate with b38 rsids
 future::plan(future::multisession, workers = 12)
 progressr::with_progress({

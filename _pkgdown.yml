@@ -34,7 +34,7 @@ reference:
   - analyse_collider_bias
   - slopehunter
   - dudbridge
-  - ivw_mr_collider_bias
+  - mr_collider_bias
   - apply_collider_correction
   - plot_slope
   - plot_correction_stability

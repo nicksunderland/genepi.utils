@@ -11,6 +11,7 @@ ColliderBiasResult(
   pi = NA_real_,
   sxy1 = NA_real_,
   b = NA_real_,
+  intercept = NA_real_,
   bse = NA_real_,
   entropy = NA_real_,
   fit = data.table::data.table()

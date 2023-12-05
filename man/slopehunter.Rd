@@ -12,7 +12,8 @@ slopehunter(
   pi0 = 0.6,
   sxy1 = 1e-05,
   bootstraps = 100,
-  seed = 2023
+  seed = 2023,
+  ...
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ slopehunter(
 (can be zero, in which case no SE is returned)}
 
 \item{seed}{an integer, seed for reproducibility}
+
+\item{...}{parameter sink, additional ignored parameters}
 }
 \value{
 an S3 ColliderBiasResult object

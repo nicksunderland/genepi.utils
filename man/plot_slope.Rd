@@ -8,7 +8,7 @@ plot_slope(results)
 }
 \arguments{
 \item{results}{a ColliderBiasResult object, or list of ColliderBiasResult objects, from \code{analyse_collider_bias()},
-\code{slopehunter()}, \code{ivw_mr_collider_bias()}, or \code{dudbridge()}}
+\code{slopehunter()}, \code{mr_collider_bias()}, or \code{dudbridge()}}
 }
 \value{
 a ggplot2

@@ -36,7 +36,7 @@ lift <- function(gwas,
   from <- match.arg(from, builds)
   to   <- match.arg(to, builds)
   stopifnot("`to` must not be the same as `from`" = to!=from)
-  stopifnot("Column name(s) not found in `gwas`" = all(c(chr_col,pos_col,ea_col,oa_col) %in% names(gwas)))
+  stopifnot("Column name(s) not found in `gwas`" = all(c(chr_col,pos_col) %in% names(gwas)))
 
   # import and convert
   gwas <- import_table(gwas)
@@ -82,7 +82,7 @@ lift <- function(gwas,
   message("Reordering")
   data.table::setkeyv(gwas, c(chr_col, pos_col))
 
-  if(!is.null(ea_col) & !is.na(oa_col))
+  if(!is.null(ea_col) & !is.null(oa_col))
   {
     message("Removing duplicates")
     gwas <- unique(gwas, by=c(chr_col, pos_col, ea_col, oa_col))

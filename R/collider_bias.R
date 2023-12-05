@@ -19,6 +19,7 @@ ColliderBiasResult <- function(method = NA_character_,
                                pi     = NA_real_,
                                sxy1   = NA_real_,
                                b      = NA_real_,
+                               intercept=NA_real_,
                                bse    = NA_real_,
                                entropy= NA_real_,
                                fit    = data.table::data.table()) {
@@ -29,6 +30,7 @@ ColliderBiasResult <- function(method = NA_character_,
       pi0    = pi0,
       sxy1   = sxy1,
       b      = b,
+      intercept=intercept,
       bse    = bse,
       entropy= entropy,
       pi     = pi,
@@ -151,6 +153,7 @@ collider_results_to_data_table.list <- function(results) {
 #' @param sxy1 a numeric, the initial (guess) of the covariance between incidence and progression BETAs
 #' @param bootstraps a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor
 #' (can be zero, in which case no SE is returned)
+#' @param ... parameter sink, additional ignored parameters
 #' @param seed an integer, seed for reproducibility
 #' @return an S3 ColliderBiasResult object
 #' @export
@@ -162,7 +165,8 @@ slopehunter <- function(gwas_i,
                         pi0        = 0.6,
                         sxy1       = 1e-5,
                         bootstraps = 100,
-                        seed       = 2023) {
+                        seed       = 2023,
+                        ...) {
 
   # silence RMD checks
   P = keep = NULL
@@ -231,6 +235,7 @@ slopehunter <- function(gwas_i,
                             pi0     = pi0,
                             sxy1    = sxy1,
                             b       = result$b,
+                            intercept=0,
                             bse     = result$bse,
                             entropy = result$entropy,
                             pi      = result$pi,
@@ -286,7 +291,7 @@ shclust <- function(d, pi0, sxy1, collect_iters=FALSE) {
     d[, pt := ifelse(pt>0.9999999, 0.9999999, pt)]
 
     # define the clusters
-    d[, CLUSTER := factor(ifelse(pt >= 0.5, "Hunted", "Pleiotropic"))]
+    d[, CLUSTER := factor(ifelse(pt >= 0.5, "Hunted", "Pleiotropic"), levels = c("NA", "Pleiotropic","Hunted"))] # hunted last level so plotted on top
 
     if(collect_iters & (iter %in% 1:20 | iter%%10==0)) {
       tmp <- d[, c("BETA_incidence", "BETA_progression", "pt", "CLUSTER")]
@@ -306,13 +311,19 @@ shclust <- function(d, pi0, sxy1, collect_iters=FALSE) {
     sx0  = sqrt( sum(d$pt * (d$BETA_incidence^2))   / sum(d$pt) )
     sy0  = sqrt( sum(d$pt * (d$BETA_progression^2)) / sum(d$pt) )
     dir0 = sign( sum(d$pt * d$BETA_progression * d$BETA_incidence) / sum(d$pt) )
-    if (dir0==0) dir0=sample(c(1,-1), 1)   # avoid slope = 0 (horizontal line)
+    if (dir0==0) {
+      warning("Enforcing dir0=1")
+      dir0=sample(c(1,-1), 1)   # avoid slope = 0 (horizontal line)
+    }
 
     # update the standard deviations and cov of distribution 2 (sx1, sy1 & sxy1)
     sx1  = sqrt( sum((1-d$pt) * (d$BETA_incidence^2))   / (length(d$BETA_incidence)   - sum(d$pt)) )
     sy1  = sqrt( sum((1-d$pt) * (d$BETA_progression^2)) / (length(d$BETA_progression) - sum(d$pt)) )
     sxy1 = sum((1-d$pt) * d$BETA_incidence * d$BETA_progression) / (length(d$BETA_incidence) - sum(d$pt))
-    if (abs(sxy1) > 0.75*sx1*sy1)  sxy1 = sign(sxy1)*0.75*sx1*sy1
+    if (abs(sxy1) > 0.75*sx1*sy1) {
+      warning("Enforcing sxy1=sign(sxy1)*0.75*sx1*sy1")
+      sxy1 = sign(sxy1)*0.75*sx1*sy1
+    }
 
     # Check convergence
     if (iter%%10==0){
@@ -400,24 +411,6 @@ apply_collider_correction <- function(gwas_i,
 
   # return the harmonised adjusted data
   return(h)
-
-
-
-
-
-  # can't join to unharmonised data as various alleles will be flipped.
-  #
-  # key_cols <- paste0(merge, "_progression")
-  # names(key_cols) <- merge
-  # cols     <- c(key_cols,"BETA_incidence","adjusted_beta","adjusted_se","adjusted_p")
-  # gwas_out <- gwas_p[h[, cols, with=FALSE], on=key_cols]
-  #
-  # # if all_rows return with potential NAs (e.g. if there wasn't any corresponding incidence SNPs)
-  # if(all_rows) {
-  #   return(gwas_out)
-  # } else {
-  #   return(gwas_out[!is.na(adjusted_beta), ])
-  # }
 }
 
 
@@ -483,6 +476,7 @@ dudbridge <- function(gwas_i,
   h[, names(h)[!names(h)%in%out_cols] := NULL]
   res <- ColliderBiasResult(method  = "dudbridge",
                             b       = cwls_estimated_slope,
+                            intercept=0,
                             bse     = cwls_estimated_standard_error,
                             fit     = h)
   return(res)
@@ -493,16 +487,18 @@ dudbridge <- function(gwas_i,
 #' The Inverse variance weighted Mendelian Randomisation method for assessing collider bias.
 #' @inheritParams slopehunter
 #' @inheritParams harmonise
+#' @param tsmr_method a string; a valid `TwoSampleMR::mr()` `method_list` parameter
 #' @param ... parameter sink, additional ignored parameters
 #' @return an S3 ColliderBiasResult object
 #' @export
 #' @importFrom TwoSampleMR format_data harmonise_data mr
 #'
-ivw_mr_collider_bias <- function(gwas_i,
-                                 gwas_p,
-                                 ip = 0.001,
-                                 merge = c("CHR"="CHR","BP"="BP"),
-                                 ...) {
+mr_collider_bias <- function(gwas_i,
+                             gwas_p,
+                             ip = 0.001,
+                             merge = c("CHR"="CHR","BP"="BP"),
+                             tsmr_method = "mr_ivw",
+                             ...) {
 
   # silence RMD checks
   P = NULL
@@ -517,7 +513,7 @@ ivw_mr_collider_bias <- function(gwas_i,
 
     # exit if there are no significant incidence variants at this threshold
     warning(paste0("No variants remaining after thresholding incidence SNPs at `ip`=", ip, "\n"))
-    return(ColliderBiasResult(method="ivw_mr_collider_bias", ip=ip))
+    return(ColliderBiasResult(method=tsmr_method, ip=ip))
 
   }
 
@@ -552,12 +548,12 @@ ivw_mr_collider_bias <- function(gwas_i,
     # exit if there are no incidence variants left after harmonising
     warning(paste0("No variants remaining after merging with progression SNPs. Check
                     that incidence SNPs exist with in the progression GWAS\n"))
-    return(ColliderBiasResult(method="ivw_mr_collider_bias"))
+    return(ColliderBiasResult(method=tsmr_method))
 
   } else {
 
     # run the MR
-    mr_results <- TwoSampleMR::mr(tsmr_h, method_list = c("mr_ivw"))
+    mr_results <- TwoSampleMR::mr(tsmr_h, method_list = tsmr_method)
 
     # overall result to return
     tsmr_h <- data.table::as.data.table(tsmr_h)
@@ -565,8 +561,9 @@ ivw_mr_collider_bias <- function(gwas_i,
     out_cols <- c("SNP","BETA_incidence","BETA_progression","CLUSTER")
     data.table::setnames(tsmr_h, c("SNP","beta.exposure","beta.outcome", "CLUSTER"), out_cols)
     tsmr_h[, names(tsmr_h)[!names(tsmr_h)%in%out_cols] := NULL]
-    res <- ColliderBiasResult(method = "ivw_mr_collider_bias",
+    res <- ColliderBiasResult(method = tsmr_method,
                               b      = mr_results$b,
+                              intercept = ifelse(is.null(mr_results$intercept), 0, mr_results$intercept),
                               bse    = mr_results$se,
                               ip     = ip,
                               fit    = tsmr_h)
@@ -596,7 +593,8 @@ ivw_mr_collider_bias <- function(gwas_i,
 analyse_collider_bias <- function(gwas_i,
                                   gwas_p,
                                   merge      = c("CHR"="CHR","BP"="BP"),
-                                  methods    = c("slopehunter", "ivw_mr_collider_bias", "dudbridge"),
+                                  methods    = c("slopehunter", "mr_collider_bias", "dudbridge"),
+                                  tsmr_method= c("mr_ivw", "mr_egger_regression", "mr_simple_median", "mr_simple_mode", "mr_raps"),
                                   ip         = c(0.9),
                                   pi0        = c(0.6),
                                   sxy1       = c(1e-5),
@@ -605,9 +603,9 @@ analyse_collider_bias <- function(gwas_i,
 
   # expand the parameters
   params <- lapply(methods, function(m) {
-    if(m=="slopehunter") return(expand.grid(method="slopehunter", ip=ip, pi0=pi0, sxy1=sxy1, bootstraps=bootstraps))
-    if(m=="dudbridge") return(expand.grid(method="dudbridge", ip=NA_real_, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
-    if(m=="ivw_mr_collider_bias") return(expand.grid(method="ivw_mr_collider_bias", ip=ip, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
+    if(m=="slopehunter") return(expand.grid(method="slopehunter", tsmr_method=NA_character_, ip=ip, pi0=pi0, sxy1=sxy1, bootstraps=bootstraps))
+    if(m=="dudbridge") return(expand.grid(method="dudbridge", tsmr_method=NA_character_, ip=NA_real_, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
+    if(m=="mr_collider_bias") return(expand.grid(method="mr_collider_bias", tsmr_method=tsmr_method, ip=ip, pi0=NA_real_, sxy1=NA_real_, bootstraps=NA_real_))
   }) |> data.table::rbindlist()
 
   # results from each combination of parameters
@@ -618,10 +616,11 @@ analyse_collider_bias <- function(gwas_i,
                    args = list(gwas_i = gwas_i,
                                gwas_p = gwas_p,
                                merge  = merge,
-                               ip     = params$ip[i],
-                               pi0    = params$pi0[i],
-                               sxy1   = params$sxy1[i],
-                               bootstraps = params$bootstraps[i]))
+                               tsmr_method = as.character(params$tsmr_method[i]),
+                               ip          = params$ip[i],
+                               pi0         = params$pi0[i],
+                               sxy1        = params$sxy1[i],
+                               bootstraps  = params$bootstraps[i]))
 
     results <- c(results, list(res))
   }
@@ -632,7 +631,7 @@ analyse_collider_bias <- function(gwas_i,
 
 #' @title Plot the Slope-hunter scatter plot
 #' @param results a ColliderBiasResult object, or list of ColliderBiasResult objects, from `analyse_collider_bias()`,
-#' `slopehunter()`, `ivw_mr_collider_bias()`, or `dudbridge()`
+#' `slopehunter()`, `mr_collider_bias()`, or `dudbridge()`
 #' @return a ggplot2
 #' @export
 #' @import ggplot2
@@ -656,26 +655,33 @@ plot_slope <- function(results) {
 
   # slope data
   b_dat <- lapply(results, function(res) data.table::data.table(slope=res$b,
-                                                                intercept=0,
+                                                                intercept=res$intercept,
                                                                 label = paste0("b = ", as.character(round(res$b, digits=2))),
+                                                                hunted_snps_label = ifelse(sum(res$fit$CLUSTER=="Hunted", na.rm=T)>0, paste0("Hunted = ", sum(res$fit$CLUSTER=="Hunted", na.rm=T)), NA_character_),
                                                                 xpos = Inf,
                                                                 ypos = Inf,
                                                                 hjustvar = 1.2,
-                                                                vjustvar = 1.4,
+                                                                vjustvar = 1.5,
                                                                 ip = res$ip,
                                                                 method = res$method)) |> data.table::rbindlist()
   b_dat[, ip := factor(ip, levels=p_levels)]
 
   # facet plot of different P value thresholds
-  g <- ggplot2::ggplot(data=dat, ggplot2::aes(BETA_incidence, BETA_progression, color=CLUSTER)) +
+  g <- ggplot2::ggplot(data=dat, ggplot2::aes(BETA_incidence, BETA_progression, color=CLUSTER, alpha=CLUSTER, size=CLUSTER)) +
     ggplot2::geom_point() +
     ggplot2::geom_abline(data=b_dat, ggplot2::aes(slope=slope, intercept=intercept), color = 'black') +
-    ggplot2::geom_text(data=b_dat, ggplot2::aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=label), color="black") +
+    ggplot2::geom_text(data=b_dat, ggplot2::aes(x=xpos,y=ypos,hjust=hjustvar+0.2,vjust=vjustvar,label=label), color="black", show.legend = FALSE) +
+    ggplot2::geom_text(data=b_dat, ggplot2::aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar+2,label=hunted_snps_label), color="black", show.legend = FALSE) +
+    ggplot2::scale_size_manual(values=c("Hunted"=2, "Pleiotropic"=1, "NA"=1)) +
+    ggplot2::scale_alpha_manual(values=c("Hunted"=1, "Pleiotropic"=0.3, "NA"=1)) +
+    ggplot2::scale_color_manual(values=c("Hunted"="#FC4E07", "Pleiotropic"="#00AFBB", "NA"="#00AFBB")) +
     ggplot2::theme_bw() +
     ggplot2::labs(title = "SlopeHunter analysis by p-value threshold (\u03BB)",
                   x = expression("\u03B2"[indicence]),
                   y = expression("\u03B2"[progression]),
-                  color = "Cluster") +
+                  color = "Cluster",
+                  size = "Cluster",
+                  alpha = "Cluster") +
     ggplot2::facet_grid(method ~ ip,
                         labeller = labeller(ip = ~ paste0("\u03BB = ", .x)),
                         scales = "free")

@@ -83,7 +83,7 @@ $$
 
 The values: $${\pi_{1}, \pi_{2}, \pi_{3}, \pi_{4}}$$ ... are the probabilities that a SNP belongs to the respective clusters.  
 
-The first thing to note is that we can filter out SNPs from cluster 3 and 4 by only including SNPs with a significant association (P-value) with incidence - this is the `ip` parameter. The problem is then reduced to finding two clusters that best fit distributions 1 and 2 of the equation above. The SlopeHunter EM algorithm iteratively determines which SNPs belong to each distribution (probabilistically) and once complete the adjustment factor (slope gradient) can be determined from group 1, i.e. only those SNPs thought to solely cause incidence.  
+The first thing to note is that we can filter out SNPs from cluster 3 and 4 by only including SNPs with a significant association (P-value) with incidence - this is the `ip` parameter. The problem is then reduced to finding two clusters that best fit distributions 1 and 2 of the equation above. The SlopeHunter EM algorithm iteratively determines which SNPs belong to each distribution and once complete the adjustment factor (slope gradient) can be determined from group 1, i.e. only those SNPs thought to solely cause incidence.  
 
 This function's code is adapted from the SlopeHunter R package and if using this method the SlopeHunter package should be referenced as the original source.
 
@@ -105,7 +105,7 @@ result <- slopehunter(gwas_i     = gwas_clumped_incidence,
                       ip         = 0.001,
                       pi0        = 0.6,
                       sxy1       = 1e-5,
-                      bootstraps = 100)
+                      bootstraps = 0)
 
 str(result)
 ```
@@ -118,7 +118,7 @@ We can visualise the iterative EM algorithm like so. The variants are allocated 
 ```{r plot_gif, eval=FALSE}
 p <- plot_slopehunter_iters(gwas_i = gwas_clumped_incidence,
                             gwas_p = gwas_progression,
-                            ip     = 0.0001,
+                            ip     = 0.001,
                             pi0    = 0.6,
                             sxy1   = 1e-5,
                             x_lims = c(-0.2, 0.2), 
@@ -133,7 +133,35 @@ gganimate::anim_save("figures/slopehunter.gif")
 knitr::include_graphics("figures/slopehunter.gif")
 ```
 
-## Overall assessment
+## The b-slope
+In the expectation (E) part of the Slope-hunter algorithm we initially set the covariance matrix of the first component:
+$$
+\color{#F8766D}{
+  \pi_{1}N
+  \begin{pmatrix}
+  \underline{0},
+  \begin{bmatrix}
+  \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} \\
+  b_1\sigma_{I}^{2} & b_{1}^{2}\sigma_{I}^{2} \\
+  \end{bmatrix}
+  \end{pmatrix}}
+$$
+The off-diagonal components are set to `sxy0 = sx0*sy0*dir0*0.95` where `sx0` and `sy0` are the standard deviations of the incidence and progression betas, respectively, and the `dir0` term is the `sign()` of the covariance - which is positive in this case:
+
+```{r show_cov, echo=FALSE, out.width="90%", fig.align='center', eval=TRUE, fig.cap="Cov(incidence, progression)"}
+knitr::include_graphics("figures/slopehunter_cov_x_y.png")
+```
+
+In the maximisation (M) step of the algorithm, we update `dir0` as the `sign()` of `sum(pt*xbeta*ybeta)/sum(pt)`. `pt` is a positive array and so the sign depends on the relative proportions of negatives and positive of the product of `xbeta` and `ybeta`. This is positive in our case, as visualised in this histogram: 
+
+```{r show_product, echo=FALSE, out.width="90%", fig.align='center', eval=TRUE, fig.cap="product(incidence, progression)"}
+knitr::include_graphics("figures/slopehunter_product_x_y.png")
+```
+
+The effect, I believe, is that a positive slope is maintained at each iteration of the algorithm.
+
+
+## Overall assessment - multiple methods
 
 The algorithms can be sensitive to the incidence p-value threshold `ip`. Too high and null variants without any effect on incidence will be included. Too low and variants will small, but potentially significant, effects on incidence will be removed. It is a good idea to investigate the stability of the adjustment factor estimate to difference in `ip` threshold.
 
@@ -152,7 +180,8 @@ We can use the `analyse_collider_bias()` function to run all combinations of met
 results <- analyse_collider_bias(gwas_i = gwas_clumped_incidence,
                                  gwas_p = gwas_progression,
                                  merge  = c("CHR"="CHR", "BP"="BP"),
-                                 methods= c("slopehunter", "ivw_mr_collider_bias", "dudbridge"),
+                                 methods= c("slopehunter","mr_collider_bias","dudbridge"),
+                                 tsmr_method = c("mr_ivw","mr_egger_regression","mr_simple_median","mr_simple_mode"),
                                  ip     = c(0.01,0.001,0.0001,0.00001,0.000001,0.0000001),
                                  pi0    = c(0.6),
                                  sxy1   = c(1e-05),
@@ -203,8 +232,8 @@ gwas_incidence <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_
 corrected_gwas <- apply_collider_correction(gwas_i = gwas_incidence, 
                                             gwas_p = gwas_progression,
                                             merge  = c("CHR"="CHR", "BP"="BP"),
-                                            b_correction_factor = -0.6558253,
-                                            b_std_err = 0.09785357)
+                                            b_correction_factor = 0.6473,
+                                            b_std_err = 0.2162)
 
 # calculate difference in raw and adjusted betas; and effect on genome wide significance
 corrected_gwas[, beta_diff := BETA_progression - adjusted_beta]

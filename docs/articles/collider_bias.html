@@ -177,10 +177,9 @@ and 4 by only including SNPs with a significant association (P-value)
 with incidence - this is the <code>ip</code> parameter. The problem is
 then reduced to finding two clusters that best fit distributions 1 and 2
 of the equation above. The SlopeHunter EM algorithm iteratively
-determines which SNPs belong to each distribution (probabilistically)
-and once complete the adjustment factor (slope gradient) can be
-determined from group 1, i.e. only those SNPs thought to solely cause
-incidence.</p>
+determines which SNPs belong to each distribution and once complete the
+adjustment factor (slope gradient) can be determined from group 1,
+i.e. only those SNPs thought to solely cause incidence.</p>
 <p>This function’s code is adapted from the SlopeHunter R package and if
 using this method the SlopeHunter package should be referenced as the
 original source.</p>
@@ -213,7 +212,7 @@ samples in the case below.</p>
 <span>                      ip         <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>                      pi0        <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>                      sxy1       <span class="op">=</span> <span class="fl">1e-5</span>,</span>
-<span>                      bootstraps <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span>                      bootstraps <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -232,7 +231,7 @@ reassigned to either cluster 1 or 2, until the model converges.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter_iters.html">plot_slopehunter_iters</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                            gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
-<span>                            ip     <span class="op">=</span> <span class="fl">0.0001</span>,</span>
+<span>                            ip     <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>                            pi0    <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>                            sxy1   <span class="op">=</span> <span class="fl">1e-5</span>,</span>
 <span>                            x_lims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span><span class="op">)</span>, </span>
@@ -243,7 +242,47 @@ reassigned to either cluster 1 or 2, until the model converges.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="overall-assessment">Overall assessment<a class="anchor" aria-label="anchor" href="#overall-assessment"></a>
+<h2 id="the-b-slope">The b-slope<a class="anchor" aria-label="anchor" href="#the-b-slope"></a>
+</h2>
+<p>In the expectation (E) part of the Slope-hunter algorithm we
+initially set the covariance matrix of the first component: <span class="math display">\[
+\color{#F8766D}{
+  \pi_{1}N
+  \begin{pmatrix}
+  \underline{0},
+  \begin{bmatrix}
+  \sigma_{I}^{2} &amp; b_{1}\sigma_{I}^{2} \\
+  b_1\sigma_{I}^{2} &amp; b_{1}^{2}\sigma_{I}^{2} \\
+  \end{bmatrix}
+  \end{pmatrix}}
+\]</span> The off-diagonal components are set to
+<code>sxy0 = sx0*sy0*dir0*0.95</code> where <code>sx0</code> and
+<code>sy0</code> are the standard deviations of the incidence and
+progression betas, respectively, and the <code>dir0</code> term is the
+<code><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign()</a></code> of the covariance - which is positive in this
+case:</p>
+<div class="figure" style="text-align: center">
+<img src="figures/slopehunter_cov_x_y.png" alt="Cov(incidence, progression)" width="90%"><p class="caption">
+Cov(incidence, progression)
+</p>
+</div>
+<p>In the maximisation (M) step of the algorithm, we update
+<code>dir0</code> as the <code><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign()</a></code> of
+<code>sum(pt*xbeta*ybeta)/sum(pt)</code>. <code>pt</code> is a positive
+array and so the sign depends on the relative proportions of negatives
+and positive of the product of <code>xbeta</code> and
+<code>ybeta</code>. This is positive in our case, as visualised in this
+histogram:</p>
+<div class="figure" style="text-align: center">
+<img src="figures/slopehunter_product_x_y.png" alt="product(incidence, progression)" width="90%"><p class="caption">
+product(incidence, progression)
+</p>
+</div>
+<p>The effect, I believe, is that a positive slope is maintained at each
+iteration of the algorithm.</p>
+</div>
+<div class="section level2">
+<h2 id="overall-assessment---multiple-methods">Overall assessment - multiple methods<a class="anchor" aria-label="anchor" href="#overall-assessment---multiple-methods"></a>
 </h2>
 <p>The algorithms can be sensitive to the incidence p-value threshold
 <code>ip</code>. Too high and null variants without any effect on
@@ -271,7 +310,8 @@ b-slope with different p-values (<code>ip</code>).</p>
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse_collider_bias.html">analyse_collider_bias</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                                 gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
 <span>                                 merge  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>, <span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span>,</span>
-<span>                                 methods<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slopehunter"</span>, <span class="st">"ivw_mr_collider_bias"</span>, <span class="st">"dudbridge"</span><span class="op">)</span>,</span>
+<span>                                 methods<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slopehunter"</span>,<span class="st">"mr_collider_bias"</span>,<span class="st">"dudbridge"</span><span class="op">)</span>,</span>
+<span>                                 tsmr_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mr_ivw"</span>,<span class="st">"mr_egger_regression"</span>,<span class="st">"mr_simple_median"</span>,<span class="st">"mr_simple_mode"</span><span class="op">)</span>,</span>
 <span>                                 ip     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>,<span class="fl">0.001</span>,<span class="fl">0.0001</span>,<span class="fl">0.00001</span>,<span class="fl">0.000001</span>,<span class="fl">0.0000001</span><span class="op">)</span>,</span>
 <span>                                 pi0    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.6</span><span class="op">)</span>,</span>
 <span>                                 sxy1   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-05</span><span class="op">)</span>,</span>
@@ -303,8 +343,8 @@ and progression datasets (the harmonised dataset).</p>
 <span><span class="va">corrected_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_collider_correction.html">apply_collider_correction</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_incidence</span>, </span>
 <span>                                            gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
 <span>                                            merge  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>, <span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span>,</span>
-<span>                                            b_correction_factor <span class="op">=</span> <span class="op">-</span><span class="fl">0.6558253</span>,</span>
-<span>                                            b_std_err <span class="op">=</span> <span class="fl">0.09785357</span><span class="op">)</span></span>
+<span>                                            b_correction_factor <span class="op">=</span> <span class="fl">0.6473</span>,</span>
+<span>                                            b_std_err <span class="op">=</span> <span class="fl">0.2162</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># calculate difference in raw and adjusted betas; and effect on genome wide significance</span></span>
 <span><span class="va">corrected_gwas</span><span class="op">[</span>, <span class="va">beta_diff</span> <span class="op">:=</span> <span class="va">BETA_progression</span> <span class="op">-</span> <span class="va">adjusted_beta</span><span class="op">]</span></span>
