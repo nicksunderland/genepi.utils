@@ -12,7 +12,7 @@ ColumnMapping <- function() {
     ieu_ukb     = list(SNP="SNP",BETA="BETA",SE="SE",EA="ALLELE1", OA="ALLELE0", EAF="A1FREQ", P="P_BOLT_LMM_INF"),
     ieugwasr    = list(RSID="rsid",CHR="chr",BP="position","EA"="ea",OA="nea",EAF="eaf",BETA="beta",SE="se", P="p", N="n"),
     ns_map      = list(SNP="MARKER",CHR="CHR",BP="POS",EA="A1", OA="A2", BETA="BETA", SE="SE", EAF="EAF", P="P"),
-    gwama       = list(SNP="rs_number",EA="reference_allele", OA="other_allele", BETA="beta", SE="se", EAF="eaf", P="p-value", BETA_95U="beta_95U",BETA_95L="beta_95L", Z="z", LOG10_P="_-log10_p-value", Q_STAT="q_statistic",I2="i2", N_STUDIES="n_studies", N="n_samples", EFFECTS="effects"),
+    gwama       = list(RSID="rs_number",CHR="chromosome",BP="position",EA="reference_allele", OA="other_allele", BETA="beta", SE="se", EAF="eaf", P="p-value", BETA_95U="beta_95U",BETA_95L="beta_95L", Z="z", LOG10_P="_-log10_p-value", Q_STAT="q_statistic",I2="i2", N_STUDIES="n_studies", N="n_samples", EFFECTS="effects"),
     giant       = list(RSID="SNP",SNP="missing",CHR="CHR", BP="POS","EA"="Tested_Allele", OA="Other_Allele", EAF="Freq_Tested_Allele", BETA="BETA", SE="SE", P="P", N="N", INFO="INFO")
   )
 

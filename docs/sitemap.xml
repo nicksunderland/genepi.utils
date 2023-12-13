@@ -139,6 +139,9 @@
     <loc>/reference/mr_collider_bias.html</loc>
   </url>
   <url>
+    <loc>/reference/plot_coloc_probabilities.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot_correction_stability.html</loc>
   </url>
   <url>
@@ -155,6 +158,9 @@
   </url>
   <url>
     <loc>/reference/plot_slopehunter_iters.html</loc>
+  </url>
+  <url>
+    <loc>/reference/qq_plot.html</loc>
   </url>
   <url>
     <loc>/reference/set_1000G_reference.html</loc>

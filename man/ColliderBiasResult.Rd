@@ -30,6 +30,8 @@ ColliderBiasResult(
 
 \item{b}{a numeric, the estimated correction factor}
 
+\item{intercept}{a numeric, the y slope intercept}
+
 \item{bse}{a numeric, the standard error of the correction factor}
 
 \item{entropy}{a numeric, the entropy - output from the Slope-hunter method}

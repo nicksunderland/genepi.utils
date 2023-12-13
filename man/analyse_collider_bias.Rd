@@ -27,6 +27,8 @@ analyse_collider_bias(
 
 \item{methods}{a character vector of collider bias method function names to run}
 
+\item{tsmr_method}{a string; a valid \code{TwoSampleMR::mr()} \code{method_list} parameter}
+
 \item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
 
 \item{pi0}{a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only}

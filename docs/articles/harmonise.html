@@ -111,7 +111,7 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
-<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="va">gwas1</span></span>
 <span></span>
 <span><span class="co"># ensure standard column names</span></span>
@@ -236,7 +236,7 @@ Analysis with downsampled GWAS of 100,000 variants
 <span><span class="va">gwas_incidence_path</span>   <span class="op">&lt;-</span> <span class="st">"/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz"</span></span>
 <span></span>
 <span><span class="co"># some GWAS data</span></span>
-<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">gwas_incidence_path</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
+<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">gwas_incidence_path</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
 <span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="va">gwas1</span></span>
 <span></span>
 <span><span class="co"># Slopehunter read in </span></span>

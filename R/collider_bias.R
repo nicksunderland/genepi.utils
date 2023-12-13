@@ -9,7 +9,9 @@
 #' @param bse a numeric, the standard error of the correction factor
 #' @param pi a numeric, the final Pi value, proportion of SNPs in the Gi SNP cluster
 #' @param fit a data.table, the raw points data for plotting table columns `c("SNP_incidence","BETA_incidence","BETA_progression","CLUSTER")`
+#' @param intercept a numeric, the y slope intercept
 #' @param entropy a numeric, the entropy - output from the Slope-hunter method
+#'
 #' @return an S3 object of class ColliderBiasResult
 #' @export
 #'
@@ -586,6 +588,7 @@ mr_collider_bias <- function(gwas_i,
 #' }
 #' ...will lead to 27 separate analyses. \cr
 #' @inheritParams slopehunter
+#' @inheritParams mr_collider_bias
 #' @param methods a character vector of collider bias method function names to run
 #' @return a list of S3 ColliderBiasResult objects
 #' @export
@@ -639,7 +642,7 @@ analyse_collider_bias <- function(gwas_i,
 plot_slope <- function(results) {
 
   # silence RCMD checks
-  BETA_incidence = BETA_progression = CLUSTER = hjustvar = vjustvar = xpos = ypos = label = slope = intercept = ip = NULL
+  BETA_incidence = BETA_progression = CLUSTER = hjustvar = vjustvar = xpos = ypos = label = slope = intercept = ip = hunted_snps_label = NULL
 
   # make list of one if a single ColliderBiasResult object
   if(inherits(results, "ColliderBiasResult")) {

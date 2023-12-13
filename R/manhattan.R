@@ -1,5 +1,5 @@
 # silence R CMD checks for data.table columns
-BETA = BP = CHR = P = SE = SNP = chr_len = tot = x = i.tot = highlight = NULL
+BETA = BP = CHR = P = SE = SNP = chr_len = tot = x = i.tot = highlight = secondary_highlight = NULL
 
 #' @title Manhattan plot
 #' @description
@@ -65,7 +65,7 @@ manhattan <- function(gwas,
   # annotate_snps = c("15:135277414[b37]G,T")
 
   # create factor from CHR
-  gwas[, "CHR" := as.factor(CHR)]
+  gwas[, "CHR" := factor(CHR, levels=c(as.character(1:25), setdiff(as.character(unique(CHR)), as.character(1:25))))]
 
   # down-sample the insignificant dots for plotting
   if(downsample > 0) {
@@ -118,26 +118,19 @@ manhattan <- function(gwas,
     )
 
   # add highlighted variants within requested kb BP window
-  if(!is.null(highlight_snps)) {
+  if(!is.null(highlight_snps) & length(highlight_snps)>0) {
     gwas[SNP %in% highlight_snps, highlight := TRUE]
     if(highlight_win > 0) {
       highlight_data <- gwas[SNP %in% highlight_snps, ]
       for(i in 1:nrow(highlight_data)) {
         bp <- highlight_data[[i, "BP"]]
         chr<- highlight_data[[i, "CHR"]]
-        gwas[BP > (bp - highlight_win*1000) & BP < (bp + highlight_win*1000) & CHR == chr, highlight := TRUE]
+        gwas[BP > (bp - highlight_win*1000) & BP < (bp + highlight_win*1000) & CHR == chr, secondary_highlight := TRUE]
       }
     }
     plot <- plot +
-      ggplot2::geom_point(data = gwas[highlight==TRUE, ], color=highlight_colour, shape=highlight_shape, alpha=highlight_alpha, size=1.5)
-  }
-
-  # add SNP label annotations
-  if(!is.null(annotate_snps)) {
-    gwas[SNP %in% annotate_snps, annotate := TRUE]
-    label_x_nudge <- max(gwas[["x"]], na.rm=TRUE) / 22
-    plot <- plot +
-      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=SNP), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
+      ggplot2::geom_point(data = gwas[secondary_highlight==TRUE, ], color=highlight_colour, fill=highlight_colour, alpha=highlight_alpha) +
+      ggplot2::geom_point(data = gwas[highlight==TRUE, ], color=highlight_colour, fill=highlight_colour, shape=highlight_shape, alpha=highlight_alpha, size=3)
   }
 
   # add horizontal significance lines
@@ -146,6 +139,14 @@ manhattan <- function(gwas,
   }
   if(!is.null(sig_line_2)) {
     plot <- plot + ggplot2::geom_hline(yintercept = -log10(sig_line_2), linetype = "dashed", color = "darkgrey")
+  }
+
+  # add SNP label annotations
+  if(!is.null(annotate_snps) & length(annotate_snps)>0) {
+    gwas[SNP %in% annotate_snps, annotate := TRUE]
+    label_x_nudge <- max(gwas[["x"]], na.rm=TRUE) / 22
+    plot <- plot +
+      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=SNP), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
   }
 
   # add titles and labels
@@ -262,12 +263,15 @@ miami <- function(gwases,
     if(!is.null(sig_line_2[[2]])) {
       max_p <- max(c(max_p, -log10(sig_line_2[[2]])),na.rm=T)
     }
-    y_limits <- c(ceiling(max_p), 0)
+    y_limits[[2]] <- c(ceiling(max_p), 0)
+  } else {
+    # user usually provides in the normal way c(0, upper)
+    y_limits[[2]] <- rev(y_limits[[2]])
   }
 
   # flip the bottom plot
   plot_lower <- plot_lower +
-    ggplot2::scale_y_reverse(limits=y_limits, expand=c(0, 0)) +
+    ggplot2::scale_y_reverse(limits=y_limits[[2]], expand=c(0, 0)) +
     ggplot2::scale_x_continuous(expand=c(0.01, 0.01), position = "top") +
     ggplot2::theme(axis.title.x=ggplot2::element_blank(),
                    axis.line.x=ggplot2::element_blank(),

@@ -69,33 +69,45 @@ clump <- function(gwas,
   # run clumping
   system(cmd)
 
-  # the clumped plink output
-  clumped <- data.table::fread(paste0(plink_output,".clumps"), nThread=parallel::detectCores())
+  # check for clump output
+  clump_path <- paste0(plink_output,".clumps")
 
-  # add index
-  clumped[, clump := seq_len(.N)]
+  if(file.exists(clump_path)) {
 
-  # pivot longer
-  clumped_long <- clumped[, list(clump_member = unlist(data.table::tstrsplit(SP2, ","))), by=c("ID","clump")]
+    # the clumped plink output
+    clumped <- data.table::fread(clump_path, nThread=parallel::detectCores())
 
-  # clean e.g. rs1763611(G) --> rs1763611
-  clumped_long[, clump_member := sub("(rs[0-9]+).*", "\\1", clump_member)]
+    # add index
+    clumped[, clump := seq_len(.N)]
 
-  # set the key
-  data.table::setkey(clumped_long, ID)
-  data.table::setkey(gwas, RSID)
+    # pivot longer
+    clumped_long <- clumped[, list(clump_member = unlist(data.table::tstrsplit(SP2, ","))), by=c("ID","clump")]
 
-  # flag the index SNPs with TRUE and the clump number
-  gwas[clumped_long, c("index","clump") := list(TRUE, clump)]
+    # clean e.g. rs1763611(G) --> rs1763611
+    clumped_long[, clump_member := sub("(rs[0-9]+).*", "\\1", clump_member)]
 
-  # set key to the clump member rsID to join again
-  data.table::setkey(clumped_long, clump_member)
+    # set the key
+    data.table::setkey(clumped_long, ID)
+    data.table::setkey(gwas, RSID)
 
-  # flag the clump members as not the index SNP and with the clump number
-  gwas[clumped_long, c("index", "clump") := list(FALSE, i.clump)]
+    # flag the index SNPs with TRUE and the clump number
+    gwas[clumped_long, c("index","clump") := list(TRUE, clump)]
 
-  # code clump as a factor
-  gwas[, clump := factor(clump, levels=sort(unique(gwas$clump)))]
+    # set key to the clump member rsID to join again
+    data.table::setkey(clumped_long, clump_member)
+
+    # flag the clump members as not the index SNP and with the clump number
+    gwas[clumped_long, c("index", "clump") := list(FALSE, i.clump)]
+
+    # code clump as a factor
+    gwas[, clump := factor(clump, levels=sort(unique(gwas$clump)))]
+
+  } else {
+
+    warning("No clumps were found witht he provided parameters, or plink failed")
+    gwas[, c("index", "clump") := list(FALSE, NA_integer_)]
+
+  }
 
   # the (potential) plink clumping log files that might be produced
   # TODO: check if there are others

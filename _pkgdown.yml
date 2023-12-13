@@ -56,8 +56,10 @@ reference:
   contents:
   - manhattan
   - miami
+  - qq_plot
   - eaf_plot
   - generate_random_gwas_data
+  - plot_coloc_probabilities
 
 - title: "Setup"
   desc: >
