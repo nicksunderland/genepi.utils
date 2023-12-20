@@ -50,7 +50,8 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
   # report loss of variants
   if(nrow(h)==0) {
 
-    stop("No matching variants between gwas inputs")
+    warning("No matching variants between gwas inputs")
+    return(NULL)
 
   } else if(nrow(h) != nrow(gwas1) | nrow(h) != nrow(gwas2)) {
 

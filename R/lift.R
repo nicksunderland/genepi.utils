@@ -26,7 +26,8 @@ lift <- function(gwas,
                  chr_col = "chr",
                  pos_col = "pos",
                  ea_col  = "ea",
-                 oa_col  = "oa")
+                 oa_col  = "oa",
+                 remove_duplicates = TRUE)
 {
 
   #TODO: try to remove dependencies GenomicRanges IRanges
@@ -82,7 +83,7 @@ lift <- function(gwas,
   message("Reordering")
   data.table::setkeyv(gwas, c(chr_col, pos_col))
 
-  if(!is.null(ea_col) & !is.null(oa_col))
+  if(!is.null(ea_col) & !is.null(oa_col) & remove_duplicates)
   {
     message("Removing duplicates")
     gwas <- unique(gwas, by=c(chr_col, pos_col, ea_col, oa_col))
