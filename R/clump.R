@@ -49,7 +49,7 @@ clump <- function(gwas,
   # write the data out; plink wants A1/A2 coding
   data.table::setnames(gwas, c("EA","OA"), c("A1","A2"))
   gwas[, c("SNP", "SNP_store") := list(RSID, SNP)]
-  data.table::fwrite(gwas, plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
+  data.table::fwrite(gwas[, list(SNP,A1,A2,P)] , plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
 
   # revert coding now it's written out
   data.table::setnames(gwas, c("A1","A2"), c("EA","OA"))

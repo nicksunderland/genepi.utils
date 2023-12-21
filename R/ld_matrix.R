@@ -40,7 +40,7 @@ ld_matrix <- function(variants,
   data.table::setnames(allele_info, names(allele_info), c("RSID","CHR","BP","REF","ALT"))
 
   # output files
-  plink_output_ldmat <- "/Users/xx20081/Downloads/ld_mat" # tempfile()
+  plink_output_ldmat <- tempfile()
 
   # build command line command
   cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
