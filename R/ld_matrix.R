@@ -109,7 +109,8 @@ harmonise_ld_dat <- function(harm, ld_mat, gwas1_trait="", gwas2_trait="") {
   n_harm <- nrow(harm)
 
   # trim harmonised data by variants with LD info
-  harm <- harm[allele_info, on=c(RSID_exposure="RSID_LD"), nomatch=NULL]
+  join_cols <- c("RSID_LD"=RSID_exposure)
+  harm <- allele_info[harm, on=c(RSID_exposure="RSID_LD"), nomatch=NULL]
 
   # report
   if(n_harm < nrow(harm)) {
