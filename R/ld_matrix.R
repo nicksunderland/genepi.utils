@@ -23,7 +23,7 @@ ld_matrix <- function(variants,
   stopifnot("At least column(s) RSID must be present in the `variants`" = all(c("RSID") %in% colnames(variants)))
 
   # output allele file
-  plink_output_alleles <- "/Users/xx20081/Downloads/alleles" # tempfile()
+  plink_output_alleles <- tempfile() #"/Users/xx20081/Downloads/alleles" #
 
   # build command line command
   cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
@@ -97,7 +97,7 @@ harmonise_ld_dat <- function(harm, ld_mat, gwas1_trait="", gwas2_trait="") {
   EAF_outcome   <- paste0("EAF_",gwas2_trait)
 
   # checks
-  stopifnot("RSIDs in `ld_mat` not present in harmonised data" = all(colnames(ld_mat) %in% harm$RSID_exposure))
+  stopifnot("RSIDs in `ld_mat` not present in harmonised data" = all(colnames(ld_mat) %in% harm[,get(RSID_exposure)]))
 
   # LD allele data
   allele_info <- attr(ld_mat, "allele_info") |> data.table::as.data.table()
