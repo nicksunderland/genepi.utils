@@ -6,22 +6,21 @@
 \usage{
 ld_matrix(
   variants,
+  with_alleles = TRUE,
   plink2 = genepi.utils::which_plink2(),
-  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37"),
-  logging = TRUE
+  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37")
 )
 }
 \arguments{
-\item{variants}{data.frame like object, or file path, with at least column \code{RSID}}
+\item{variants}{data.frame like object, or file path, with at least column \code{RSID}; if columns \code{EA},\code{OA},\code{BETA},\code{EAF} are provided then the variants
+will be return harmonised to the reference panel (effect allele, data = major allele, reference)}
 
 \item{plink2}{a string, path to the plink executable}
 
 \item{plink_ref}{a string, path to the pfile genome reference}
-
-\item{logging}{a logical, whether to set the plink logging information as attributes (\code{log}, \code{missing_id}, \code{missing_allele}) on the returned data.table}
 }
 \value{
-an LD matrix
+an LD matrix if only variants provided, else if alleles provided a list(dat=harmonised data, ld_mat=ld_matrix)
 }
 \description{
 Based on the ieugwasr function (see reference)

@@ -55,12 +55,18 @@ clump <- function(gwas,
   data.table::setnames(gwas, c("A1","A2"), c("EA","OA"))
   gwas[, c("SNP", "SNP_store") := list(SNP_store, NULL)]
 
+  # see if using compressed files
+  if(file.exists(paste0(plink_ref,".pvar.zst"))) {
+    compressed_plink = TRUE
+  } else {
+    compressed_plink = FALSE
+  }
+
   # build command line command
   cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
-               "--pfile", plink_ref,
+               "--pfile", ifelse(compressed_plink, paste(plink_ref, "vzs"), plink_ref),
                "--clump", plink_input,
                "--out", plink_output,
-               # "--clump-annotate A1,OR",
                "--clump-p1", p1,
                "--clump-p2", p2,
                "--clump-r2", r2,

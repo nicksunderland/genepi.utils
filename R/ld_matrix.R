@@ -2,155 +2,218 @@
 #' @description
 #' Based on the ieugwasr function (see reference)
 #' @references [ieugwasr::ld_matrix_local()](https://github.com/MRCIEU/ieugwasr/blob/33e4629f4dacd635c68e690bb5648de529c333cc/R/ld_matrix.R#L92C1-L92C16)
-#' @param variants data.frame like object, or file path, with at least column `RSID`
+#' @param variants data.frame like object, or file path, with at least column `RSID`; if columns `EA`,`OA`,`BETA`,`EAF` are provided then the variants
+#' will be return harmonised to the reference panel (effect allele, data = major allele, reference)
 #' @inheritParams clump
-#' @return an LD matrix
+#' @return an LD matrix if only variants provided, else if alleles provided a list(dat=harmonised data, ld_mat=ld_matrix)
 #' @export
 #'
-ld_matrix <- function(variants,
+ld_matrix <- function(dat,
                       plink2    = genepi.utils::which_plink2(),
-                      plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
-                      logging   = TRUE) {
+                      plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) {
 
-  # to data.table format
-  variants <- import_table(variants)
 
-  # write out the variants file
-  variants_file <- tempfile()
-  data.table::fwrite(variants[, "RSID"], variants_file, sep="\t", col.names=FALSE)
+  dat = readRDS("/Users/xx20081/Desktop/gwas.RDS")
+  plink2 = "/usr/local/plink/plink2"
+  plink_ref = "/Users/xx20081/git/TargetExplorerData/inst/extdata/references/ALL_1kGv3/ALL_1kGv3"
 
   # checks
-  stopifnot("At least column(s) RSID must be present in the `variants`" = all(c("RSID") %in% colnames(variants)))
+  stopifnot("dat must be a data.frame like object" = inherits(dat, "data.frame"))
+  stopifnot("At least column(s) RSID must be present in `dat`" = all(c("RSID") %in% colnames(dat)))
 
-  # output allele file
-  plink_output_alleles <- tempfile() #"/Users/xx20081/Downloads/alleles" #
-
-  # build command line command
-  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
-               "--pfile", plink_ref,
-               "--extract", variants_file,
-               "--make-just-pvar",
-               "--out", plink_output_alleles)
-
-  # run clumping
-  system(cmd)
-
-  # the pvar file
-  allele_info <- data.table::fread(paste0(plink_output_alleles,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID","#CHROM","POS","REF","ALT"))
-  data.table::setnames(allele_info, names(allele_info), c("RSID","CHR","BP","REF","ALT"))
-
-  # output files
-  plink_output_ldmat <- tempfile()
-
-  # build command line command
-  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
-               "--pfile", plink_ref,
-               "--extract", variants_file,
-               "--r-phased square",
-               "--out", plink_output_ldmat)
-
-  # run clumping
-  system(cmd)
-
-  # the ld mat file
-  ld_mat     <- data.table::fread(paste0(plink_output_ldmat,".phased.vcor1"), sep="\t", header=FALSE)
-  ld_mat_ids <- data.table::fread(paste0(plink_output_ldmat,".phased.vcor1.vars"), sep="\t", header=FALSE) |> `colnames<-`("RSID")
-  ld_mat     <- as.matrix(ld_mat, rownames=ld_mat_ids$RSID) |> `colnames<-`(ld_mat_ids$RSID)
-
-  # logging info
-  if(logging) {
-    attr(ld_mat, "log") <- paste(readLines(paste0(plink_output_ldmat,".log")), collapse="\n")
+  # remove variants with problematic rsid coding
+  correct_rsid <- grepl("^rs[0-9]+$", trimws(dat$RSID))
+  if(sum(!correct_rsid) > 0) {
+    warning("[-] ", sum(!correct_rsid), " data rows removed due to incorrect RSIDs coding")
+    dat <- dat[correct_rsid, ]
   }
 
-  # add allele info
-  attr(ld_mat, "allele_info") <- as.data.frame(allele_info)
+  # extract the variants and allele information from the reference file
+  alleles <- get_ref_allele_info(dat$RSID, plink2, plink_ref)
 
-  # return the matrix
-  return(ld_mat)
+  # get the LD matrix
+  ld_mat  <- get_ld_matrix_values(dat$RSID, plink2, plink_ref)
+
+  # the extracted alleles may contain multi-allelic variants, so index from the matrix to match all the variants
+  ld_mat <- ld_mat[alleles$RSID, alleles$RSID]
+
+  # now rename with the allele appended RSIDs
+  colnames(ld_mat) <- rownames(ld_mat) <- alleles$RSID_allele
+
+  # if EA and OA columns provided, then assume we are harmonising a gwas dataset
+  if(!all(c("EA","OA","BETA","EAF") %in% names(dat))) {
+
+    message("ld_matrix(): no variant alleles provided, returning LD matrix")
+    return(ld_mat)
+
+  } else {
+
+    message("ld_matrix(): variant alleles provided, returning harmonised data and LD matrix object")
+
+    # join the LD allele columns - both ways
+    dat[alleles, c("LD_REF","LD_ALT","LD_RSID_allele") := list(i.REF, i.ALT, i.RSID_allele), on=c("RSID"="RSID","EA"="REF","OA"="ALT")]
+    dat[alleles, c("LD_REF","LD_ALT","LD_RSID_allele") := list(i.REF, i.ALT, i.RSID_allele), on=c("RSID"="RSID","OA"="REF","EA"="ALT")]
+
+    # report & remove
+    if(sum(is.na(dat$LD_REF)) > 0) {
+      message("[-] ", sum(is.na(dat$LD_REF)), " data rows removed during harmonisation, as RSIDs not found in LD reference")
+      print(dat[is.na(LD_REF), ])
+    }
+    dat <- dat[!is.na(LD_REF), ]
+
+    # flag appropriate alleles
+    dat[, keep_ld := (EA==LD_REF & OA==LD_ALT) | # correct
+          (EA==LD_ALT & OA==LD_REF)]  # incorrect, but can be flipped
+
+    # report & remove
+    if(sum(!dat$keep_ld) > 0) {
+      message("[-] ", sum(!dat$keep_ld), " data rows removed during harmonisation, as alleles cannot be harmonised to LD reference")
+      print(dat[keep_ld==FALSE, ])
+    }
+    dat <- dat[keep_ld==TRUE, ]
+
+    # report
+    if(nrow(dat)==0) {
+      warning("[x] no SNPs could be aligned to the LD reference panel")
+      return(NULL)
+    }
+
+    # flipping
+    dat[, BETA := ifelse(EA != LD_REF, BETA*-1, BETA)]
+    dat[, EAF  := ifelse(EA != LD_REF, 1-EAF,   EAF )]
+    dat[, EA_exp_store := EA]
+    dat[, EA   := ifelse(EA           != LD_REF, OA,           EA)]
+    dat[, OA   := ifelse(EA_exp_store != LD_REF, EA_exp_store, OA)]
+    dat[, EA_exp_store := NULL]
+
+    # flag appropriate alleles
+    dat[, keep_ld := (EA==LD_REF & OA==LD_ALT)]
+
+    # check
+    if(any(!dat$keep_ld)) {
+      warning("error harmonising LD matrix")
+      return(NULL)
+    }
+
+    # order the LD matrix by the data
+    ld_mat <- ld_mat[dat$LD_RSID_allele, dat$LD_RSID_allele]
+
+    # clean up the dataset
+    dat[, c("LD_REF","LD_ALT","keep_ld") := NULL]
+
+    # return the harmonised data and LD matrix
+    return(list(dat=dat, ld_mat=ld_mat))
+  }
+
 }
 
 
-#' @title Re-harmonise against LD matrix reference alleles
-#' @description
-#' Based on the TwoSampleMR function (see reference)
-#' @references [TwoSampleMR::harmonise_ld_dat()](https://github.com/MRCIEU/TwoSampleMR/blob/cbd03e6ac58a81922248eb1265cb3ee36b9a76ce/R/other_formats.R#L76)
-#' @param harm a data.table, output from `harmonise()`
-#' @param ld_mat a matrix, output from `ld_matrix()`
-#' @inheritParams harmonise
-#' @return a two-element `list(harm=harm, ld_mat=ld_mat)`
-#' @export
+#' Title
 #'
-harmonise_ld_dat <- function(harm, ld_mat, gwas1_trait="", gwas2_trait="") {
-
-  # silence R CMD
-  ALT_LD = REF_LD = keep_ld = EA_exp_store = EA_out_store = NULL
-
-  # column names
-  RSID_exposure <- paste0("RSID_",gwas1_trait)
-  EA_exposure   <- paste0("EA_",gwas1_trait)
-  OA_exposure   <- paste0("OA_",gwas1_trait)
-  BETA_exposure <- paste0("BETA_",gwas1_trait)
-  EAF_exposure  <- paste0("EAF_",gwas1_trait)
-  EA_outcome    <- paste0("EA_",gwas2_trait)
-  OA_outcome    <- paste0("OA_",gwas2_trait)
-  BETA_outcome  <- paste0("BETA_",gwas2_trait)
-  EAF_outcome   <- paste0("EAF_",gwas2_trait)
+#' @param variants
+#' @param plink2
+#' @param plink_ref
+#'
+#' @return
+#' @noRd
+#'
+get_ref_allele_info <- function(variants,
+                                plink2    = genepi.utils::which_plink2(),
+                                plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) {
 
   # checks
-  stopifnot("RSIDs in `ld_mat` not present in harmonised data" = all(colnames(ld_mat) %in% harm[,get(RSID_exposure)]))
+  stopifnot("variants must be a character vector" = is.character(variants))
+  stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
 
-  # LD allele data
-  allele_info <- attr(ld_mat, "allele_info") |> data.table::as.data.table()
-  attr(ld_mat, "allele_info") <- NULL
-  attr(ld_mat, "log") <- NULL
-  data.table::setnames(allele_info, names(allele_info), paste0(names(allele_info),"_LD"))
+  # write out the variants file
+  variants_file <- tempfile()
+  data.table::fwrite(data.table::data.table(RSID=variants), variants_file, sep="\t", col.names=FALSE)
 
-  # size of harmonised set
-  n_harm <- nrow(harm)
+  # output allele file
+  alleles_file <- tempfile()
 
-  # trim harmonised data by variants with LD info
-  join_cols <- c("RSID_LD"=RSID_exposure)
-  harm <- allele_info[harm, on=c(RSID_exposure="RSID_LD"), nomatch=NULL]
-
-  # report
-  if(n_harm < nrow(harm)) {
-    message("[-] ", n_harm-nrow(harm), " harmonised rows removed as RSIDs not found in `ld_mat` allele information")
+  # see if using compressed files
+  if(file.exists(paste0(plink_ref,".pvar.zst"))) {
+    compressed_plink = TRUE
+  } else {
+    compressed_plink = FALSE
   }
 
-  # flag appropriate way round alleles
-  harm[, keep_ld := (get("EA_exposure")==ALT_LD & get("OA_exposure")==REF_LD) | # correct
-                    (get("EA_exposure")==REF_LD & get("OA_exposure")==ALT_LD)]  # incorrect, but can be flipped
+  # build command line command and run
+  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
+               "--pfile", ifelse(compressed_plink, paste(plink_ref, "vzs"), plink_ref),
+               "--extract", variants_file,
+               "--make-just-pvar",
+               "--keep-allele-order",
+               "--set-missing-var-ids @:#_$r_$a",
+               "--out", alleles_file)
+  system(cmd)
 
-  # report
-  if(any(!harm$keep_ld)) {
-    message("[x] no SNPs could be aligned to the LD reference panel")
-    return(NULL)
+  # read in the extracted alleles file
+  alleles <- data.table::fread(paste0(alleles_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID","#CHROM","POS","REF","ALT"))
+  data.table::setnames(alleles, names(alleles), c("RSID","CHR","BP","REF","ALT"))
+
+  # some reference files give the ALT allele as comma separated alternate allele options - expand to extra rows
+  alleles <- alleles[, list(RSID,CHR,BP,REF,ALT=unlist(strsplit(ALT, ",", fixed=TRUE))), by=seq_len(nrow(alleles))]
+  alleles[, seq_len := NULL]
+  alleles[, RSID_allele := paste0(RSID,"_",ALT,"_",REF)]
+
+  # return alleles data.table
+  return(alleles)
+}
+
+
+
+#' Title
+#'
+#' @param variants
+#' @param plink2
+#' @param plink_ref
+#'
+#' @return
+#' @noRd
+#'
+get_ld_matrix_values <- function(variants,
+                                 plink2    = genepi.utils::which_plink2(),
+                                 plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) {
+
+  # checks
+  stopifnot("variants must be a character vector" = is.character(variants))
+  stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
+
+  # write out the variants file
+  variants_file <- tempfile()
+  data.table::fwrite(data.table::data.table(RSID=variants), variants_file, sep="\t", col.names=FALSE)
+
+  # output allele file
+  alleles_file <- tempfile()
+
+  # see if using compressed files
+  if(file.exists(paste0(plink_ref,".pvar.zst"))) {
+    compressed_plink = TRUE
+  } else {
+    compressed_plink = FALSE
   }
 
-  # flipping exposure
-  harm[, (BETA_exposure) := ifelse(get("EA_exposure") != ALT_LD, get("BETA_exposure")*-1, get("BETA_exposure"))]
-  harm[, (EAF_exposure)  := ifelse(get("EA_outcome") != ALT_LD, 1-get("EAF_exposure"),    get("EAF_exposure"))]
-  harm[, EA_exp_store := get("EA_exposure")]
-  harm[, (EA_exposure) := ifelse(get("EA_exposure") != ALT_LD, get("OA_exposure"),  get("EA_exposure"))]
-  harm[, (OA_exposure) := ifelse(EA_exp_store != ALT_LD,       get("EA_exp_store"), get("OA_exposure"))]
-  harm[, EA_exp_store := NULL]
+  # create and run the LD matrix plink2 function
+  plink_ldmat <- tempfile()
+  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
+               "--pfile", ifelse(compressed_plink, paste(plink_ref, "vzs"), plink_ref),
+               "--extract", variants_file,
+               "--keep-allele-order ",
+               "--r-phased square",
+               "--out", plink_ldmat)
+  system(cmd)
 
-  # flipping outcome
-  harm[, (BETA_outcome)  := ifelse(get("EA_outcome") != ALT_LD, get("BETA_outcome")*-1,  get("BETA_outcome"))]
-  harm[, (EAF_outcome)  := ifelse(get("EA_outcome") != ALT_LD, 1-get("EAF_outcome"),     get("EAF_outcome"))]
-  harm[, EA_out_store := get("EA_outcome")]
-  harm[, (EA_outcome) := ifelse(get("EA_outcome") != ALT_LD, get("OA_outcome"),  get("EA_outcome"))]
-  harm[, (OA_outcome) := ifelse(EA_out_store != ALT_LD,      get("EA_out_store"), get("OA_outcome"))]
-  harm[, EA_out_store := NULL]
+  # read in the LD matrix data
+  ld_mat <- data.table::fread(paste0(plink_ldmat,".phased.vcor1"), sep="\t", header=FALSE) |> as.matrix()
 
-  # remove
-  if(any(!harm$keep_ld)) {
-    message("[-] ", sum(!harm$keep_ld), " variants removed due to harmonisation issues")
-    ld_mat <- ld_mat[harm$keep_ld, harm$keep_ld]
-    harm <- harm[keep_ld==TRUE, ]
-  }
+  # read in the LD matrix variant rsids
+  ld_mat_ids <- data.table::fread(paste0(plink_ldmat,".phased.vcor1.vars"), sep="\t", header=FALSE) |> `colnames<-`("RSID")
 
-  # return
-  return(list(harm=harm, ld_mat=ld_mat))
+  # name the matrix
+  colnames(ld_mat) <- rownames(ld_mat) <- ld_mat_ids$RSID
 
+  # return the matrix
+  return(ld_mat)
 }

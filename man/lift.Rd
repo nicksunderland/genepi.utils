@@ -12,7 +12,8 @@ lift(
   chr_col = "chr",
   pos_col = "pos",
   ea_col = "ea",
-  oa_col = "oa"
+  oa_col = "oa",
+  remove_duplicates = TRUE
 )
 }
 \arguments{
