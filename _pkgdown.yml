@@ -19,7 +19,7 @@ reference:
   - clump
   - harmonise
   - ld_matrix
-  - harmonise_ld_dat
+  - download_ukbb_ld
 
 - title: "RSID mapping"
   desc: >
@@ -31,16 +31,16 @@ reference:
   desc: >
     Functions for analysing collider / index event bias and adjust GWAS data for this bias.
   contents:
-  - analyse_collider_bias
-  - slopehunter
-  - dudbridge
-  - mr_collider_bias
-  - apply_collider_correction
-  - plot_slope
-  - plot_correction_stability
-  - plot_slopehunter_iters
   - ColliderBiasResult
   - collider_results_to_data_table
+  - slopehunter
+  - apply_collider_correction
+  - dudbridge
+  - mr_collider_bias
+  - analyse_collider_bias
+  - plot_slope
+  - plot_slopehunter_iters
+  - plot_correction_stability
 
 - title: "Drug target proxies"
   desc: >

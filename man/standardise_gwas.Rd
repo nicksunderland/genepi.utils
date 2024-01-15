@@ -11,10 +11,10 @@ standardise_gwas(
   fill = FALSE,
   build = "GRCh37",
   populate_rsid = FALSE,
-  filters = list(BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 10", P_invalid =
+  filters = list(BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 20", P_invalid =
     "!is.infinite(P)", SE_invalid = "!is.infinite(SE)", CHR_missing = "!is.na(CHR)",
     BP_missing = "!is.na(BP)", BETA_missing = "!is.na(BETA)", SE_missing = "!is.na(SE)",
-    P_missing = "!is.na(P)", EAF_missing = "!is.na(P)")
+    P_missing = "!is.na(P)", EAF_missing = "!is.na(EAF)")
 )
 }
 \arguments{

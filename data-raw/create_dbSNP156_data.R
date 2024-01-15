@@ -11,9 +11,9 @@
 # The Data:
 # https://www.ncbi.nlm.nih.gov/projects/SNP/docs/dbSNP_VCF_Submission.pdf
 # download:
-#     https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz (hg37) or GCF_000001405.40 (hg38)
+#     https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz (hg37) or GCF_000001405.40 (hg38).
 # extract just the columns we want: (on the HPC load modules bcftools and samtools)
-#     bcftools query -f '%ID %CHROM %POS %REF %ALT\n' GCF_000001405.25.gz | gzip -c > snp156_extracted.vcf.gz
+#     bcftools query -f '%ID %CHROM %POS %REF %ALT\n' GCF_000001405.25.gz | gzip -c > snp156_extracted.vcf.gz (add FREQ=%INFO/FREQ if you want frequency info column)
 # rename to: snp156_extracted.vcf.gz.Z so that it works with zcat.... (?)
 # split into smaller files of 25M rows each
 #     gunzip -c snp156_extracted.vcf.gz | split -l 25000000 - split_file_

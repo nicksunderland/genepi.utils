@@ -5,19 +5,29 @@
 \title{Calculate LD matrix}
 \usage{
 ld_matrix(
-  variants,
-  with_alleles = TRUE,
+  dat,
+  colmap = NULL,
+  method = "r",
   plink2 = genepi.utils::which_plink2(),
-  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37")
+  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37"),
+  ukbb_ref = NULL
 )
 }
 \arguments{
-\item{variants}{data.frame like object, or file path, with at least column \code{RSID}; if columns \code{EA},\code{OA},\code{BETA},\code{EAF} are provided then the variants
+\item{dat}{data.frame like object, or file path, with at least column \code{RSID}; if columns \code{EA},\code{OA},\code{BETA},\code{EAF} are provided then the variants
 will be return harmonised to the reference panel (effect allele, data = major allele, reference)}
+
+\item{colmap}{a list, mapping to columns list(RSID=?,EA=?,OA=?,BETA=?,EAF=?) where ? can be a character vector in the case of harmonised datasets.
+Warning - it is assumed that harmonised datasets are indeed harmonised, if not, any unharmonised variants will be
+inappropriately removed.}
+
+\item{method}{a string, either \code{r} or \code{r2}}
 
 \item{plink2}{a string, path to the plink executable}
 
 \item{plink_ref}{a string, path to the pfile genome reference}
+
+\item{ukbb_ref}{path to a UKBB reference file}
 }
 \value{
 an LD matrix if only variants provided, else if alleles provided a list(dat=harmonised data, ld_mat=ld_matrix)

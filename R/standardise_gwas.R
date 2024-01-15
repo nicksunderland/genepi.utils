@@ -24,7 +24,7 @@ standardise_gwas <- function(gwas,
                              build="GRCh37",
                              populate_rsid=FALSE,
                              filters = list(
-                               BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 10",
+                               BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 20",
                                P_invalid    = "!is.infinite(P)",
                                SE_invalid   = "!is.infinite(SE)",
                                CHR_missing  = "!is.na(CHR)",
@@ -32,7 +32,7 @@ standardise_gwas <- function(gwas,
                                BETA_missing = "!is.na(BETA)",
                                SE_missing   = "!is.na(SE)",
                                P_missing    = "!is.na(P)",
-                               EAF_missing  = "!is.na(P)"
+                               EAF_missing  = "!is.na(EAF)"
                              )) {
 
   message("Standardising GWAS ...")
@@ -435,8 +435,7 @@ health_check <- function(gwas) {
 
     if (sum(invalid_pvals, na.rm=TRUE) > 0 | any(is.na(invalid_pvals))) {
       cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
-      warning(paste0("GWAS has ", sum(invalid_pvals), " P value(s) outside accepted range, please check your filter settings. Example:"))
-      print(gwas[which(invalid_pvals)[1], cols, with=FALSE])
+      warning(paste0("GWAS has ", sum(invalid_pvals), " P value(s) outside accepted range, please check your filter settings."))
     }
 
   } else {
@@ -453,8 +452,7 @@ health_check <- function(gwas) {
 
     if (sum(invalid_eaf, na.rm=T) > 0 | any(is.na(invalid_eaf))) {
       cols <- c("SNP","CHR","BP","EA","OA","EAF","BETA","SE","P")
-      warning(paste0("GWAS has ", sum(invalid_eaf), " EAF value(s) outside accepted range, please check your filter settings. Example:"))
-      print(gwas[which(invalid_eaf)[1], cols, with=FALSE])
+      warning(paste0("GWAS has ", sum(invalid_eaf), " EAF value(s) outside accepted range, please check your filter settings."))
     }
 
   } else {

@@ -7,10 +7,11 @@
 #' @param coloc coloc object, output from `coloc::coloc.abf()`
 #' @param rule a string, a valid rule indicating success e.g. "H4 > 0.5"
 #' @param type a string, either `prior` or `posterior`
+#' @param row an integer, row in a `coloc.susie` or `coloc.signals` object
 #' @return a ggplot
 #' @export
 #' @references [coloc](https://chr1swallace.github.io/coloc/articles/a04_sensitivity.html)
-plot_coloc_probabilities <- function(coloc, rule="H4 > 0.5", type="prior") {
+plot_coloc_probabilities <- function(coloc, rule="H4 > 0.5", type="prior", row=1) {
 
   # RCMD check warnings
   h <- x <- NULL
@@ -23,9 +24,20 @@ plot_coloc_probabilities <- function(coloc, rule="H4 > 0.5", type="prior") {
   rule.init <- rule
   rule <- gsub("(H.)","PP.\\1.abf",rule,perl=TRUE)
 
-  # extract the results
+  ## extract the results
+  # multiple signals?
+  if(data.table::is.data.table(coloc$summary)) {
+    if(!(row %in% 1:nrow(coloc$summary)))
+      stop("row must be between 1 and ",nrow(coloc$summary))
+    pp <- unlist(c(coloc$summary[row,grep("PP|nsnp",names(coloc$summary)),with=FALSE]))
+    if(paste0("SNP.PP.H4.row",row) %in% names(coloc$results)) {
+      coloc$results[["SNP.PP.H4"]] <- coloc$results[[paste0("SNP.PP.H4.row",row)]]
+    }
+    pp <- unlist(c(coloc$summary[row,grep("PP|nsnp",names(coloc$summary)),with=FALSE]))
+  } else {
+    pp <- coloc$summary
+  }
   results <- coloc$results
-  pp      <- coloc$summary
   p12     <- coloc$priors["p12"]
   p1      <- coloc$priors["p1"]
   p2      <- coloc$priors["p2"]
@@ -128,8 +140,9 @@ prior.adjust <- function(summ,newp12,p1=1e-4,p2=1e-4,p12=1e-6) {
 
 # copied from coloc package to make the above work
 prior.snp2hyp <- function(nsnp,p12=1e-6,p1=1e-4,p2=1e-4) {
-  if(any(p12<p1*p2) || any(p12 > p1) || any(p12 > p2))
-    return(NULL)
+  if(any(p12<p1*p2) || any(p12 > p1) || any(p12 > p2)) {
+    stop("Sensitivity plot input probability issue - ensure NOT `any(p12<p1*p2) || any(p12 > p1) || any(p12 > p2)`")
+  }
   tmp <- cbind(nsnp * p1,
                nsnp * p2,
                nsnp * (nsnp-1) * p1 * p2,

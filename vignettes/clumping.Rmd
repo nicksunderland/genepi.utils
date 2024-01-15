@@ -30,9 +30,9 @@ plink2 \
   --out all_phase3_nodup
 ```
 
-The path to your processed reference files (`path/to/plink_ref/all_phase3_nodup`) can be directly passed the the `clump()` function as the `plink_ref` argument, or, you can cofigure the path in the package by using `set_1000G_reference()` - this only needs to be done once per install. The currently set reference path can be queried with `which_1000G_reference()`.
+The path to your processed reference files (`path/to/plink_ref/all_phase3_nodup`) can be directly passed the the `clump()` function as the `plink_ref` argument, or, you can configure the path in the package by using `set_1000G_reference()` - this only needs to be done once per install. The currently set reference path can be queried with `which_1000G_reference()`.
 
-You will need PLINK2 installed on your computer. The `clump()` function takes a path to the plink executable as the `plink2` argument. Alternatively, you can cofigure the path in the package by using `set_plink2()` - this only needs to be done once per install. The currently set PLINK2 path can be queried with `which_plink2()`. If the `plink2` argument is set to `NULL` the function will attempt to call plink directly, equivalent of running `plink2 --options` directly in your command line.
+You will need PLINK2 installed on your computer. The `clump()` function takes a path to the plink executable as the `plink2` argument. Alternatively, you can configure the path in the package by using `set_plink2()` - this only needs to be done once per install. The currently set PLINK2 path can be queried with `which_plink2()`. If the `plink2` argument is set to `NULL` the function will attempt to call plink directly, equivalent of running `plink2 --options` directly in your command line.
 
 ```{r setup}
 library(genepi.utils)
@@ -68,7 +68,7 @@ clumped_gwas <- clump(gwas,
                       r2 = 0.1, 
                       kb = 250, 
                       plink2    = which_plink2(), 
-                      plink_ref = which_1000G_reference())
+                      plink_ref = which_1000G_reference(build="GRCh37"))
 
 # view result
 clumped_gwas[]

@@ -69,7 +69,6 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
 
   # indel recoding
   h <- recode_indels(h)
-  jinfo[['indel_kept']] <- sum(h$keep)
   jinfo[['indel_removed']] <- sum(!h$keep)
 
   # SNPs with alleles in 2 need to swap (e.g. A/C Vs. C/A)
@@ -108,7 +107,7 @@ harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progre
 
   # Any SNPs left with un-matching alleles (e.g. A/C Vs. A/G) need to be removed
   h[, OK   := alleles_ok(EA_1, OA_1, EA_2, OA_2)]
-  h[, keep := keep & OK & !palindromic]
+  h[, keep := keep & OK]  #& !palindromic]   --  should have to explicitly remove palindromics, and have keep represent just plain bad allele coding
 
   # recode SNP/chr:pos:allele ID string if this contains allele info i.e. capture things like:
   # 12:432412[b37]A,T

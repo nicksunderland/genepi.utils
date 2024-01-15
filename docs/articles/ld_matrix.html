@@ -120,7 +120,7 @@ vignette.</p>
 <span></span>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup"</span></span>
+<span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/EUR_1kGv3"</span></span>
 <span></span>
 <span><span class="co"># check path to plink2 executable</span></span>
 <span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -129,116 +129,85 @@ vignette.</p>
 <div class="section level2">
 <h2 id="ld-matrix">LD matrix<a class="anchor" aria-label="anchor" href="#ld-matrix"></a>
 </h2>
-<p>Generate the LD matrix.</p>
+<p>Generate the LD matrix. If we provide a GWAS data.table with the
+alleles then it will be harmonised with the LD matrix.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># produce LD matrix </span></span>
-<span><span class="va">ld_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ld_matrix.html">ld_matrix</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">9</span>, <span class="st">"RSID"</span><span class="op">]</span>,</span>
-<span>                    plink2    <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                    plink_ref <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span>build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># view result</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ld_mat</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            rs7899632 rs61875309 rs12258651 rs1359508 rs1048754 rs3750595</span></span>
-<span><span class="co">#&gt; rs7899632   1.000000  -0.352729   0.464422 -0.605224 -0.351842  0.999186</span></span>
-<span><span class="co">#&gt; rs61875309 -0.352729   1.000000  -0.163815 -0.273537  0.997485 -0.352442</span></span>
-<span><span class="co">#&gt; rs12258651  0.464422  -0.163815   1.000000 -0.281882 -0.163403  0.463646</span></span>
-<span><span class="co">#&gt; rs1359508  -0.605224  -0.273537  -0.281882  1.000000 -0.276556 -0.605593</span></span>
-<span><span class="co">#&gt; rs1048754  -0.351842   0.997485  -0.163403 -0.276556  1.000000 -0.351555</span></span>
-<span><span class="co">#&gt; rs3750595   0.999186  -0.352442   0.463646 -0.605593 -0.351555  1.000000</span></span>
-<span><span class="co">#&gt; rs2025625  -0.602476  -0.275604  -0.280205  0.994053 -0.274911 -0.602850</span></span>
-<span><span class="co">#&gt; rs10786405  0.989851  -0.349437   0.467642 -0.599557 -0.348558  0.990658</span></span>
-<span><span class="co">#&gt; rs11816998 -0.346224   0.984860  -0.158549 -0.270245  0.982267 -0.345940</span></span>
-<span><span class="co">#&gt;            rs2025625 rs10786405 rs11816998</span></span>
-<span><span class="co">#&gt; rs7899632  -0.602476   0.989851  -0.346224</span></span>
-<span><span class="co">#&gt; rs61875309 -0.275604  -0.349437   0.984860</span></span>
-<span><span class="co">#&gt; rs12258651 -0.280205   0.467642  -0.158549</span></span>
-<span><span class="co">#&gt; rs1359508   0.994053  -0.599557  -0.270245</span></span>
-<span><span class="co">#&gt; rs1048754  -0.274911  -0.348558   0.982267</span></span>
-<span><span class="co">#&gt; rs3750595  -0.602850   0.990658  -0.345940</span></span>
-<span><span class="co">#&gt; rs2025625   1.000000  -0.596843  -0.272363</span></span>
-<span><span class="co">#&gt; rs10786405 -0.596843   1.000000  -0.342968</span></span>
-<span><span class="co">#&gt; rs11816998 -0.272363  -0.342968   1.000000</span></span>
-<span><span class="co">#&gt; attr(,"log")</span></span>
-<span><span class="co">#&gt; [1] "PLINK v2.00a6 M1 (23 Nov 2023)\nOptions in effect:\n  --extract /var/folders/62/n2yrhw752hn73nlbzp0r0_rr0000gq/T//RtmpMT7NKD/filef95ea5e1593\n  --out /Users/xx20081/Downloads/ld_mat\n  --pfile /Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup\n  --r-phased square\n\nHostname: K3P0KGKVKT\nWorking directory: /Users/xx20081/git/genepi.utils/vignettes\nStart time: Wed Dec 13 20:45:51 2023\n\nRandom number seed: 1702500351\n98304 MiB RAM detected; reserving 49152 MiB for main workspace.\nUsing up to 12 threads (change this with --threads).\n2504 samples (1270 females, 1234 males; 2497 founders) loaded from\n/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup.psam.\n48493710 variants loaded from\n/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup.pvar.\n2 categorical phenotypes loaded.\n--extract: 9 variants remaining.\nCalculating allele frequencies... done.\n9 variants remaining after main filters.\n--r-phased: Variant IDs written to\n/Users/xx20081/Downloads/ld_mat.phased.vcor1.vars .\n--r-phased: Matrix written to /Users/xx20081/Downloads/ld_mat.phased.vcor1 .\n\nEnd time: Wed Dec 13 20:45:56 2023"</span></span>
-<span><span class="co">#&gt; attr(,"allele_info")</span></span>
-<span><span class="co">#&gt;         RSID CHR        BP REF ALT</span></span>
-<span><span class="co">#&gt; 1  rs7899632  10 100000625   A   G</span></span>
-<span><span class="co">#&gt; 2 rs61875309  10 100000645   A   C</span></span>
-<span><span class="co">#&gt; 3 rs12258651  10 100003242   T   G</span></span>
-<span><span class="co">#&gt; 4  rs1359508  10 100003785   T   C</span></span>
-<span><span class="co">#&gt; 5  rs1048754  10 100004360   G   A</span></span>
-<span><span class="co">#&gt; 6  rs3750595  10 100004906   C   A</span></span>
-<span><span class="co">#&gt; 7  rs2025625  10 100004996   G   A</span></span>
-<span><span class="co">#&gt; 8 rs10786405  10 100005282   C   T</span></span>
-<span><span class="co">#&gt; 9 rs11816998  10 100007362   G   C</span></span></code></pre></div>
+<span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ld_matrix.html">ld_matrix</a></span><span class="op">(</span><span class="va">gwas</span>,</span>
+<span>                 method    <span class="op">=</span> <span class="st">"r2"</span>,</span>
+<span>                 plink2    <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                 plink_ref <span class="op">=</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span>build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ld_matrix(): variant alleles provided, returning harmonised data and LD matrix object</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="harmonise-data-against-ld-matrix-alleles">Harmonise data against LD matrix alleles<a class="anchor" aria-label="anchor" href="#harmonise-data-against-ld-matrix-alleles"></a>
 </h2>
+<p>The previous command has harmonised the <code>gwas</code> input
+data.table to the LD alleles. The return value is a list with elements
+<code>dat</code> and <code>ld_mat</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># harmonised data </span></span>
-<span><span class="va">harm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas</span>, <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/copy.html" class="external-link">copy</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span>, gwas1_trait<span class="op">=</span><span class="st">"exposure"</span>, gwas2_trait<span class="op">=</span><span class="st">"outcome"</span>, merge<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RSID"</span><span class="op">=</span><span class="st">"RSID"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">obj</span><span class="op">[</span><span class="st">'dat'</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $dat</span></span>
+<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA       EAF   BETA    SE</span></span>
+<span><span class="co">#&gt;  1:  rs7899632 10:100000625[b37]A,G  10 100000625  A  G 0.9999290  0.037 0.137</span></span>
+<span><span class="co">#&gt;  2: rs61875309 10:100000645[b37]A,C  10 100000645  A  C 0.8790000 -0.045 0.173</span></span>
+<span><span class="co">#&gt;  3: rs12258651 10:100003242[b37]T,G  10 100003242  T  G 0.9999995  0.037 0.134</span></span>
+<span><span class="co">#&gt;  4:  rs1359508 10:100003785[b37]T,C  10 100003785  T  C 0.8450000  0.008 0.137</span></span>
+<span><span class="co">#&gt;  5:  rs1048754 10:100004360[b37]G,A  10 100004360  G  A 0.1620000 -0.045 0.134</span></span>
+<span><span class="co">#&gt;  6:  rs3750595 10:100004906[b37]C,A  10 100004906  C  A 0.2600000  0.037 0.173</span></span>
+<span><span class="co">#&gt;  7:  rs2025625 10:100004996[b37]G,A  10 100004996  G  A 1.0000000  0.008 0.137</span></span>
+<span><span class="co">#&gt;  8: rs10786405 10:100005282[b37]C,T  10 100005282  C  T 0.9990700  0.147 0.134</span></span>
+<span><span class="co">#&gt;  9: rs11816998 10:100007362[b37]G,C  10 100007362  G  C 0.9999184 -0.045 0.173</span></span>
+<span><span class="co">#&gt; 10:  rs3793692 10:100008436[b37]G,A  10 100008436  G  A 0.9990540  0.008 0.208</span></span>
+<span><span class="co">#&gt;         P LD_REF LD_ALT LD_RSID_allele</span></span>
+<span><span class="co">#&gt;  1: 0.781      A      G  rs7899632_A_G</span></span>
+<span><span class="co">#&gt;  2: 0.961      A      C rs61875309_A_C</span></span>
+<span><span class="co">#&gt;  3: 0.480      T      G rs12258651_T_G</span></span>
+<span><span class="co">#&gt;  4: 0.743      T      C  rs1359508_T_C</span></span>
+<span><span class="co">#&gt;  5: 0.961      G      A  rs1048754_G_A</span></span>
+<span><span class="co">#&gt;  6: 0.781      C      A  rs3750595_C_A</span></span>
+<span><span class="co">#&gt;  7: 0.743      G      A  rs2025625_G_A</span></span>
+<span><span class="co">#&gt;  8: 0.781      C      T rs10786405_C_T</span></span>
+<span><span class="co">#&gt;  9: 0.961      G      C rs11816998_G_C</span></span>
+<span><span class="co">#&gt; 10: 0.743      G      A  rs3793692_G_A</span></span>
 <span></span>
-<span><span class="co"># mess up the alleles vs reference</span></span>
-<span><span class="va">harm</span> <span class="op">&lt;-</span> <span class="va">harm</span><span class="op">[</span><span class="va">RSID_exposure</span><span class="op">==</span><span class="st">"rs7899632"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EA_exposure"</span>,<span class="st">"EA_outcome"</span>,<span class="st">"OA_exposure"</span>,<span class="st">"OA_outcome"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"G"</span>,<span class="st">"G"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">harm</span><span class="op">[</span><span class="va">RSID_exposure</span><span class="op">==</span><span class="st">"rs7899632"</span>, <span class="op">]</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt; Key: &lt;RSID_exposure&gt;</span></span>
-<span><span class="co">#&gt;            SNP_exposure          SNP_outcome CHR_exposure CHR_outcome</span></span>
-<span><span class="co">#&gt;                  &lt;char&gt;               &lt;char&gt;       &lt;char&gt;      &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1: 10:100000625[b37]A,G 10:100000625[b37]A,G           10          10</span></span>
-<span><span class="co">#&gt;    BP_exposure BP_outcome EA_exposure EA_outcome OA_exposure OA_outcome</span></span>
-<span><span class="co">#&gt;          &lt;int&gt;      &lt;int&gt;      &lt;char&gt;     &lt;char&gt;      &lt;char&gt;     &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1:   100000625  100000625           A          A           G          G</span></span>
-<span><span class="co">#&gt;    EAF_exposure EAF_outcome BETA_exposure BETA_outcome P_exposure P_outcome</span></span>
-<span><span class="co">#&gt;           &lt;num&gt;       &lt;num&gt;         &lt;num&gt;        &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:      7.1e-05     7.1e-05        -0.037       -0.037      0.781     0.781</span></span>
-<span><span class="co">#&gt;    palindromic   keep RSID_exposure SE_exposure SE_outcome RSID_outcome</span></span>
-<span><span class="co">#&gt;         &lt;lgcl&gt; &lt;lgcl&gt;        &lt;char&gt;       &lt;num&gt;      &lt;num&gt;       &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1:       FALSE   TRUE     rs7899632       0.137      0.137    rs7899632</span></span>
-<span></span>
-<span><span class="co"># re-harmonise</span></span>
-<span><span class="va">harm_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/harmonise_ld_dat.html">harmonise_ld_dat</a></span><span class="op">(</span><span class="va">harm</span>, <span class="va">ld_mat</span>, gwas1_trait<span class="op">=</span><span class="st">"exposure"</span>, gwas2_trait<span class="op">=</span><span class="st">"outcome"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># harmonised data</span></span>
-<span><span class="va">harm_result</span><span class="op">[[</span><span class="st">"harm"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">RSID_exposure</span><span class="op">==</span><span class="st">"rs7899632"</span>, <span class="op">]</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt;            SNP_exposure          SNP_outcome CHR_exposure CHR_outcome</span></span>
-<span><span class="co">#&gt;                  &lt;char&gt;               &lt;char&gt;       &lt;char&gt;      &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1: 10:100000625[b37]A,G 10:100000625[b37]A,G           10          10</span></span>
-<span><span class="co">#&gt;    BP_exposure BP_outcome EA_exposure EA_outcome OA_exposure OA_outcome</span></span>
-<span><span class="co">#&gt;          &lt;int&gt;      &lt;int&gt;      &lt;char&gt;     &lt;char&gt;      &lt;char&gt;     &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1:   100000625  100000625           G          G           A          A</span></span>
-<span><span class="co">#&gt;    EAF_exposure EAF_outcome BETA_exposure BETA_outcome P_exposure P_outcome</span></span>
-<span><span class="co">#&gt;           &lt;num&gt;       &lt;num&gt;         &lt;num&gt;        &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:     0.999929    0.999929         0.037        0.037      0.781     0.781</span></span>
-<span><span class="co">#&gt;    palindromic   keep RSID_exposure SE_exposure SE_outcome RSID_outcome CHR_LD</span></span>
-<span><span class="co">#&gt;         &lt;lgcl&gt; &lt;lgcl&gt;        &lt;char&gt;       &lt;num&gt;      &lt;num&gt;       &lt;char&gt;  &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1:       FALSE   TRUE     rs7899632       0.137      0.137    rs7899632     10</span></span>
-<span><span class="co">#&gt;        BP_LD REF_LD ALT_LD keep_ld</span></span>
-<span><span class="co">#&gt;        &lt;int&gt; &lt;char&gt; &lt;char&gt;  &lt;lgcl&gt;</span></span>
-<span><span class="co">#&gt; 1: 100000625      A      G    TRUE</span></span>
-<span></span>
-<span><span class="co"># LD matrix</span></span>
-<span><span class="va">harm_result</span><span class="op">[[</span><span class="st">"ld_mat"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt;            rs7899632 rs61875309 rs12258651 rs1359508 rs1048754 rs3750595</span></span>
-<span><span class="co">#&gt; rs7899632   1.000000  -0.352729   0.464422 -0.605224 -0.351842  0.999186</span></span>
-<span><span class="co">#&gt; rs61875309 -0.352729   1.000000  -0.163815 -0.273537  0.997485 -0.352442</span></span>
-<span><span class="co">#&gt; rs12258651  0.464422  -0.163815   1.000000 -0.281882 -0.163403  0.463646</span></span>
-<span><span class="co">#&gt; rs1359508  -0.605224  -0.273537  -0.281882  1.000000 -0.276556 -0.605593</span></span>
-<span><span class="co">#&gt; rs1048754  -0.351842   0.997485  -0.163403 -0.276556  1.000000 -0.351555</span></span>
-<span><span class="co">#&gt; rs3750595   0.999186  -0.352442   0.463646 -0.605593 -0.351555  1.000000</span></span>
-<span><span class="co">#&gt; rs2025625  -0.602476  -0.275604  -0.280205  0.994053 -0.274911 -0.602850</span></span>
-<span><span class="co">#&gt; rs10786405  0.989851  -0.349437   0.467642 -0.599557 -0.348558  0.990658</span></span>
-<span><span class="co">#&gt; rs11816998 -0.346224   0.984860  -0.158549 -0.270245  0.982267 -0.345940</span></span>
-<span><span class="co">#&gt;            rs2025625 rs10786405 rs11816998</span></span>
-<span><span class="co">#&gt; rs7899632  -0.602476   0.989851  -0.346224</span></span>
-<span><span class="co">#&gt; rs61875309 -0.275604  -0.349437   0.984860</span></span>
-<span><span class="co">#&gt; rs12258651 -0.280205   0.467642  -0.158549</span></span>
-<span><span class="co">#&gt; rs1359508   0.994053  -0.599557  -0.270245</span></span>
-<span><span class="co">#&gt; rs1048754  -0.274911  -0.348558   0.982267</span></span>
-<span><span class="co">#&gt; rs3750595  -0.602850   0.990658  -0.345940</span></span>
-<span><span class="co">#&gt; rs2025625   1.000000  -0.596843  -0.272363</span></span>
-<span><span class="co">#&gt; rs10786405 -0.596843   1.000000  -0.342968</span></span>
-<span><span class="co">#&gt; rs11816998 -0.272363  -0.342968   1.000000</span></span></code></pre></div>
+<span><span class="co"># the LD matrix</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">obj</span><span class="op">[</span><span class="st">'ld_mat'</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $ld_mat</span></span>
+<span><span class="co">#&gt;                rs7899632_A_G rs61875309_A_C rs12258651_T_G rs1359508_T_C</span></span>
+<span><span class="co">#&gt; rs7899632_A_G      1.0000000     0.23544930     0.20391148    0.38781072</span></span>
+<span><span class="co">#&gt; rs61875309_A_C     0.2354493     1.00000000     0.04801081    0.13827704</span></span>
+<span><span class="co">#&gt; rs12258651_T_G     0.2039115     0.04801081     1.00000000    0.07907906</span></span>
+<span><span class="co">#&gt; rs1359508_T_C      0.3878107     0.13827704     0.07907906    1.00000000</span></span>
+<span><span class="co">#&gt; rs1048754_G_A      0.2354493     1.00000000     0.04801081    0.13827704</span></span>
+<span><span class="co">#&gt; rs3750595_C_A      1.0000000     0.23544930     0.20391148    0.38781072</span></span>
+<span><span class="co">#&gt; rs2025625_G_A      0.3878107     0.13827704     0.07907906    1.00000000</span></span>
+<span><span class="co">#&gt; rs10786405_C_T     1.0000000     0.23544930     0.20391148    0.38781072</span></span>
+<span><span class="co">#&gt; rs11816998_G_C     0.2314337     0.98294511     0.04719200    0.13591874</span></span>
+<span><span class="co">#&gt; rs3793692_G_A      0.3878107     0.13827704     0.07907906    1.00000000</span></span>
+<span><span class="co">#&gt;                rs1048754_G_A rs3750595_C_A rs2025625_G_A rs10786405_C_T</span></span>
+<span><span class="co">#&gt; rs7899632_A_G     0.23544930     1.0000000    0.38781072      1.0000000</span></span>
+<span><span class="co">#&gt; rs61875309_A_C    1.00000000     0.2354493    0.13827704      0.2354493</span></span>
+<span><span class="co">#&gt; rs12258651_T_G    0.04801081     0.2039115    0.07907906      0.2039115</span></span>
+<span><span class="co">#&gt; rs1359508_T_C     0.13827704     0.3878107    1.00000000      0.3878107</span></span>
+<span><span class="co">#&gt; rs1048754_G_A     1.00000000     0.2354493    0.13827704      0.2354493</span></span>
+<span><span class="co">#&gt; rs3750595_C_A     0.23544930     1.0000000    0.38781072      1.0000000</span></span>
+<span><span class="co">#&gt; rs2025625_G_A     0.13827704     0.3878107    1.00000000      0.3878107</span></span>
+<span><span class="co">#&gt; rs10786405_C_T    0.23544930     1.0000000    0.38781072      1.0000000</span></span>
+<span><span class="co">#&gt; rs11816998_G_C    0.98294511     0.2314337    0.13591874      0.2314337</span></span>
+<span><span class="co">#&gt; rs3793692_G_A     0.13827704     0.3878107    1.00000000      0.3878107</span></span>
+<span><span class="co">#&gt;                rs11816998_G_C rs3793692_G_A</span></span>
+<span><span class="co">#&gt; rs7899632_A_G       0.2314337    0.38781072</span></span>
+<span><span class="co">#&gt; rs61875309_A_C      0.9829451    0.13827704</span></span>
+<span><span class="co">#&gt; rs12258651_T_G      0.0471920    0.07907906</span></span>
+<span><span class="co">#&gt; rs1359508_T_C       0.1359187    1.00000000</span></span>
+<span><span class="co">#&gt; rs1048754_G_A       0.9829451    0.13827704</span></span>
+<span><span class="co">#&gt; rs3750595_C_A       0.2314337    0.38781072</span></span>
+<span><span class="co">#&gt; rs2025625_G_A       0.1359187    1.00000000</span></span>
+<span><span class="co">#&gt; rs10786405_C_T      0.2314337    0.38781072</span></span>
+<span><span class="co">#&gt; rs11816998_G_C      1.0000000    0.13591874</span></span>
+<span><span class="co">#&gt; rs3793692_G_A       0.1359187    1.00000000</span></span></code></pre></div>
 </div>
   </div>
 
@@ -254,7 +223,7 @@ vignette.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+<p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

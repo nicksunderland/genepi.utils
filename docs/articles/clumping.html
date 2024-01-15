@@ -129,13 +129,13 @@ that PLINK2 does not like.</p>
 <p>The path to your processed reference files
 (<code>path/to/plink_ref/all_phase3_nodup</code>) can be directly passed
 the the <code><a href="../reference/clump.html">clump()</a></code> function as the <code>plink_ref</code>
-argument, or, you can cofigure the path in the package by using
+argument, or, you can configure the path in the package by using
 <code><a href="../reference/set_1000G_reference.html">set_1000G_reference()</a></code> - this only needs to be done once per
 install. The currently set reference path can be queried with
 <code><a href="../reference/which_1000G_reference.html">which_1000G_reference()</a></code>.</p>
 <p>You will need PLINK2 installed on your computer. The
 <code><a href="../reference/clump.html">clump()</a></code> function takes a path to the plink executable as
-the <code>plink2</code> argument. Alternatively, you can cofigure the
+the <code>plink2</code> argument. Alternatively, you can configure the
 path in the package by using <code><a href="../reference/set_plink2.html">set_plink2()</a></code> - this only needs
 to be done once per install. The currently set PLINK2 path can be
 queried with <code><a href="../reference/which_plink2.html">which_plink2()</a></code>. If the <code>plink2</code>
@@ -158,7 +158,7 @@ directly in your command line.</p>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $pfile_1000G_GRCh37</span></span>
-<span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/all_phase3_nodup"</span></span>
+<span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/EUR_1kGv3"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $pfile_1000G_GRCh38</span></span>
 <span><span class="co">#&gt; [1] "not_set_yet"</span></span>
@@ -185,30 +185,28 @@ variant belongs to.</li>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># input gwas; n.b. trailing `[]` just for printing in rmarkdown</span></span>
 <span><span class="va">gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           RSID                  SNP    CHR        BP     EA     OA      EAF</span></span>
-<span><span class="co">#&gt;         &lt;char&gt;               &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  rs7899632 10:100000625[b37]A,G     10 100000625      G      A 7.10e-05</span></span>
-<span><span class="co">#&gt;  2: rs61875309 10:100000645[b37]A,C     10 100000645      C      A 1.21e-01</span></span>
-<span><span class="co">#&gt;  3: rs12258651 10:100003242[b37]T,G     10 100003242      G      T 5.04e-07</span></span>
-<span><span class="co">#&gt;  4:  rs1359508 10:100003785[b37]T,C     10 100003785      C      T 1.55e-01</span></span>
-<span><span class="co">#&gt;  5:  rs1048754 10:100004360[b37]G,A     10 100004360      A      G 8.38e-01</span></span>
-<span><span class="co">#&gt;  6:  rs3750595 10:100004906[b37]C,A     10 100004906      A      C 7.40e-01</span></span>
-<span><span class="co">#&gt;  7:  rs2025625 10:100004996[b37]G,A     10 100004996      A      G 3.23e-10</span></span>
-<span><span class="co">#&gt;  8: rs10786405 10:100005282[b37]C,T     10 100005282      T      C 9.30e-04</span></span>
-<span><span class="co">#&gt;  9: rs11816998 10:100007362[b37]G,C     10 100007362      C      G 8.16e-05</span></span>
-<span><span class="co">#&gt; 10:  rs3793692 10:100008436[b37]G,A     10 100008436      A      G 9.46e-04</span></span>
-<span><span class="co">#&gt;       BETA    SE     P</span></span>
-<span><span class="co">#&gt;      &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: -0.037 0.137 0.781</span></span>
-<span><span class="co">#&gt;  2:  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt;  3: -0.037 0.134 0.480</span></span>
-<span><span class="co">#&gt;  4: -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  5:  0.045 0.134 0.961</span></span>
-<span><span class="co">#&gt;  6: -0.037 0.173 0.781</span></span>
-<span><span class="co">#&gt;  7: -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  8: -0.147 0.134 0.781</span></span>
-<span><span class="co">#&gt;  9:  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt; 10: -0.008 0.208 0.743</span></span>
+<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA      EAF   BETA    SE</span></span>
+<span><span class="co">#&gt;  1:  rs7899632 10:100000625[b37]A,G  10 100000625  G  A 7.10e-05 -0.037 0.137</span></span>
+<span><span class="co">#&gt;  2: rs61875309 10:100000645[b37]A,C  10 100000645  C  A 1.21e-01  0.045 0.173</span></span>
+<span><span class="co">#&gt;  3: rs12258651 10:100003242[b37]T,G  10 100003242  G  T 5.04e-07 -0.037 0.134</span></span>
+<span><span class="co">#&gt;  4:  rs1359508 10:100003785[b37]T,C  10 100003785  C  T 1.55e-01 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  5:  rs1048754 10:100004360[b37]G,A  10 100004360  A  G 8.38e-01  0.045 0.134</span></span>
+<span><span class="co">#&gt;  6:  rs3750595 10:100004906[b37]C,A  10 100004906  A  C 7.40e-01 -0.037 0.173</span></span>
+<span><span class="co">#&gt;  7:  rs2025625 10:100004996[b37]G,A  10 100004996  A  G 3.23e-10 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  8: rs10786405 10:100005282[b37]C,T  10 100005282  T  C 9.30e-04 -0.147 0.134</span></span>
+<span><span class="co">#&gt;  9: rs11816998 10:100007362[b37]G,C  10 100007362  C  G 8.16e-05  0.045 0.173</span></span>
+<span><span class="co">#&gt; 10:  rs3793692 10:100008436[b37]G,A  10 100008436  A  G 9.46e-04 -0.008 0.208</span></span>
+<span><span class="co">#&gt;         P</span></span>
+<span><span class="co">#&gt;  1: 0.781</span></span>
+<span><span class="co">#&gt;  2: 0.961</span></span>
+<span><span class="co">#&gt;  3: 0.480</span></span>
+<span><span class="co">#&gt;  4: 0.743</span></span>
+<span><span class="co">#&gt;  5: 0.961</span></span>
+<span><span class="co">#&gt;  6: 0.781</span></span>
+<span><span class="co">#&gt;  7: 0.743</span></span>
+<span><span class="co">#&gt;  8: 0.781</span></span>
+<span><span class="co">#&gt;  9: 0.961</span></span>
+<span><span class="co">#&gt; 10: 0.743</span></span>
 <span></span>
 <span><span class="co"># run clumping</span></span>
 <span><span class="va">clumped_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clump.html">clump</a></span><span class="op">(</span><span class="va">gwas</span>, </span>
@@ -217,35 +215,32 @@ variant belongs to.</li>
 <span>                      r2 <span class="op">=</span> <span class="fl">0.1</span>, </span>
 <span>                      kb <span class="op">=</span> <span class="fl">250</span>, </span>
 <span>                      plink2    <span class="op">=</span> <span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>                      plink_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>                      plink_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span>build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># view result</span></span>
 <span><span class="va">clumped_gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt; Key: &lt;RSID&gt;</span></span>
-<span><span class="co">#&gt;           RSID                  SNP    CHR        BP     EA     OA      EAF</span></span>
-<span><span class="co">#&gt;         &lt;char&gt;               &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  rs1048754 10:100004360[b37]G,A     10 100004360      A      G 8.38e-01</span></span>
-<span><span class="co">#&gt;  2: rs10786405 10:100005282[b37]C,T     10 100005282      T      C 9.30e-04</span></span>
-<span><span class="co">#&gt;  3: rs11816998 10:100007362[b37]G,C     10 100007362      C      G 8.16e-05</span></span>
-<span><span class="co">#&gt;  4: rs12258651 10:100003242[b37]T,G     10 100003242      G      T 5.04e-07</span></span>
-<span><span class="co">#&gt;  5:  rs1359508 10:100003785[b37]T,C     10 100003785      C      T 1.55e-01</span></span>
-<span><span class="co">#&gt;  6:  rs2025625 10:100004996[b37]G,A     10 100004996      A      G 3.23e-10</span></span>
-<span><span class="co">#&gt;  7:  rs3750595 10:100004906[b37]C,A     10 100004906      A      C 7.40e-01</span></span>
-<span><span class="co">#&gt;  8:  rs3793692 10:100008436[b37]G,A     10 100008436      A      G 9.46e-04</span></span>
-<span><span class="co">#&gt;  9: rs61875309 10:100000645[b37]A,C     10 100000645      C      A 1.21e-01</span></span>
-<span><span class="co">#&gt; 10:  rs7899632 10:100000625[b37]A,G     10 100000625      G      A 7.10e-05</span></span>
-<span><span class="co">#&gt;       BETA    SE     P  index  clump</span></span>
-<span><span class="co">#&gt;      &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;lgcl&gt; &lt;fctr&gt;</span></span>
-<span><span class="co">#&gt;  1:  0.045 0.134 0.961  FALSE      3</span></span>
-<span><span class="co">#&gt;  2: -0.147 0.134 0.781  FALSE      1</span></span>
-<span><span class="co">#&gt;  3:  0.045 0.173 0.961  FALSE      3</span></span>
-<span><span class="co">#&gt;  4: -0.037 0.134 0.480   TRUE      1</span></span>
-<span><span class="co">#&gt;  5: -0.008 0.137 0.743   TRUE      2</span></span>
-<span><span class="co">#&gt;  6: -0.008 0.137 0.743  FALSE      2</span></span>
-<span><span class="co">#&gt;  7: -0.037 0.173 0.781  FALSE      1</span></span>
-<span><span class="co">#&gt;  8: -0.008 0.208 0.743  FALSE      2</span></span>
-<span><span class="co">#&gt;  9:  0.045 0.173 0.961   TRUE      3</span></span>
-<span><span class="co">#&gt; 10: -0.037 0.137 0.781  FALSE      1</span></span></code></pre></div>
+<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA      EAF   BETA    SE</span></span>
+<span><span class="co">#&gt;  1:  rs1048754 10:100004360[b37]G,A  10 100004360  A  G 8.38e-01  0.045 0.134</span></span>
+<span><span class="co">#&gt;  2: rs10786405 10:100005282[b37]C,T  10 100005282  T  C 9.30e-04 -0.147 0.134</span></span>
+<span><span class="co">#&gt;  3: rs11816998 10:100007362[b37]G,C  10 100007362  C  G 8.16e-05  0.045 0.173</span></span>
+<span><span class="co">#&gt;  4: rs12258651 10:100003242[b37]T,G  10 100003242  G  T 5.04e-07 -0.037 0.134</span></span>
+<span><span class="co">#&gt;  5:  rs1359508 10:100003785[b37]T,C  10 100003785  C  T 1.55e-01 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  6:  rs2025625 10:100004996[b37]G,A  10 100004996  A  G 3.23e-10 -0.008 0.137</span></span>
+<span><span class="co">#&gt;  7:  rs3750595 10:100004906[b37]C,A  10 100004906  A  C 7.40e-01 -0.037 0.173</span></span>
+<span><span class="co">#&gt;  8:  rs3793692 10:100008436[b37]G,A  10 100008436  A  G 9.46e-04 -0.008 0.208</span></span>
+<span><span class="co">#&gt;  9: rs61875309 10:100000645[b37]A,C  10 100000645  C  A 1.21e-01  0.045 0.173</span></span>
+<span><span class="co">#&gt; 10:  rs7899632 10:100000625[b37]A,G  10 100000625  G  A 7.10e-05 -0.037 0.137</span></span>
+<span><span class="co">#&gt;         P index clump</span></span>
+<span><span class="co">#&gt;  1: 0.961 FALSE     2</span></span>
+<span><span class="co">#&gt;  2: 0.781 FALSE     1</span></span>
+<span><span class="co">#&gt;  3: 0.961 FALSE     2</span></span>
+<span><span class="co">#&gt;  4: 0.480  TRUE     1</span></span>
+<span><span class="co">#&gt;  5: 0.743  TRUE     2</span></span>
+<span><span class="co">#&gt;  6: 0.743 FALSE     2</span></span>
+<span><span class="co">#&gt;  7: 0.781 FALSE     1</span></span>
+<span><span class="co">#&gt;  8: 0.743 FALSE     2</span></span>
+<span><span class="co">#&gt;  9: 0.961 FALSE     2</span></span>
+<span><span class="co">#&gt; 10: 0.781 FALSE     1</span></span></code></pre></div>
 </div>
   </div>
 
@@ -261,7 +256,7 @@ variant belongs to.</li>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+<p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

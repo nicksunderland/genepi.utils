@@ -126,39 +126,24 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span></span>
 <span><span class="co"># view</span></span>
 <span><span class="va">gwas2</span></span>
-<span><span class="co">#&gt;                      SNP    CHR        BP     EA     OA      EAF   BETA    SE</span></span>
-<span><span class="co">#&gt;                   &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 10:100000625[b37]A,G     10 100000625      G      A 7.10e-05 -0.037 0.137</span></span>
-<span><span class="co">#&gt;  2: 10:100000645[b37]A,C     10 100000645      C      A 1.21e-01  0.045 0.173</span></span>
-<span><span class="co">#&gt;  3: 10:100003242[b37]T,G     10 100003242      G      T 5.04e-07 -0.037 0.134</span></span>
-<span><span class="co">#&gt;  4: 10:100003785[b37]T,C     10 100003785      C      T 1.55e-01 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  5: 10:100004360[b37]G,A     10 100004360      A      T 8.38e-01  0.045 0.134</span></span>
-<span><span class="co">#&gt;  6: 10:100004906[b37]C,A     10 100004906      A      A 7.40e-01 -0.037 0.173</span></span>
-<span><span class="co">#&gt;  7: 10:100004996[b37]G,A     10 100004996      D      I 3.23e-10 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  8: 10:100005282[b37]C,T     10 100005282    ACC      A 9.30e-04 -0.147 0.134</span></span>
-<span><span class="co">#&gt;  9: 10:100007362[b37]G,C     10 100007362      C      G 8.16e-05  0.045 0.173</span></span>
-<span><span class="co">#&gt; 10: 10:100008436[b37]G,A     10 100008436      A      G 9.46e-04 -0.008 0.208</span></span>
-<span><span class="co">#&gt;         P</span></span>
-<span><span class="co">#&gt;     &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 0.781</span></span>
-<span><span class="co">#&gt;  2: 0.961</span></span>
-<span><span class="co">#&gt;  3: 0.480</span></span>
-<span><span class="co">#&gt;  4: 0.743</span></span>
-<span><span class="co">#&gt;  5: 0.961</span></span>
-<span><span class="co">#&gt;  6: 0.781</span></span>
-<span><span class="co">#&gt;  7: 0.743</span></span>
-<span><span class="co">#&gt;  8: 0.781</span></span>
-<span><span class="co">#&gt;  9: 0.961</span></span>
-<span><span class="co">#&gt; 10: 0.743</span></span>
+<span><span class="co">#&gt;                      SNP CHR        BP  EA OA      EAF   BETA    SE     P</span></span>
+<span><span class="co">#&gt;  1: 10:100000625[b37]A,G  10 100000625   G  A 7.10e-05 -0.037 0.137 0.781</span></span>
+<span><span class="co">#&gt;  2: 10:100000645[b37]A,C  10 100000645   C  A 1.21e-01  0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt;  3: 10:100003242[b37]T,G  10 100003242   G  T 5.04e-07 -0.037 0.134 0.480</span></span>
+<span><span class="co">#&gt;  4: 10:100003785[b37]T,C  10 100003785   C  T 1.55e-01 -0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  5: 10:100004360[b37]G,A  10 100004360   A  T 8.38e-01  0.045 0.134 0.961</span></span>
+<span><span class="co">#&gt;  6: 10:100004906[b37]C,A  10 100004906   A  A 7.40e-01 -0.037 0.173 0.781</span></span>
+<span><span class="co">#&gt;  7: 10:100004996[b37]G,A  10 100004996   D  I 3.23e-10 -0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  8: 10:100005282[b37]C,T  10 100005282 ACC  A 9.30e-04 -0.147 0.134 0.781</span></span>
+<span><span class="co">#&gt;  9: 10:100007362[b37]G,C  10 100007362   C  G 8.16e-05  0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt; 10: 10:100008436[b37]G,A  10 100008436   A  G 9.46e-04 -0.008 0.208 0.743</span></span>
 <span></span>
 <span><span class="co"># harmonise</span></span>
 <span><span class="va">harmonised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span>, merge<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>,<span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># view </span></span>
 <span><span class="va">harmonised</span></span>
-<span><span class="co">#&gt; Key: &lt;CHR_incidence, BP_incidence&gt;</span></span>
 <span><span class="co">#&gt;              SNP_incidence        SNP_progression CHR_incidence CHR_progression</span></span>
-<span><span class="co">#&gt;                     &lt;char&gt;                 &lt;char&gt;        &lt;char&gt;          &lt;char&gt;</span></span>
 <span><span class="co">#&gt;  1:   10:100000625[b37]A,G   10:100000625[b37]A,G            10              10</span></span>
 <span><span class="co">#&gt;  2:   10:100000645[b37]A,C   10:100000645[b37]A,C            10              10</span></span>
 <span><span class="co">#&gt;  3:   10:100003242[b37]T,G   10:100003242[b37]T,G            10              10</span></span>
@@ -170,7 +155,6 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span><span class="co">#&gt;  9:   10:100007362[b37]G,C   10:100007362[b37]G,C            10              10</span></span>
 <span><span class="co">#&gt; 10:   10:100008436[b37]G,A   10:100008436[b37]G,A            10              10</span></span>
 <span><span class="co">#&gt;     BP_incidence BP_progression EA_incidence EA_progression OA_incidence</span></span>
-<span><span class="co">#&gt;            &lt;int&gt;          &lt;int&gt;       &lt;char&gt;         &lt;char&gt;       &lt;char&gt;</span></span>
 <span><span class="co">#&gt;  1:    100000625      100000625            G              G            A</span></span>
 <span><span class="co">#&gt;  2:    100000645      100000645            C              C            A</span></span>
 <span><span class="co">#&gt;  3:    100003242      100003242            G              G            T</span></span>
@@ -182,7 +166,6 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span><span class="co">#&gt;  9:    100007362      100007362            C              C            G</span></span>
 <span><span class="co">#&gt; 10:    100008436      100008436            A              A            G</span></span>
 <span><span class="co">#&gt;     OA_progression EAF_incidence EAF_progression BETA_incidence</span></span>
-<span><span class="co">#&gt;             &lt;char&gt;         &lt;num&gt;           &lt;num&gt;          &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:              A      7.10e-05        7.10e-05         -0.037</span></span>
 <span><span class="co">#&gt;  2:              A      1.21e-01        1.21e-01          0.045</span></span>
 <span><span class="co">#&gt;  3:              T      5.04e-07        5.04e-07         -0.037</span></span>
@@ -193,20 +176,18 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span><span class="co">#&gt;  8:              A      9.30e-04        9.30e-04         -0.147</span></span>
 <span><span class="co">#&gt;  9:              G      8.16e-05        8.16e-05          0.045</span></span>
 <span><span class="co">#&gt; 10:              G      9.46e-04        9.46e-04         -0.008</span></span>
-<span><span class="co">#&gt;     BETA_progression P_incidence P_progression palindromic   keep SE_incidence</span></span>
-<span><span class="co">#&gt;                &lt;num&gt;       &lt;num&gt;         &lt;num&gt;      &lt;lgcl&gt; &lt;lgcl&gt;        &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:           -0.037       0.781         0.781       FALSE   TRUE        0.137</span></span>
-<span><span class="co">#&gt;  2:            0.045       0.961         0.961       FALSE   TRUE        0.173</span></span>
-<span><span class="co">#&gt;  3:           -0.037       0.480         0.480       FALSE   TRUE        0.134</span></span>
-<span><span class="co">#&gt;  4:           -0.008       0.743         0.743       FALSE   TRUE        0.137</span></span>
-<span><span class="co">#&gt;  5:           -0.045       0.961         0.961        TRUE  FALSE        0.134</span></span>
-<span><span class="co">#&gt;  6:           -0.037       0.781         0.781       FALSE  FALSE        0.173</span></span>
-<span><span class="co">#&gt;  7:            0.008       0.743         0.743       FALSE   TRUE        0.137</span></span>
-<span><span class="co">#&gt;  8:           -0.147       0.781         0.781       FALSE   TRUE        0.134</span></span>
-<span><span class="co">#&gt;  9:            0.045       0.961         0.961        TRUE  FALSE        0.173</span></span>
-<span><span class="co">#&gt; 10:           -0.008       0.743         0.743       FALSE   TRUE        0.208</span></span>
+<span><span class="co">#&gt;     BETA_progression P_incidence P_progression palindromic  keep SE_incidence</span></span>
+<span><span class="co">#&gt;  1:           -0.037       0.781         0.781       FALSE  TRUE        0.137</span></span>
+<span><span class="co">#&gt;  2:            0.045       0.961         0.961       FALSE  TRUE        0.173</span></span>
+<span><span class="co">#&gt;  3:           -0.037       0.480         0.480       FALSE  TRUE        0.134</span></span>
+<span><span class="co">#&gt;  4:           -0.008       0.743         0.743       FALSE  TRUE        0.137</span></span>
+<span><span class="co">#&gt;  5:           -0.045       0.961         0.961        TRUE  TRUE        0.134</span></span>
+<span><span class="co">#&gt;  6:           -0.037       0.781         0.781       FALSE FALSE        0.173</span></span>
+<span><span class="co">#&gt;  7:            0.008       0.743         0.743       FALSE  TRUE        0.137</span></span>
+<span><span class="co">#&gt;  8:           -0.147       0.781         0.781       FALSE  TRUE        0.134</span></span>
+<span><span class="co">#&gt;  9:            0.045       0.961         0.961        TRUE  TRUE        0.173</span></span>
+<span><span class="co">#&gt; 10:           -0.008       0.743         0.743       FALSE  TRUE        0.208</span></span>
 <span><span class="co">#&gt;     SE_progression</span></span>
-<span><span class="co">#&gt;              &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:          0.137</span></span>
 <span><span class="co">#&gt;  2:          0.173</span></span>
 <span><span class="co">#&gt;  3:          0.134</span></span>
@@ -248,7 +229,7 @@ Analysis with downsampled GWAS of 100,000 variants
 <span><span class="va">gwas2_2smr</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/format_data.html" class="external-link">format_data</a></span><span class="op">(</span><span class="va">gwas1</span>, type<span class="op">=</span><span class="st">"outcome"</span>, snp_col<span class="op">=</span><span class="st">"SNP"</span>, beta_col<span class="op">=</span><span class="st">"BETA"</span>, se_col<span class="op">=</span><span class="st">"SE"</span>, pval_col<span class="op">=</span><span class="st">"P"</span>, eaf_col<span class="op">=</span><span class="st">"EAF"</span>, effect_allele_col<span class="op">=</span><span class="st">"EA"</span>, other_allele_col<span class="op">=</span><span class="st">"OA"</span>, chr_col <span class="op">=</span> <span class="st">"CHR"</span>, pos_col<span class="op">=</span><span class="st">"POS"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="co"># benchmarking harmonisation</span></span>
-<span><span class="va">mbm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span><span class="st">"genepi.utils::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span><span class="op">)</span> <span class="op">}</span>,</span>
+<span><span class="va">mbm</span> <span class="op">&lt;-</span> <span class="fu">microbenchmark</span><span class="op">(</span><span class="st">"genepi.utils::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span><span class="op">)</span> <span class="op">}</span>,</span>
 <span>                      <span class="st">"Slopehunter::harmonise_effects()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">SlopeHunter</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SlopeHunter/man/harmonise_effects.html" class="external-link">harmonise_effects</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span><span class="op">)</span> <span class="op">}</span>,</span>
 <span>                      <span class="st">"TwoSampleMR::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/harmonise_data.html" class="external-link">harmonise_data</a></span><span class="op">(</span><span class="va">gwas1_2smr</span>, <span class="va">gwas2_2smr</span><span class="op">)</span> <span class="op">}</span>,</span>
 <span>                      times <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
@@ -274,7 +255,7 @@ Analysis with downsampled GWAS of 100,000 variants
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+<p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

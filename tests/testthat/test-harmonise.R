@@ -48,7 +48,7 @@ test_that("harmonise", {
     P_in   = c(1e-3,1e-4,3e-4,3e-3,3e-3,3e-3,3e-3),
     P_pr   = c(1e-2,1e-4,3e-4,3e-3,3e-3,3e-3,3e-3),
     palindromic = c(T,F,F,F,F,F,F),
-    keep   = c(F,T,T,T,T,F,F)
+    keep   = c(T,T,T,T,T,F,F)
   )
   # need to adjust SNP coding if flipped allele
   h_expected[, SNP_in := paste0(CHR_in,":",BP_in,"[b37]",OA_in,",",EA_in)]

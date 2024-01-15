@@ -1,2 +1,3 @@
-library(usethis)
-library(devtools)
+source("renv/activate.R")
+# library(usethis)
+# library(devtools)

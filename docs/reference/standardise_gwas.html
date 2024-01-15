@@ -82,10 +82,10 @@
 <span>  fill <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  build <span class="op">=</span> <span class="st">"GRCh37"</span>,</span>
 <span>  populate_rsid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  filters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BETA_invalid <span class="op">=</span> <span class="st">"!is.infinite(BETA) &amp; abs(BETA) &lt; 10"</span>, P_invalid <span class="op">=</span></span>
+<span>  filters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BETA_invalid <span class="op">=</span> <span class="st">"!is.infinite(BETA) &amp; abs(BETA) &lt; 20"</span>, P_invalid <span class="op">=</span></span>
 <span>    <span class="st">"!is.infinite(P)"</span>, SE_invalid <span class="op">=</span> <span class="st">"!is.infinite(SE)"</span>, CHR_missing <span class="op">=</span> <span class="st">"!is.na(CHR)"</span>,</span>
 <span>    BP_missing <span class="op">=</span> <span class="st">"!is.na(BP)"</span>, BETA_missing <span class="op">=</span> <span class="st">"!is.na(BETA)"</span>, SE_missing <span class="op">=</span> <span class="st">"!is.na(SE)"</span>,</span>
-<span>    P_missing <span class="op">=</span> <span class="st">"!is.na(P)"</span>, EAF_missing <span class="op">=</span> <span class="st">"!is.na(P)"</span><span class="op">)</span></span>
+<span>    P_missing <span class="op">=</span> <span class="st">"!is.na(P)"</span>, EAF_missing <span class="op">=</span> <span class="st">"!is.na(EAF)"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -137,7 +137,7 @@ These must be positive assertions, i.e. resolve to TRUE to keep the row. If filt
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+  <p></p><p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

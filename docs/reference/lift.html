@@ -89,7 +89,8 @@ small segments of the genome).</p>
 <span>  chr_col <span class="op">=</span> <span class="st">"chr"</span>,</span>
 <span>  pos_col <span class="op">=</span> <span class="st">"pos"</span>,</span>
 <span>  ea_col <span class="op">=</span> <span class="st">"ea"</span>,</span>
-<span>  oa_col <span class="op">=</span> <span class="st">"oa"</span></span>
+<span>  oa_col <span class="op">=</span> <span class="st">"oa"</span>,</span>
+<span>  remove_duplicates <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -126,6 +127,10 @@ small segments of the genome).</p>
 <dt>oa_col</dt>
 <dd><p>Name of other allele column name. Optional. Might lead to duplicated rows if not presented</p></dd>
 
+
+<dt>remove_duplicates</dt>
+<dd><p>a logical, whether to remove duplicate IDs</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -146,7 +151,7 @@ small segments of the genome).</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+  <p></p><p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

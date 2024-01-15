@@ -34,7 +34,7 @@ clump <- function(gwas,
                   plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
                   logging = TRUE) {
 
-  SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = NULL
+  SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = A1 = A2 = NULL
 
   # to data.table format
   gwas <- import_table(gwas)

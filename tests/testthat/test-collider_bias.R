@@ -13,7 +13,7 @@ test_that("slopehunter", {
   gwas2[, BETA := runif(.N)]
 
   # genepi.utils SH
-  sh_geu<- slopehunter(gwas1, gwas2, ip=ip, pi0=pi0, sxy1=sxy1, bootstraps=0)
+  sh_geu <- slopehunter(gwas1, gwas2, ip=ip, pi0=pi0, sxy1=sxy1, bootstraps=0)
 
   # SlopeHunter SH
   inc <- SlopeHunter::format_data(gwas1,
@@ -104,7 +104,7 @@ test_that("apply_collider_correction", {
   adjusted_sh <- SlopeHunter::SHadj(sh, h)
 
   # apply genepi.utils
-  adjusted <- apply_collider_correction(gwas1, gwas2, b_correction_factor = sh$b, b_std_err = sh$bse)
+  adjusted <- apply_collider_correction(gwas1, gwas2, b_correction_factor = sh$b, b_std_err = sh$bse, keep_palindromic = FALSE)
 
   # test the same
   expect_equal(adjusted$adjusted_beta, adjusted_sh$ybeta.adj)

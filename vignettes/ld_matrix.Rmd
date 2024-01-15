@@ -37,35 +37,27 @@ which_plink2()
 
 ## LD matrix
 
-Generate the LD matrix. 
+Generate the LD matrix. If we provide a GWAS data.table with the alleles then it will be harmonised with the LD matrix. 
 
 ```{r ld_matrix}
 # produce LD matrix 
-ld_mat <- ld_matrix(gwas[1:9, "RSID"],
-                    plink2    = genepi.utils::which_plink2(),
-                    plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"))
+obj <- ld_matrix(gwas,
+                 method    = "r2",
+                 plink2    = genepi.utils::which_plink2(),
+                 plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"))
 
-# view result
-print(ld_mat)
 ```
 
 
 ## Harmonise data against LD matrix alleles
 
+The previous command has harmonised the `gwas` input data.table to the LD alleles. The return value is a list with elements `dat` 
+and `ld_mat`.
+
 ```{r ld_matrix_info2}
 # harmonised data 
-harm <- harmonise(gwas, data.table::copy(gwas), gwas1_trait="exposure", gwas2_trait="outcome", merge=c("RSID"="RSID"))
+print(obj['dat'])
 
-# mess up the alleles vs reference
-harm <- harm[RSID_exposure=="rs7899632", c("EA_exposure","EA_outcome","OA_exposure","OA_outcome") := list("A","A","G","G")]
-harm[RSID_exposure=="rs7899632", ][]
-
-# re-harmonise
-harm_result <- harmonise_ld_dat(harm, ld_mat, gwas1_trait="exposure", gwas2_trait="outcome")
-
-# harmonised data
-harm_result[["harm"]][RSID_exposure=="rs7899632", ][]
-
-# LD matrix
-harm_result[["ld_mat"]]
+# the LD matrix
+print(obj['ld_mat'])
 ```

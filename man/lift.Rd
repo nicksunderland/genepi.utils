@@ -32,6 +32,8 @@ lift(
 \item{ea_col}{Name of effect allele column name. Optional. Might lead to duplicated rows if not presented}
 
 \item{oa_col}{Name of other allele column name. Optional. Might lead to duplicated rows if not presented}
+
+\item{remove_duplicates}{a logical, whether to remove duplicate IDs}
 }
 \value{
 data.table with updated position columns

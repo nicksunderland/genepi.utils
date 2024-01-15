@@ -11,10 +11,5 @@ The `genepi.utils` package is a collection of utility functions for working with
 \author{
 \strong{Maintainer}: Nicholas Sunderland \email{nicholas.sunderland@bristol.ac.uk} (\href{https://orcid.org/0000-0003-3625-630X}{ORCID})
 
-Authors:
-\itemize{
-  \item Andrew Elmore
-}
-
 }
 \keyword{internal}

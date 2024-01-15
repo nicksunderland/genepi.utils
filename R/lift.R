@@ -13,6 +13,7 @@
 #' @param snp_col Name of SNP column name. Optional. Uses less certain method of matching if not available
 #' @param ea_col Name of effect allele column name. Optional. Might lead to duplicated rows if not presented
 #' @param oa_col Name of other allele column name. Optional. Might lead to duplicated rows if not presented
+#' @param remove_duplicates a logical, whether to remove duplicate IDs
 #' @return data.table with updated position columns
 #' @export
 #' @importFrom rtracklayer import.chain liftOver

@@ -55,7 +55,7 @@ remove.packages("data.table")
 remove.packages("furrr")
 remove.packages("fst")
 
-install.packages("https://cran.r-project.org/src/contrib/data.table_1.14.8.tar.gz", type="source", repos=NULL)
+install.packages("https://cran.r-project.org/src/contrib/data.table_1.14.10.tar.gz", type="source", repos=NULL)
 install.packages("https://cran.r-project.org/src/contrib/furrr_0.3.1.tar.gz", type="source", repos=NULL)
 install.packages("https://cran.r-project.org/src/contrib/fst_0.9.8.tar.gz", type="source", repos=NULL)
 ```

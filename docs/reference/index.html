@@ -121,9 +121,9 @@
         </td>
         <td><p>Calculate LD matrix</p></td>
       </tr><tr><td>
-          <p><code><a href="harmonise_ld_dat.html">harmonise_ld_dat()</a></code> </p>
+          <p><code><a href="download_ukbb_ld.html">download_ukbb_ld()</a></code> </p>
         </td>
-        <td><p>Re-harmonise against LD matrix reference alleles</p></td>
+        <td><p>Title</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="rsid-mapping">RSID mapping <a href="#rsid-mapping" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for mapping chromosome and position data to variant RSIDs</p>
@@ -137,13 +137,21 @@
           <p class="section-desc"></p><p>Functions for analysing collider / index event bias and adjust GWAS data for this bias.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="analyse_collider_bias.html">analyse_collider_bias()</a></code> </p>
+          <p><code><a href="ColliderBiasResult.html">ColliderBiasResult()</a></code> </p>
         </td>
-        <td><p>Run collider bias analysis</p></td>
+        <td><p>Collider bias result object</p></td>
+      </tr><tr><td>
+          <p><code><a href="collider_results_to_data_table.html">collider_results_to_data_table()</a></code> </p>
+        </td>
+        <td><p>ColliderBiasResult to data.table</p></td>
       </tr><tr><td>
           <p><code><a href="slopehunter.html">slopehunter()</a></code> </p>
         </td>
         <td><p>Slope-hunter collider bias method</p></td>
+      </tr><tr><td>
+          <p><code><a href="apply_collider_correction.html">apply_collider_correction()</a></code> </p>
+        </td>
+        <td><p>Apply correction factor to GWAS data</p></td>
       </tr><tr><td>
           <p><code><a href="dudbridge.html">dudbridge()</a></code> </p>
         </td>
@@ -153,29 +161,21 @@
         </td>
         <td><p>IVW MR collider bias method</p></td>
       </tr><tr><td>
-          <p><code><a href="apply_collider_correction.html">apply_collider_correction()</a></code> </p>
+          <p><code><a href="analyse_collider_bias.html">analyse_collider_bias()</a></code> </p>
         </td>
-        <td><p>Apply correction factor to GWAS data</p></td>
+        <td><p>Run collider bias analysis</p></td>
       </tr><tr><td>
           <p><code><a href="plot_slope.html">plot_slope()</a></code> </p>
         </td>
         <td><p>Plot the Slope-hunter scatter plot</p></td>
       </tr><tr><td>
-          <p><code><a href="plot_correction_stability.html">plot_correction_stability()</a></code> </p>
-        </td>
-        <td><p>Plot the estimated correction factor variability</p></td>
-      </tr><tr><td>
           <p><code><a href="plot_slopehunter_iters.html">plot_slopehunter_iters()</a></code> </p>
         </td>
         <td><p>Create an animation of Slope-hunter iterations</p></td>
       </tr><tr><td>
-          <p><code><a href="ColliderBiasResult.html">ColliderBiasResult()</a></code> </p>
+          <p><code><a href="plot_correction_stability.html">plot_correction_stability()</a></code> </p>
         </td>
-        <td><p>Collider bias result object</p></td>
-      </tr><tr><td>
-          <p><code><a href="collider_results_to_data_table.html">collider_results_to_data_table()</a></code> </p>
-        </td>
-        <td><p>ColliderBiasResult to data.table</p></td>
+        <td><p>Plot the estimated correction factor variability</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="drug-target-proxies">Drug target proxies <a href="#drug-target-proxies" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for creating genetically proxied drug target instruments.</p>
@@ -261,7 +261,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+  <p></p><p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

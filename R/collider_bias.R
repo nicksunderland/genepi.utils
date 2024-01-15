@@ -395,9 +395,9 @@ apply_collider_correction <- function(gwas_i,
 
   # remove invalid alleles +/- palindromics
   if(keep_palindromic) {
-    h <- h[keep==TRUE | palindromic==TRUE, ]
+    h <- h[keep==TRUE,  ]
   } else {
-    h <- h[keep==TRUE, ]
+    h <- h[keep==TRUE & palindromic==FALSE, ]
   }
 
   # adjust the beta, se and p

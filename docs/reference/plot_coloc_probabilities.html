@@ -81,13 +81,13 @@ package vignettes for details.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_coloc_probabilities</span><span class="op">(</span><span class="va">coloc</span>, rule <span class="op">=</span> <span class="st">"H4 &gt; 0.5"</span>, type <span class="op">=</span> <span class="st">"prior"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_coloc_probabilities</span><span class="op">(</span><span class="va">coloc</span>, rule <span class="op">=</span> <span class="st">"H4 &gt; 0.5"</span>, type <span class="op">=</span> <span class="st">"prior"</span>, row <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>coloc</dt>
-<dd><p>coloc object, output from <code><a href="https://rdrr.io/pkg/coloc/man/coloc.abf.html" class="external-link">coloc::coloc.abf()</a></code></p></dd>
+<dd><p>coloc object, output from <code>coloc::coloc.abf()</code></p></dd>
 
 
 <dt>rule</dt>
@@ -96,6 +96,10 @@ package vignettes for details.</p>
 
 <dt>type</dt>
 <dd><p>a string, either <code>prior</code> or <code>posterior</code></p></dd>
+
+
+<dt>row</dt>
+<dd><p>an integer, row in a <code>coloc.susie</code> or <code>coloc.signals</code> object</p></dd>
 
 </dl></div>
     <div id="value">
@@ -117,7 +121,7 @@ package vignettes for details.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Nicholas Sunderland, Andrew Elmore.</p>
+  <p></p><p>Developed by Nicholas Sunderland.</p>
 </div>
 
 <div class="pkgdown">

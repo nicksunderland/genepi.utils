@@ -86,3 +86,46 @@ set.seed(123)
 rand_idx = sample(1:nrow(result), size=10, replace = FALSE)
 
 result[rand_idx, c("RSID","CHR","POS","EFFECT_ALLELE","OTHER_ALLELE")]
+
+
+
+
+
+
+
+# testing ld_matrix
+load_all()
+library(ggplot2)
+library(data.table)
+
+
+# rs910166
+gwas = readRDS("/Users/xx20081/Desktop/gwas.RDS")
+
+ld <- ld_matrix(gwas,
+                method = "r",
+                plink2    = genepi.utils::which_plink2(),
+                plink_ref = "/Users/xx20081/Desktop/EUR_1kGv3_chr6_38996574_39075519")
+
+r2 <- data.table(RSID_allele = rownames(ld$ld_mat), R2 = ld$ld_mat[, which(grepl("rs910166",colnames(ld$ld_mat)))])
+r2[, RSID := sub("_[ACTG]+_[ACTG]+$","",RSID_allele)]
+
+gwas[r2, R2:=i.R2, on="RSID"]
+
+
+
+ggplot(gwas, aes(x=BP, y=nlog10P, color=abs(R2))) +
+  geom_point() +
+  xlim(c(38995543, 39075923)) +
+  binned_scale(aesthetics = "color",
+               scale_name = "stepsn",
+               palette = function(x) c("darkblue", "lightblue", "green", "orange", "red"),
+               breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.0),
+               limits = c(0, 1),
+               show.limits = TRUE,
+               guide = "colorsteps"
+  )
+
+
+
+fwrite(gwas[BP>38995543 & BP<39075923, ], "/Users/xx20081/Desktop/gwas.csv", sep=",")
