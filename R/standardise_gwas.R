@@ -25,6 +25,7 @@ standardise_gwas <- function(gwas,
                              build="GRCh37",
                              populate_rsid=FALSE,
                              missing_rsid="fill_CHR:BP",
+                             parallel_cores=parallel::detectCores(),
                              filters = list(
                                BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 20",
                                P_invalid    = "!is.infinite(P)",
@@ -422,7 +423,8 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none") {
                                  build     = populate_rsid,
                                  flip      = "allow",
                                  alt_rsids = FALSE,
-                                 verbose   = TRUE)
+                                 verbose   = TRUE,
+                                 parallel_cores=parallel_cores)
     })
 
     # add back
