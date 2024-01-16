@@ -71,8 +71,8 @@ chrpos_to_rsid <- function(dt,
   chr_col_orig = "chr_col_orig"
   dt[, (chr_col_orig) := get(chr_col)]
   dt[, (chr_col) := sub("(?i)^(?:chr)?([0-9XY]+)", toupper("\\1"), toupper(get(chr_col)))]
-  # 2) replace X[23] and Y[24]
-  dt[, (chr_col) := ifelse(get(chr_col)=="X","23",ifelse(get(chr_col)=="Y","24",get(chr_col)))]
+  # 2) replace X[23,25] and Y[24]
+  dt[, (chr_col) := ifelse(get(chr_col) %in% c("X","25") ,"23",ifelse(get(chr_col)=="Y","24",get(chr_col)))]
   # 3) delete the RSID column ahead of re-adding it, if it exists
   if("RSID" %in% names(dt)) {
     dt[, "RSID" := NULL]
