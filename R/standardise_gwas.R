@@ -15,6 +15,7 @@ BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = Z = SE = SNP = NULL
 #' @param build a string, one of GRCh37 or GRCh38
 #' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
 #' @param missing_rsid one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none")
+#' @param parallel_cores an integer, number of cores to use for RSID mapping, default is maximum machine cores
 #' @return a standardised data.table
 #' @export
 #'
@@ -393,14 +394,14 @@ standardise_alleles <- function(gwas, build) {
 #'
 populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parallel_cores=parallel::detectCores()) {
 
-  # rsid regex
-  valid_regex <- "^(rs[0-9]+|[0-9XY]+:[0-9]+).*"
+  # R CMD checks
+  RSID = NULL
 
   # parse existing RSID if there
   if("RSID" %in% names(gwas)) {
 
-    gwas[, RSID := tolower(sub(valid_regex, "\\1", RSID))]
-    invalid <- which(!grepl(valid_regex, gwas$RSID))
+    gwas[, RSID := tolower(sub("^(rs[0-9]+).*", "\\1", RSID))]
+    invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
 
   } else {
 
@@ -410,29 +411,25 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
 
   # some invalid RSIDs and want to populate from dbSNP
   if(length(invalid) > 0 && populate_rsid!=FALSE) {
-    warning("[-] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
+    message("[-] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
 
     # get the RSIDs
-    future::plan(future::multisession, workers=parallel::detectCores())
-    progressr::with_progress({
-      rsid_dat <- chrpos_to_rsid(gwas[invalid, list(CHR,BP,EA,OA)],
-                                 chr_col   = "CHR",
-                                 pos_col   = "BP",
-                                 ea_col    = "EA",
-                                 nea_col   = "OA",
-                                 build     = populate_rsid,
-                                 flip      = "allow",
-                                 alt_rsids = FALSE,
-                                 verbose   = TRUE,
-                                 parallel_cores=parallel_cores)
-    })
-
+    rsid_dat <- chrpos_to_rsid(gwas[invalid, list(CHR,BP,EA,OA)],
+                               chr_col   = "CHR",
+                               pos_col   = "BP",
+                               ea_col    = "EA",
+                               nea_col   = "OA",
+                               build     = populate_rsid,
+                               flip      = "allow",
+                               alt_rsids = FALSE,
+                               verbose   = TRUE,
+                               parallel_cores=parallel_cores)
     # add back
     gwas[invalid, RSID := rsid_dat$RSID]
 
   # NA out invalid RSIDs
   } else if(length(invalid) > 0 && populate_rsid==FALSE) {
-    warning("[-] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
+    message("[-] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
 
     gwas[invalid, RSID := NA_character_]
 
@@ -449,7 +446,7 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
 
   } else {
 
-    still_invalid <- which(!grepl(valid_regex, gwas$RSID))
+    still_invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
 
   }
 

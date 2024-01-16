@@ -11,6 +11,8 @@ standardise_gwas(
   fill = FALSE,
   build = "GRCh37",
   populate_rsid = FALSE,
+  missing_rsid = "fill_CHR:BP",
+  parallel_cores = parallel::detectCores(),
   filters = list(BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 20", P_invalid =
     "!is.infinite(P)", SE_invalid = "!is.infinite(SE)", CHR_missing = "!is.na(CHR)",
     BP_missing = "!is.na(BP)", BETA_missing = "!is.na(BETA)", SE_missing = "!is.na(SE)",
@@ -29,6 +31,8 @@ standardise_gwas(
 \item{build}{a string, one of GRCh37 or GRCh38}
 
 \item{populate_rsid}{either FALSE or a valid argument for chrpos_to_rsid \code{build}, e.g. b37_dbsnp156}
+
+\item{missing_rsid}{one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none")}
 
 \item{filters}{a named list of conditions (as strings) to be evaluated as data.table row filters (quoting column names not necessary).
 These must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example:
