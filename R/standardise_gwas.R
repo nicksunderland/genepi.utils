@@ -411,7 +411,7 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
 
   # some invalid RSIDs and want to populate from dbSNP
   if(length(invalid) > 0 && populate_rsid!=FALSE) {
-    message("[-] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
+    message("[?] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
 
     # get the RSIDs
     rsid_dat <- chrpos_to_rsid(gwas[invalid, list(CHR,BP,EA,OA)],
@@ -429,7 +429,7 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
 
   # NA out invalid RSIDs
   } else if(length(invalid) > 0 && populate_rsid==FALSE) {
-    message("[-] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
+    message("[?] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
 
     gwas[invalid, RSID := NA_character_]
 
