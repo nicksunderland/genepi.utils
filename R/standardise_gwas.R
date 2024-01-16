@@ -62,7 +62,7 @@ standardise_gwas <- function(gwas,
   gwas <- filter_invalid_values(gwas, filters)
   gwas <- standardise_alleles(gwas, build)
   gwas <- health_check(gwas)
-  gwas <- populate_rsid(gwas, populate_rsid, missing_rsid)
+  gwas <- populate_rsid(gwas, populate_rsid, missing_rsid, parallel_cores)
 
   # set attribute for final number of valid rows
   data.table::setattr(gwas, "valid rows", nrow(gwas))
@@ -391,7 +391,7 @@ standardise_alleles <- function(gwas, build) {
 #' @return a data.table
 #' @noRd
 #'
-populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none") {
+populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parallel_cores=parallel::detectCores()) {
 
   # rsid regex
   valid_regex <- "^(rs[0-9]+|[0-9XY]+:[0-9]+).*"
