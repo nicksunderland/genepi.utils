@@ -98,7 +98,7 @@ chrpos_to_rsid <- function(dt,
     out <- furrr::future_map(.x = dts,
                              .f = process_chromosome,
                              chr_col=chr_col, pos_col=pos_col, nea_col=nea_col, ea_col=ea_col, build=build, dbsnp_dir=dbsnp_dir, flip=flip, alt_rsids=alt_rsids, p=p,
-                             .options=furrr::furrr_options(seed=TRUE, globals=c("p")))
+                             .options=furrr::furrr_options(seed=TRUE))
 
   })
 
