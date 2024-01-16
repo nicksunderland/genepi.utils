@@ -14,6 +14,7 @@ BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = Z = SE = SNP = NULL
 #' @param fill a logical, whether to add (NAs) missing columns present in the mapping but not present in the GWAS
 #' @param build a string, one of GRCh37 or GRCh38
 #' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
+#' @param missing_rsid one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none")
 #' @return a standardised data.table
 #' @export
 #'
@@ -23,6 +24,7 @@ standardise_gwas <- function(gwas,
                              fill=FALSE,
                              build="GRCh37",
                              populate_rsid=FALSE,
+                             missing_rsid="fill_CHR:BP",
                              filters = list(
                                BETA_invalid = "!is.infinite(BETA) & abs(BETA) < 20",
                                P_invalid    = "!is.infinite(P)",
@@ -39,6 +41,7 @@ standardise_gwas <- function(gwas,
 
   # validate inputs
   build <- match.arg(build, c("GRCh37", "GRCh38"))
+  missing_rsid <- match.arg(missing_rsid, c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none"))
   if(populate_rsid!=FALSE) {
     populate_rsid <- match.arg(populate_rsid, names(genepi.utils::which_dbsnp_builds()))
   }
@@ -58,7 +61,7 @@ standardise_gwas <- function(gwas,
   gwas <- filter_invalid_values(gwas, filters)
   gwas <- standardise_alleles(gwas, build)
   gwas <- health_check(gwas)
-  gwas <- populate_rsid(gwas, populate_rsid)
+  gwas <- populate_rsid(gwas, populate_rsid, missing_rsid)
 
   # set attribute for final number of valid rows
   data.table::setattr(gwas, "valid rows", nrow(gwas))
@@ -387,32 +390,75 @@ standardise_alleles <- function(gwas, build) {
 #' @return a data.table
 #' @noRd
 #'
-populate_rsid <- function(gwas, populate_rsid=FALSE) {
+populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none") {
 
-  if (populate_rsid == FALSE) return(gwas)
+  # rsid regex
+  valid_regex <- "^(rs[0-9]+|[0-9XY]+:[0-9]+).*"
 
+  # parse existing RSID if there
   if("RSID" %in% names(gwas)) {
-    warning("GWAS already has an RSID field, this will not be overwritten")
-    return(gwas)
+
+    gwas[, RSID := tolower(sub(valid_regex, "\\1", RSID))]
+    invalid <- which(!grepl(valid_regex, gwas$RSID))
+
+  } else {
+
+    invalid <- 1:nrow(gwas)
+
   }
 
-  # get the RSIDs
-  future::plan(future::multisession, workers=parallel::detectCores())
-  progressr::with_progress({
-    gwas <- chrpos_to_rsid(gwas,
-                           chr_col   = "CHR",
-                           pos_col   = "BP",
-                           ea_col    = "EA",
-                           nea_col   = "OA",
-                           build     = populate_rsid,
-                           flip      = "allow",
-                           alt_rsids = FALSE,
-                           verbose   = TRUE)
-  })
+  # some invalid RSIDs and want to populate from dbSNP
+  if(length(invalid) > 0 && populate_rsid) {
+    warning("[-] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
+
+    # get the RSIDs
+    future::plan(future::multisession, workers=parallel::detectCores())
+    progressr::with_progress({
+      rsid_dat <- chrpos_to_rsid(gwas[invalid, list(CHR,BP,EA,OA)],
+                                 chr_col   = "CHR",
+                                 pos_col   = "BP",
+                                 ea_col    = "EA",
+                                 nea_col   = "OA",
+                                 build     = populate_rsid,
+                                 flip      = "allow",
+                                 alt_rsids = FALSE,
+                                 verbose   = TRUE)
+    })
+
+    # add back
+    gwas[invalid, RSID := rsid_dat$RSID]
+
+  # NA out invalid RSIDs
+  } else if(length(invalid) > 0 && !populate_rsid) {
+    warning("[-] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
+
+    gwas[invalid, RSID := NA_character_]
+
+  # everything was fine to begin with
+  } # else pass
 
   # RSIDs at the front
   data.table::setcolorder(gwas, c("RSID", names(gwas)[names(gwas) != "RSID"]))
 
+  # what to do with missing RSIDs; if ignoring, return; else get indices of invalid
+  if(missing_rsid=='none') {
+
+    return(gwas)
+
+  } else {
+
+    still_invalid <- which(!grepl(valid_regex, gwas$RSID))
+
+  }
+
+  # fill
+  switch(missing_rsid,
+         'fill_CHR:BP'            = { gwas[still_invalid, RSID := paste0(CHR,':',BP)               ] },
+         'fill_CHR:BP_OA_EA'      = { gwas[still_invalid, RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] },
+         'overwrite_CHR:BP'       = { gwas[             , RSID := paste0(CHR,':',BP)               ] },
+         'overwrite_CHR:BP:OA:EA' = { gwas[             , RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] })
+
+  # return
   return(gwas)
 }
 
