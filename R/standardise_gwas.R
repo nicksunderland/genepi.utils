@@ -14,7 +14,7 @@ BETA = BP = CHR = EA = OA = OR = OR_LB = OR_SE = OR_UB = P = Z = SE = SNP = NULL
 #' @param fill a logical, whether to add (NAs) missing columns present in the mapping but not present in the GWAS
 #' @param build a string, one of GRCh37 or GRCh38
 #' @param populate_rsid either FALSE or a valid argument for chrpos_to_rsid `build`, e.g. b37_dbsnp156
-#' @param missing_rsid one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none")
+#' @param missing_rsid one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none","leave")
 #' @param parallel_cores an integer, number of cores to use for RSID mapping, default is maximum machine cores
 #' @return a standardised data.table
 #' @export
@@ -405,6 +405,7 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
 
   } else {
 
+    gwas[, RSID := NA_character_]
     invalid <- 1:nrow(gwas)
 
   }
@@ -427,35 +428,27 @@ populate_rsid <- function(gwas, populate_rsid=FALSE, missing_rsid="none", parall
     # add back
     gwas[invalid, RSID := rsid_dat$RSID]
 
-  # NA out invalid RSIDs
-  } else if(length(invalid) > 0 && populate_rsid==FALSE) {
-    message("[?] ", length(invalid), " RSIDs could not be parsed, returning NAs here.")
+  }
 
-    gwas[invalid, RSID := NA_character_]
-
-  # everything was fine to begin with
-  } # else pass
+  # what to do with missing RSIDs;
+  switch(missing_rsid,
+         'leave'                  = { gwas },
+         'none'                   = { still_invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
+                                      message("[?] ", length(still_invalid), " RSIDs could not be parsed, setting to NA.")
+                                      gwas[invalid      , RSID := NA_character_                    ] },
+         'fill_CHR:BP'            = { still_invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
+                                      message("[?] ", length(still_invalid), " RSIDs could not be parsed, setting to CHR:BP")
+                                      gwas[still_invalid, RSID := paste0(CHR,':',BP)               ] },
+         'fill_CHR:BP_OA_EA'      = { still_invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
+                                      message("[?] ", length(still_invalid), " RSIDs could not be parsed, setting to CHR:BP_OA_EA")
+                                      gwas[still_invalid, RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] },
+         'overwrite_CHR:BP'       = { message("[?] setting all RSIDs to CHR:BP coding")
+                                      gwas[             , RSID := paste0(CHR,':',BP)               ] },
+         'overwrite_CHR:BP:OA:EA' = { message("[?] setting all RSIDs to CHR:BP_OA_EA coding")
+                                      gwas[             , RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] })
 
   # RSIDs at the front
   data.table::setcolorder(gwas, c("RSID", names(gwas)[names(gwas) != "RSID"]))
-
-  # what to do with missing RSIDs; if ignoring, return; else get indices of invalid
-  if(missing_rsid=='none') {
-
-    return(gwas)
-
-  } else {
-
-    still_invalid <- which(!grepl("^(rs[0-9]+)$", gwas$RSID))
-
-  }
-
-  # fill
-  switch(missing_rsid,
-         'fill_CHR:BP'            = { gwas[still_invalid, RSID := paste0(CHR,':',BP)               ] },
-         'fill_CHR:BP_OA_EA'      = { gwas[still_invalid, RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] },
-         'overwrite_CHR:BP'       = { gwas[             , RSID := paste0(CHR,':',BP)               ] },
-         'overwrite_CHR:BP:OA:EA' = { gwas[             , RSID := paste0(CHR,':',BP,'_',OA,'_',EA) ] })
 
   # return
   return(gwas)
