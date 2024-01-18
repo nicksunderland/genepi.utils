@@ -32,7 +32,9 @@ standardise_gwas(
 
 \item{populate_rsid}{either FALSE or a valid argument for chrpos_to_rsid \code{build}, e.g. b37_dbsnp156}
 
-\item{missing_rsid}{one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none")}
+\item{missing_rsid}{one of c("fill_CHR:BP","fill_CHR:BP_OA_EA","overwrite_CHR:BP","overwrite_CHR:BP:OA:EA","none","leave")}
+
+\item{parallel_cores}{an integer, number of cores to use for RSID mapping, default is maximum machine cores}
 
 \item{filters}{a named list of conditions (as strings) to be evaluated as data.table row filters (quoting column names not necessary).
 These must be positive assertions, i.e. resolve to TRUE to keep the row. If filters==NULL, no filtering occurs. Example:
