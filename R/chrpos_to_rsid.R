@@ -285,7 +285,7 @@ process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, fli
     p()
     chrom_dt[["RSID"]] <- NA_character_
     if(alt_rsids) alt_rsid_data <- data.table::copy(chrom_dt)
-    if(flip!="no_flip" & alleles) chrom_dt[, rsid_flip_match := NA_character_]
+    if(flip!="no_flip" & alleles) chrom_dt[, rsid_flip_match := NA]
     if(alt_rsids) {
       alt_rsid_data[, "baseRSID" := NA_character_]
       alt_rsid_data <- alt_rsid_data[!is.na(baseRSID), ]

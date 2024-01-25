@@ -48,12 +48,11 @@ clump <- function(gwas,
 
   # write the data out; plink wants A1/A2 coding
   data.table::setnames(gwas, c("EA","OA"), c("A1","A2"))
-  gwas[, c("SNP", "SNP_store") := list(RSID, SNP)]
+  gwas[, SNP := RSID]
   data.table::fwrite(gwas[, list(SNP,A1,A2,P)] , plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
 
   # revert coding now it's written out
   data.table::setnames(gwas, c("A1","A2"), c("EA","OA"))
-  gwas[, c("SNP", "SNP_store") := list(SNP_store, NULL)]
 
   # see if using compressed files
   if(file.exists(paste0(plink_ref,".pvar.zst"))) {
