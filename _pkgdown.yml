@@ -3,14 +3,17 @@ reference:
   desc: >
     Functions for standardising GWAS inputs
   contents:
-  - standardise_gwas
-  - harmonise_gwases
-  - ColumnMapping
-  - format_gwas_output
+  - GWAS
+  - ColumnMap
+  - Column
+  # - standardise_gwas
+  # - harmonise_gwases
+  # - ColumnMapping
+  # - format_gwas_output
   - lift
-  - get_map
-  - input_formats
-  - is.input_format
+  # - get_map
+  # - input_formats
+  # - is.input_format
 
 - title: "GWAS processing"
   desc: >

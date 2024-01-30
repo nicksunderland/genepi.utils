@@ -26,12 +26,13 @@ Imports:
     viridis,
     tibble,
     MendelianRandomization,
-    GenomicRanges, 
-    IRanges, 
+    GenomicRanges,
+    IRanges,
     rtracklayer,
     TwoSampleMR,
     paws,
-    reticulate
+    reticulate,
+    S7
 Remotes:
     github::MRCIEU/TwoSampleMR,
     github::Osmahmoud/SlopeHunter
@@ -44,3 +45,23 @@ Suggests:
     SlopeHunter
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Collate: 
+    'chrpos_to_rsid.R'
+    'class_colmap.R'
+    'class_column_map.R'
+    'class_gwas.R'
+    'clump.R'
+    'collider_bias.R'
+    'colocalisation.R'
+    'drug_target_proxy.R'
+    'eaf_plot.R'
+    'genepi.utils-package.R'
+    'harmonise.R'
+    'ld_matrix.R'
+    'lift.R'
+    'manhattan.R'
+    'pz_plot.R'
+    'qq_plot.R'
+    'standardise_gwas.R'
+    'utils.R'
+    'zzz.R'
