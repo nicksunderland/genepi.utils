@@ -30,8 +30,6 @@ Imports:
     IRanges,
     rtracklayer,
     TwoSampleMR,
-    paws,
-    reticulate,
     S7
 Remotes:
     github::MRCIEU/TwoSampleMR,

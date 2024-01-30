@@ -14,7 +14,7 @@
 #' The path to the reference (without the plink extensions) should be passed as the
 #' `plink_ref` argument. The path to the plink2 executable should be passed as the
 #' `plink2` argument.
-#' @param gwas a data.frame like object with at least columns RSID, EA, OA, and P
+#' @param gwas a data.frame like object with at least columns rsid, ea, oa, and p
 #' @param p1 a numeric, the p-value threshold for inclusion as a clump
 #' @param p2 a numeric, the p-value threshold for incorporation into a clump
 #' @param r2 a numeric, the r2 value
@@ -34,25 +34,25 @@ clump <- function(gwas,
                   plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
                   logging = TRUE) {
 
-  SNP = RSID = SP2 = ID = i.clump = clump_member = SNP_store = A1 = A2 = NULL
+  SNP = rsid = SP2 = ID = i.clump = clump_member = SNP_store = A1 = A2 = NULL
 
   # to data.table format
   gwas <- import_table(gwas)
 
   # checks
-  stopifnot("At least columns RSID, EA, OA, and P must be present in the `gwas`" = all(c("RSID","EA","OA","P") %in% colnames(gwas)))
+  stopifnot("At least columns rsid, ea, oa, and p must be present in the `gwas`" = all(c("rsid","ea","oa","p") %in% colnames(gwas)))
 
   # init files
   plink_input  <- tempfile()
   plink_output <- tempfile()
 
   # write the data out; plink wants A1/A2 coding
-  data.table::setnames(gwas, c("EA","OA"), c("A1","A2"))
-  gwas[, SNP := RSID]
+  data.table::setnames(gwas, c("ea","oa","p"), c("A1","A2","P"))
+  gwas[, SNP := rsid]
   data.table::fwrite(gwas[, list(SNP,A1,A2,P)] , plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
 
   # revert coding now it's written out
-  data.table::setnames(gwas, c("A1","A2"), c("EA","OA"))
+  data.table::setnames(gwas, c("A1","A2"), c("ea","oa"))
 
   # see if using compressed files
   if(file.exists(paste0(plink_ref,".pvar.zst"))) {
@@ -93,7 +93,7 @@ clump <- function(gwas,
 
     # set the key
     data.table::setkey(clumped_long, ID)
-    data.table::setkey(gwas, RSID)
+    data.table::setkey(gwas, rsid)
 
     # flag the index SNPs with TRUE and the clump number
     gwas[clumped_long, c("index","clump") := list(TRUE, clump)]

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
@@ -99,115 +99,297 @@
 
     
     
-<p>Here is a simple example of using the <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code>
-function to standardise your GWAS input ready for use with other
-features in this package.</p>
+<p>Here is a simple example of using the
+<code><a href="../reference/GWAS.html">genepi.utils::GWAS()</a></code> object to standardise your GWAS input
+ready for use with other features in this package. First some
+unprocessed example data:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">filepath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">filepath</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gwas</span></span>
-<span><span class="co">#&gt;           MARKER CHR       POS   BETA    SE     P      EAF A1 A2</span></span>
-<span><span class="co">#&gt;  1: 10:100000625  10 100000625 -0.037 0.137 0.781 7.10e-05  G  A</span></span>
-<span><span class="co">#&gt;  2: 10:100000645  10 100000645  0.045 0.173 0.961 1.21e-01  C  A</span></span>
-<span><span class="co">#&gt;  3: 10:100003242  10 100003242 -0.037 0.134 0.480 5.04e-07  G  T</span></span>
-<span><span class="co">#&gt;  4: 10:100003785  10 100003785 -0.008 0.137 0.743 1.55e-01  C  T</span></span>
-<span><span class="co">#&gt;  5: 10:100004360  10 100004360  0.045 0.134 0.961 8.38e-01  A  G</span></span>
-<span><span class="co">#&gt;  6: 10:100004906  10 100004906 -0.037 0.173 0.781 7.40e-01  A  C</span></span>
-<span><span class="co">#&gt;  7: 10:100004996  10 100004996 -0.008 0.137 0.743 3.23e-10  A  G</span></span>
-<span><span class="co">#&gt;  8: 10:100005282  10 100005282 -0.147 0.134 0.781 9.30e-04  T  C</span></span>
-<span><span class="co">#&gt;  9: 10:100007362  10 100007362  0.045 0.173 0.961 8.16e-05  C  G</span></span>
-<span><span class="co">#&gt; 10: 10:100008436  10 100008436 -0.008 0.208 0.743 9.46e-04  A  G</span></span></code></pre></div>
+<span><span class="co">#&gt;           MARKER   CHR       POS   BETA    SE     P      EAF     A1     A2</span></span>
+<span><span class="co">#&gt;           &lt;char&gt; &lt;int&gt;     &lt;int&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;    &lt;num&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1: 10:100000625    10 100000625 -0.037 0.137 0.781 7.10e-05      G      A</span></span>
+<span><span class="co">#&gt;  2: 10:100000645    10 100000645  0.045 0.173 0.961 1.21e-01      C      A</span></span>
+<span><span class="co">#&gt;  3: 10:100003242    10 100003242 -0.037 0.134 0.480 5.04e-07      G      T</span></span>
+<span><span class="co">#&gt;  4: 10:100003785    10 100003785 -0.008 0.137 0.743 1.55e-01      C      T</span></span>
+<span><span class="co">#&gt;  5: 10:100004360    10 100004360  0.045 0.134 0.961 8.38e-01      A      G</span></span>
+<span><span class="co">#&gt;  6: 10:100004906    10 100004906 -0.037 0.173 0.781 7.40e-01      A      C</span></span>
+<span><span class="co">#&gt;  7: 10:100004996    10 100004996 -0.008 0.137 0.743 3.23e-10      A      G</span></span>
+<span><span class="co">#&gt;  8: 10:100005282    10 100005282 -0.147 0.134 0.781 9.30e-04      T      C</span></span>
+<span><span class="co">#&gt;  9: 10:100007362    10 100007362  0.045 0.173 0.961 8.16e-05      C      G</span></span>
+<span><span class="co">#&gt; 10: 10:100008436    10 100008436 -0.008 0.208 0.743 9.46e-04      A      G</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="column-mapping">Column mapping<a class="anchor" aria-label="anchor" href="#column-mapping"></a>
 </h2>
-<p>We provide a number of column mapping options for standard GWAS
-formats through the <code><a href="../reference/ColumnMapping.html">ColumnMapping()</a></code> class. The available
-formats can be queried like so:</p>
+<p>A number of column mapping options for standard GWAS formats are
+provided through the <code><a href="../reference/ColumnMap.html">ColumnMap()</a></code> class.</p>
+<ul>
+<li>a <strong>string</strong> - valid id for a pre-defined map
+(e.g. ‘giant’ or ‘gwama’)<br>
+</li>
+<li>an <strong>unnamed character vector or list</strong> - the
+constructor will create a <code>ColumnMap</code> object as long as the
+provided column names are found within the list of known aliases<br>
+</li>
+<li>a <strong>named character vector or list</strong> - the names must
+be the standard column names to map to, and the values the current
+column names<br>
+</li>
+<li>a <strong>list of <code>Column</code> class objects</strong>
+</li>
+</ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># column mapping object</span></span>
-<span><span class="va">map_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMapping.html">ColumnMapping</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># possible inputs to mapping object</span></span>
+<span><span class="va">colmap_input1</span> <span class="op">&lt;-</span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'MARKER'</span>, <span class="st">'CHR'</span>, <span class="st">'POS'</span>, <span class="st">'BETA'</span>, <span class="st">'SE'</span>, <span class="st">'P'</span>, <span class="st">'EAF'</span>, <span class="st">'A1'</span>, <span class="st">'A2'</span><span class="op">)</span> <span class="co"># will try to guess standard name mapping</span></span>
+<span><span class="va">colmap_input2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rsid<span class="op">=</span><span class="st">'MARKER'</span>, chr<span class="op">=</span><span class="st">'CHR'</span>, bp<span class="op">=</span><span class="st">'POS'</span>, beta<span class="op">=</span><span class="st">'BETA'</span>, se<span class="op">=</span><span class="st">'SE'</span>, p<span class="op">=</span><span class="st">'P'</span>, eaf<span class="op">=</span><span class="st">'EAF'</span>, ea<span class="op">=</span><span class="st">'A1'</span>, oa<span class="op">=</span><span class="st">'A2'</span><span class="op">)</span> <span class="co"># standard naming</span></span>
+<span><span class="va">colmap_input3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'rsid'</span>, alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'MARKER'</span><span class="op">)</span>, type<span class="op">=</span><span class="st">'character'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'chr'</span>,  alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'CHR'</span><span class="op">)</span>,    type<span class="op">=</span><span class="st">'character'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'bp'</span>,   alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'POS'</span><span class="op">)</span>,    type<span class="op">=</span><span class="st">'integer'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'beta'</span>, alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'BETA'</span><span class="op">)</span>,   type<span class="op">=</span><span class="st">'numeric'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'se'</span>,   alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'SE'</span><span class="op">)</span>,     type<span class="op">=</span><span class="st">'numeric'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'p'</span>,    alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'P'</span><span class="op">)</span>,      type<span class="op">=</span><span class="st">'numeric'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'eaf'</span>,  alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'EAF'</span><span class="op">)</span>,    type<span class="op">=</span><span class="st">'numeric'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'ea'</span>,   alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'A1'</span><span class="op">)</span>,     type<span class="op">=</span><span class="st">'character'</span><span class="op">)</span>,</span>
+<span>                      <span class="fu"><a href="../reference/Column.html">Column</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">'oa'</span>,   alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'A2'</span><span class="op">)</span>,     type<span class="op">=</span><span class="st">'character'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># available formats</span></span>
-<span><span class="fu"><a href="../reference/input_formats.html">input_formats</a></span><span class="op">(</span><span class="va">map_obj</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "default"  "metal"    "ieu_ukb"  "ieugwasr" "ns_map"   "gwama"    "giant"</span></span></code></pre></div>
+<span><span class="co"># column mapping object</span></span>
+<span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMap.html">ColumnMap</a></span><span class="op">(</span><span class="st">"ns_map"</span><span class="op">)</span></span>
+<span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMap.html">ColumnMap</a></span><span class="op">(</span><span class="va">colmap_input1</span><span class="op">)</span></span>
+<span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMap.html">ColumnMap</a></span><span class="op">(</span><span class="va">colmap_input2</span><span class="op">)</span></span>
+<span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMap.html">ColumnMap</a></span><span class="op">(</span><span class="va">colmap_input3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">map</span></span>
+<span><span class="co">#&gt; &lt;genepi.utils::ColumnMap&gt;</span></span>
+<span><span class="co">#&gt;  @ map:List of 9</span></span>
+<span><span class="co">#&gt;  .. $ rsid: &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "rsid"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "MARKER"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. $ chr : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "chr"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "CHR"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. $ bp  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "bp"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "POS"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "integer"</span></span>
+<span><span class="co">#&gt;  .. $ beta: &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "beta"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "BETA"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. $ se  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "se"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "SE"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. $ p   : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "p"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "P"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. $ eaf : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "eaf"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "EAF"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. $ ea  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "ea"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "A1"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. $ oa  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  ..  ..@ name : chr "oa"</span></span>
+<span><span class="co">#&gt;  ..  ..@ alias: chr "A2"</span></span>
+<span><span class="co">#&gt;  ..  ..@ type : chr "character"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="standardise-gwas">Standardise GWAS<a class="anchor" aria-label="anchor" href="#standardise-gwas"></a>
 </h2>
 <p>A GWAS can then be standardised like so:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt; Standardising GWAS ...</span></span>
+<code class="sourceCode R"><span><span class="va">filepath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="va">filepath</span>, map<span class="op">=</span><span class="va">map</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading GWAS ...</span></span>
+<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
+<span><span class="co">#&gt; [i] applying column mapping</span></span>
+<span><span class="co">#&gt; [i] enforcing column types</span></span>
+<span><span class="co">#&gt; [i] standardising columns</span></span>
+<span><span class="co">#&gt; [i] standardising allele coding</span></span>
+<span><span class="co">#&gt; [i] applying filters</span></span>
+<span><span class="co">#&gt; [i] checking rsid coding</span></span>
+<span><span class="co">#&gt;  [?] 10 rsids could not be parsed, setting to chr:bp</span></span>
 <span></span>
 <span><span class="va">gwas</span></span>
-<span><span class="co">#&gt;                      SNP CHR        BP EA OA      EAF   BETA    SE     P</span></span>
-<span><span class="co">#&gt;  1: 10:100000625[b37]A,G  10 100000625  G  A 7.10e-05 -0.037 0.137 0.781</span></span>
-<span><span class="co">#&gt;  2: 10:100000645[b37]A,C  10 100000645  C  A 1.21e-01  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt;  3: 10:100003242[b37]T,G  10 100003242  G  T 5.04e-07 -0.037 0.134 0.480</span></span>
-<span><span class="co">#&gt;  4: 10:100003785[b37]T,C  10 100003785  C  T 1.55e-01 -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  5: 10:100004360[b37]G,A  10 100004360  A  G 8.38e-01  0.045 0.134 0.961</span></span>
-<span><span class="co">#&gt;  6: 10:100004906[b37]C,A  10 100004906  A  C 7.40e-01 -0.037 0.173 0.781</span></span>
-<span><span class="co">#&gt;  7: 10:100004996[b37]G,A  10 100004996  A  G 3.23e-10 -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  8: 10:100005282[b37]C,T  10 100005282  T  C 9.30e-04 -0.147 0.134 0.781</span></span>
-<span><span class="co">#&gt;  9: 10:100007362[b37]G,C  10 100007362  C  G 8.16e-05  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt; 10: 10:100008436[b37]G,A  10 100008436  A  G 9.46e-04 -0.008 0.208 0.743</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;genepi.utils::GWAS&gt;</span></span>
+<span><span class="co">#&gt;  @ map        : &lt;genepi.utils::ColumnMap&gt;</span></span>
+<span><span class="co">#&gt;  .. @ map:List of 9</span></span>
+<span><span class="co">#&gt;  .. .. $ rsid: &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "rsid"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "MARKER"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. .. $ chr : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "chr"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "CHR"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. .. $ bp  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "bp"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "POS"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "integer"</span></span>
+<span><span class="co">#&gt;  .. .. $ beta: &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "beta"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "BETA"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. .. $ se  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "se"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "SE"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. .. $ p   : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "p"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "P"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. .. $ eaf : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "eaf"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "EAF"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "numeric"</span></span>
+<span><span class="co">#&gt;  .. .. $ ea  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "ea"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "A1"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  .. .. $ oa  : &lt;genepi.utils::Column&gt;</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ name : chr "oa"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ alias: chr "A2"</span></span>
+<span><span class="co">#&gt;  .. ..  ..@ type : chr "character"</span></span>
+<span><span class="co">#&gt;  @ qc         :List of 11</span></span>
+<span><span class="co">#&gt;  .. $ !is.infinite(beta) &amp; abs(beta) &lt; 20: int(0) </span></span>
+<span><span class="co">#&gt;  .. $ eaf &gt; 0 &amp; eaf &lt; 1                  : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.infinite(p)                    : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.infinite(se)                   : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(chr)                        : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(bp)                         : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(beta)                       : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(se)                         : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(p)                          : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ !is.na(eaf)                        : int(0) </span></span>
+<span><span class="co">#&gt;  .. $ fail                               : int(0) </span></span>
+<span><span class="co">#&gt;  @ rsid       : chr [1:10] "10:100000625" "10:100000645" "10:100003242" ...</span></span>
+<span><span class="co">#&gt;  @ chr        : chr [1:10] "10" "10" "10" "10" "10" "10" "10" "10" "10" "10"</span></span>
+<span><span class="co">#&gt;  @ bp         : int [1:10] 100000625 100000645 100003242 100003785 100004360 100004906 100004996 100005282 100007362 100008436</span></span>
+<span><span class="co">#&gt;  @ ea         : chr [1:10] "G" "C" "G" "C" "A" "A" "A" "T" "C" "A"</span></span>
+<span><span class="co">#&gt;  @ oa         : chr [1:10] "A" "A" "T" "T" "G" "C" "G" "C" "G" "G"</span></span>
+<span><span class="co">#&gt;  @ eaf        : num [1:10] 7.10e-05 1.21e-01 5.04e-07 1.55e-01 8.38e-01 7.40e-01 3.23e-10 9.30e-04 8.16e-05 9.46e-04</span></span>
+<span><span class="co">#&gt;  @ beta       : num [1:10] -0.037 0.045 -0.037 -0.008 0.045 -0.037 -0.008 -0.147 0.045 -0.008</span></span>
+<span><span class="co">#&gt;  @ se         : num [1:10] 0.137 0.173 0.134 0.137 0.134 0.173 0.137 0.134 0.173 0.208</span></span>
+<span><span class="co">#&gt;  @ p          : num [1:10] 0.781 0.961 0.48 0.743 0.961 0.781 0.743 0.781 0.961 0.743</span></span>
+<span><span class="co">#&gt;  @ n          : int NA</span></span>
+<span><span class="co">#&gt;  @ ncase      : int NA</span></span>
+<span><span class="co">#&gt;  @ correlation: logi [1, 1] NA</span></span>
+<span><span class="co">#&gt;  @ trait      : chr "trait"</span></span>
+<span><span class="co">#&gt;  @ id         : chr "id"</span></span>
+<span><span class="co">#&gt;  @ source     : chr "/Users/xx20081/Library/Caches/org.R-project.R/R/renv/library/genepi.utils-57b5912e/R-4.3/aarch64-apple-darwin20"| __truncated__</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="custom-mapping">Custom mapping<a class="anchor" aria-label="anchor" href="#custom-mapping"></a>
+<h2 id="as-data-table">As data.table<a class="anchor" aria-label="anchor" href="#as-data-table"></a>
 </h2>
-<p>The provided mapping formats can be inspected with
-<code><a href="../reference/get_map.html">get_map()</a></code>. The <code>input_format</code> input of
-<code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> can either be one of the pre-defined
-mappings (as shown above), or you can provide your own custom mapping in
-the form of a named list. In this case the list should contain a minimum
-of the names SNP, CHR, BP, EA, OA, BETA, SE, P, and EAF.</p>
+<p>A <code>GWAS</code> object can be easily converted to data.table.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">map_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ColumnMapping.html">ColumnMapping</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">standard_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_map.html">get_map</a></span><span class="op">(</span><span class="va">map_obj</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">standard_mapping</span></span>
-<span><span class="co">#&gt; $SNP</span></span>
-<span><span class="co">#&gt; [1] "MARKER"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $CHR</span></span>
-<span><span class="co">#&gt; [1] "CHR"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $BP</span></span>
-<span><span class="co">#&gt; [1] "POS"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $EA</span></span>
-<span><span class="co">#&gt; [1] "A1"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $OA</span></span>
-<span><span class="co">#&gt; [1] "A2"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $BETA</span></span>
-<span><span class="co">#&gt; [1] "BETA"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $SE</span></span>
-<span><span class="co">#&gt; [1] "SE"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $EAF</span></span>
-<span><span class="co">#&gt; [1] "EAF"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $P</span></span>
-<span><span class="co">#&gt; [1] "P"</span></span></code></pre></div>
+<span><span class="va">g</span></span>
+<span><span class="co">#&gt;             rsid    chr        bp     ea     oa      eaf   beta    se     p</span></span>
+<span><span class="co">#&gt;           &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: 10:100000625     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781</span></span>
+<span><span class="co">#&gt;  2: 10:100000645     10 100000645      C      A 1.21e-01  0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt;  3: 10:100003242     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480</span></span>
+<span><span class="co">#&gt;  4: 10:100003785     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  5: 10:100004360     10 100004360      A      G 8.38e-01  0.045 0.134 0.961</span></span>
+<span><span class="co">#&gt;  6: 10:100004906     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781</span></span>
+<span><span class="co">#&gt;  7: 10:100004996     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  8: 10:100005282     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781</span></span>
+<span><span class="co">#&gt;  9: 10:100007362     10 100007362      C      G 8.16e-05  0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt; 10: 10:100008436     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743</span></span>
+<span><span class="co">#&gt;         n ncase  trait     id</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  2:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  3:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  4:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  5:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  6:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  7:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  8:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;  9:    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt; 10:    NA    NA  trait     id</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="custom-quality-control">Custom quality control<a class="anchor" aria-label="anchor" href="#custom-quality-control"></a>
+</h2>
+<p>A GWAS object is created after a number of data checks and filters.
+The default filters can be altered via the filters argument, which takes
+a named list of strings that can be evaluated as expressions to filter a
+data.table. The results of the filtering can be found in the
+<code>@qc</code> property of the <code>GWAS</code> object which is a
+named list of integer vectors identifying rows that fail that particular
+filter.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">custom_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SNP  <span class="op">=</span> <span class="st">"snp_marker"</span>, </span>
-<span>                   CHR  <span class="op">=</span> <span class="st">"chrom"</span>, </span>
-<span>                   BP   <span class="op">=</span> <span class="st">"position"</span>, </span>
-<span>                   EA   <span class="op">=</span> <span class="st">"effect_allele"</span>, </span>
-<span>                   OA   <span class="op">=</span> <span class="st">"alt_allele"</span>, </span>
-<span>                   BETA <span class="op">=</span> <span class="st">"beta"</span>, </span>
-<span>                   SE   <span class="op">=</span> <span class="st">"std_error"</span>, </span>
-<span>                   P    <span class="op">=</span> <span class="st">"pval"</span>, </span>
-<span>                   EAF  <span class="op">=</span> <span class="st">"frq"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">filepath</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># not run</span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="va">custom_map</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span></code></pre></div>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat     <span class="op">=</span> <span class="va">gwas</span>, </span>
+<span>             map     <span class="op">=</span> <span class="va">map</span>, </span>
+<span>             filters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta_invalid <span class="op">=</span> <span class="st">"!is.infinite(beta) &amp; abs(beta) &lt; 10"</span>,</span>
+<span>                            eaf_invalid  <span class="op">=</span> <span class="st">"eaf &gt;= 0.01 &amp; eaf &lt;= 0.99"</span>,</span>
+<span>                            p_invalid    <span class="op">=</span> <span class="st">"!is.infinite(p) &amp; sign(p) != -1 &amp; p &lt; 1"</span>,</span>
+<span>                            se_invalid   <span class="op">=</span> <span class="st">"!is.infinite(se) &amp; abs(se) &lt; 10"</span>,</span>
+<span>                            chr_missing  <span class="op">=</span> <span class="st">"!is.na(chr)"</span>,</span>
+<span>                            bp_missing   <span class="op">=</span> <span class="st">"!is.na(bp)"</span>,</span>
+<span>                            beta_missing <span class="op">=</span> <span class="st">"!is.na(beta)"</span>,</span>
+<span>                            se_missing   <span class="op">=</span> <span class="st">"!is.na(se)"</span>,</span>
+<span>                            p_missing    <span class="op">=</span> <span class="st">"!is.na(p)"</span>,</span>
+<span>                            eaf_missing  <span class="op">=</span> <span class="st">"!is.na(eaf)"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading GWAS ...</span></span>
+<span><span class="co">#&gt; [i] applying column mapping</span></span>
+<span><span class="co">#&gt; [i] enforcing column types</span></span>
+<span><span class="co">#&gt; [i] standardising columns</span></span>
+<span><span class="co">#&gt; [i] standardising allele coding</span></span>
+<span><span class="co">#&gt; [i] applying filters</span></span>
+<span><span class="co">#&gt;  [-] 6 row warning(s) with filter 'eaf_invalid' [eaf &gt;= 0.01 &amp; eaf &lt;= 0.99]</span></span>
+<span><span class="co">#&gt; [i] checking rsid coding</span></span>
+<span><span class="co">#&gt;  [?] 10 rsids could not be parsed, setting to chr:bp</span></span>
+<span></span>
+<span><span class="va">gwas</span><span class="op">@</span><span class="va">qc</span></span>
+<span><span class="co">#&gt; $`!is.infinite(beta) &amp; abs(beta) &lt; 10`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`eaf &gt;= 0.01 &amp; eaf &lt;= 0.99`</span></span>
+<span><span class="co">#&gt; [1]  1  3  7  8  9 10</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.infinite(p) &amp; sign(p) != -1 &amp; p &lt; 1`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.infinite(se) &amp; abs(se) &lt; 10`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(chr)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(bp)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(beta)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(se)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(p)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`!is.na(eaf)`</span></span>
+<span><span class="co">#&gt; integer(0)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $fail</span></span>
+<span><span class="co">#&gt; [1]  1  3  7  8  9 10</span></span></code></pre></div>
 </div>
   </div>
 

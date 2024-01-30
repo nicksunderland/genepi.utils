@@ -14,26 +14,50 @@ knitr::opts_chunk$set(
 )
 ```
 
-Here is a simple example of using the `standardise_gwas()` function to standardise your GWAS input ready for use with other features in this package. 
+Here is a simple example of using the `genepi.utils::GWAS()` object to standardise your GWAS input ready for use with other features in 
+this package. First some unprocessed example data:
 
 ```{r setup}
 library(genepi.utils)
 
-gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+filepath <- system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils")
+
+gwas <- data.table::fread(filepath)
 
 gwas
 ```
 
 ## Column mapping
 
-We provide a number of column mapping options for standard GWAS formats through the `ColumnMapping()` class. The available formats can be queried like so: 
+A number of column mapping options for standard GWAS formats are provided through the `ColumnMap()` class.
+
+* a **string** - valid id for a pre-defined map (e.g. 'giant' or 'gwama')  
+* an **unnamed character vector or list** - the constructor will create a `ColumnMap` object as long as the provided column names are found 
+within the list of known aliases  
+* a **named character vector or list** - the names must be the standard column names to map to, and the values the current column names  
+* a **list of `Column` class objects**  
 
 ```{r mapping}
-# column mapping object
-map_obj <- ColumnMapping()
+# possible inputs to mapping object
+colmap_input1 <-    c('MARKER', 'CHR', 'POS', 'BETA', 'SE', 'P', 'EAF', 'A1', 'A2') # will try to guess standard name mapping
+colmap_input2 <- list(rsid='MARKER', chr='CHR', bp='POS', beta='BETA', se='SE', p='P', eaf='EAF', ea='A1', oa='A2') # standard naming
+colmap_input3 <- list(Column(name='rsid', alias=c('MARKER'), type='character'),
+                      Column(name='chr',  alias=c('CHR'),    type='character'),
+                      Column(name='bp',   alias=c('POS'),    type='integer'),
+                      Column(name='beta', alias=c('BETA'),   type='numeric'),
+                      Column(name='se',   alias=c('SE'),     type='numeric'),
+                      Column(name='p',    alias=c('P'),      type='numeric'),
+                      Column(name='eaf',  alias=c('EAF'),    type='numeric'),
+                      Column(name='ea',   alias=c('A1'),     type='character'),
+                      Column(name='oa',   alias=c('A2'),     type='character'))
 
-# available formats
-input_formats(map_obj)
+# column mapping object
+map <- ColumnMap("ns_map")
+map <- ColumnMap(colmap_input1)
+map <- ColumnMap(colmap_input2)
+map <- ColumnMap(colmap_input3)
+
+map
 ```
 
 ## Standardise GWAS
@@ -41,35 +65,44 @@ input_formats(map_obj)
 A GWAS can then be standardised like so:
 
 ```{r std}
-gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid=FALSE)[]
+filepath <- system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils")
+
+gwas <- GWAS(dat=filepath, map=map)
 
 gwas
 ```
 
-## Custom mapping
+## As data.table
 
-The provided mapping formats can be inspected with `get_map()`. The `input_format` input of `standardise_gwas()` can either be one of the pre-defined mappings (as shown above), or you can provide your own custom mapping in the form of a named list. In this case the list should contain a minimum of the names SNP, CHR, BP, EA, OA, BETA, SE, P, and EAF.
+A `GWAS` object can be easily converted to data.table.
 
-```{r format}
-map_obj <- ColumnMapping()
+```{r datatable}
+g <- as.data.table(gwas)
 
-standard_mapping <- get_map(map_obj, input_format="ns_map")
-
-standard_mapping
+g
 ```
 
+## Custom quality control
 
-```{r custom_map, eval=FALSE}
-custom_map <- list(SNP  = "snp_marker", 
-                   CHR  = "chrom", 
-                   BP   = "position", 
-                   EA   = "effect_allele", 
-                   OA   = "alt_allele", 
-                   BETA = "beta", 
-                   SE   = "std_error", 
-                   P    = "pval", 
-                   EAF  = "frq")
+A GWAS object is created after a number of data checks and filters. The default filters can be altered via the filters argument, which 
+takes a named list of strings that can be evaluated as expressions to filter a data.table. The results of the filtering can be found in 
+the `@qc` property of the `GWAS` object which is a named list of integer vectors identifying rows that fail that particular filter. 
 
-# not run
-gwas <- standardise_gwas(gwas, input_format=custom_map, build="GRCh37", populate_rsid=FALSE)[]
+```{r filter}
+gwas <- data.table::fread(filepath)
+
+gwas <- GWAS(dat     = gwas, 
+             map     = map, 
+             filters = list(beta_invalid = "!is.infinite(beta) & abs(beta) < 10",
+                            eaf_invalid  = "eaf >= 0.01 & eaf <= 0.99",
+                            p_invalid    = "!is.infinite(p) & sign(p) != -1 & p < 1",
+                            se_invalid   = "!is.infinite(se) & abs(se) < 10",
+                            chr_missing  = "!is.na(chr)",
+                            bp_missing   = "!is.na(bp)",
+                            beta_missing = "!is.na(beta)",
+                            se_missing   = "!is.na(se)",
+                            p_missing    = "!is.na(p)",
+                            eaf_missing  = "!is.na(eaf)"))
+
+gwas@qc
 ```

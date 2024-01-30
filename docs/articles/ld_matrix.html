@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
@@ -109,14 +109,20 @@ vignette.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ensure annotated with rsID</span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Standardising GWAS ...</span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span>, fill_rsid<span class="op">=</span><span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading GWAS ...</span></span>
+<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
+<span><span class="co">#&gt; [i] applying column mapping</span></span>
+<span><span class="co">#&gt; [i] enforcing column types</span></span>
+<span><span class="co">#&gt; [i] standardising columns</span></span>
+<span><span class="co">#&gt; [i] standardising allele coding</span></span>
+<span><span class="co">#&gt; [i] applying filters</span></span>
+<span><span class="co">#&gt; [i] checking rsid coding</span></span>
+<span><span class="co">#&gt;  [?] 10 RSIDs could not be parsed, attempting to fetch from dbSNP.</span></span>
 <span><span class="co">#&gt; RSID mapping...</span></span>
 <span><span class="co">#&gt; Chromosomes to process:  10</span></span>
 <span><span class="co">#&gt; RSID coverage 100% (10/10), of which 0% (0/10) where found flipping alleles</span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
@@ -149,28 +155,30 @@ data.table to the LD alleles. The return value is a list with elements
 <code class="sourceCode R"><span><span class="co"># harmonised data </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">obj</span><span class="op">[</span><span class="st">'dat'</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $dat</span></span>
-<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA       EAF   BETA    SE</span></span>
-<span><span class="co">#&gt;  1:  rs7899632 10:100000625[b37]A,G  10 100000625  A  G 0.9999290  0.037 0.137</span></span>
-<span><span class="co">#&gt;  2: rs61875309 10:100000645[b37]A,C  10 100000645  A  C 0.8790000 -0.045 0.173</span></span>
-<span><span class="co">#&gt;  3: rs12258651 10:100003242[b37]T,G  10 100003242  T  G 0.9999995  0.037 0.134</span></span>
-<span><span class="co">#&gt;  4:  rs1359508 10:100003785[b37]T,C  10 100003785  T  C 0.8450000  0.008 0.137</span></span>
-<span><span class="co">#&gt;  5:  rs1048754 10:100004360[b37]G,A  10 100004360  G  A 0.1620000 -0.045 0.134</span></span>
-<span><span class="co">#&gt;  6:  rs3750595 10:100004906[b37]C,A  10 100004906  C  A 0.2600000  0.037 0.173</span></span>
-<span><span class="co">#&gt;  7:  rs2025625 10:100004996[b37]G,A  10 100004996  G  A 1.0000000  0.008 0.137</span></span>
-<span><span class="co">#&gt;  8: rs10786405 10:100005282[b37]C,T  10 100005282  C  T 0.9990700  0.147 0.134</span></span>
-<span><span class="co">#&gt;  9: rs11816998 10:100007362[b37]G,C  10 100007362  G  C 0.9999184 -0.045 0.173</span></span>
-<span><span class="co">#&gt; 10:  rs3793692 10:100008436[b37]G,A  10 100008436  G  A 0.9990540  0.008 0.208</span></span>
-<span><span class="co">#&gt;         P LD_REF LD_ALT LD_RSID_allele</span></span>
-<span><span class="co">#&gt;  1: 0.781      A      G  rs7899632_A_G</span></span>
-<span><span class="co">#&gt;  2: 0.961      A      C rs61875309_A_C</span></span>
-<span><span class="co">#&gt;  3: 0.480      T      G rs12258651_T_G</span></span>
-<span><span class="co">#&gt;  4: 0.743      T      C  rs1359508_T_C</span></span>
-<span><span class="co">#&gt;  5: 0.961      G      A  rs1048754_G_A</span></span>
-<span><span class="co">#&gt;  6: 0.781      C      A  rs3750595_C_A</span></span>
-<span><span class="co">#&gt;  7: 0.743      G      A  rs2025625_G_A</span></span>
-<span><span class="co">#&gt;  8: 0.781      C      T rs10786405_C_T</span></span>
-<span><span class="co">#&gt;  9: 0.961      G      C rs11816998_G_C</span></span>
-<span><span class="co">#&gt; 10: 0.743      G      A  rs3793692_G_A</span></span>
+<span><span class="co">#&gt;           rsid    chr        bp     ea     oa       eaf   beta    se     p</span></span>
+<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;     &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  rs7899632     10 100000625      A      G 0.9999290  0.037 0.137 0.781</span></span>
+<span><span class="co">#&gt;  2: rs61875309     10 100000645      A      C 0.8790000 -0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt;  3: rs12258651     10 100003242      T      G 0.9999995  0.037 0.134 0.480</span></span>
+<span><span class="co">#&gt;  4:  rs1359508     10 100003785      T      C 0.8450000  0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  5:  rs1048754     10 100004360      G      A 0.1620000 -0.045 0.134 0.961</span></span>
+<span><span class="co">#&gt;  6:  rs3750595     10 100004906      C      A 0.2600000  0.037 0.173 0.781</span></span>
+<span><span class="co">#&gt;  7:  rs2025625     10 100004996      G      A 1.0000000  0.008 0.137 0.743</span></span>
+<span><span class="co">#&gt;  8: rs10786405     10 100005282      C      T 0.9990700  0.147 0.134 0.781</span></span>
+<span><span class="co">#&gt;  9: rs11816998     10 100007362      G      C 0.9999184 -0.045 0.173 0.961</span></span>
+<span><span class="co">#&gt; 10:  rs3793692     10 100008436      G      A 0.9990540  0.008 0.208 0.743</span></span>
+<span><span class="co">#&gt;         n ncase  trait     id LD_ref LD_alt LD_rsid_allele</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;         &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:    NA    NA  trait     id      A      G  rs7899632_A_G</span></span>
+<span><span class="co">#&gt;  2:    NA    NA  trait     id      A      C rs61875309_A_C</span></span>
+<span><span class="co">#&gt;  3:    NA    NA  trait     id      T      G rs12258651_T_G</span></span>
+<span><span class="co">#&gt;  4:    NA    NA  trait     id      T      C  rs1359508_T_C</span></span>
+<span><span class="co">#&gt;  5:    NA    NA  trait     id      G      A  rs1048754_G_A</span></span>
+<span><span class="co">#&gt;  6:    NA    NA  trait     id      C      A  rs3750595_C_A</span></span>
+<span><span class="co">#&gt;  7:    NA    NA  trait     id      G      A  rs2025625_G_A</span></span>
+<span><span class="co">#&gt;  8:    NA    NA  trait     id      C      T rs10786405_C_T</span></span>
+<span><span class="co">#&gt;  9:    NA    NA  trait     id      G      C rs11816998_G_C</span></span>
+<span><span class="co">#&gt; 10:    NA    NA  trait     id      G      A  rs3793692_G_A</span></span>
 <span></span>
 <span><span class="co"># the LD matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">obj</span><span class="op">[</span><span class="st">'ld_mat'</span><span class="op">]</span><span class="op">)</span></span>

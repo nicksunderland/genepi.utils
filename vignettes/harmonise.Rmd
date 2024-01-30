@@ -23,22 +23,20 @@ are specified in the `merge` argument - usually either `c("CHR"="CHR","BP"="BP")
 library(genepi.utils)
 
 # the gwas data
-gwas1 <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
-gwas2 <- gwas1
-
-# ensure standard column names
-gwas1 <- standardise_gwas(gwas1, input_format="ns_map", build="GRCh37")
-gwas2 <- standardise_gwas(gwas2, input_format="ns_map", build="GRCh37")[]
+gwas1 <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map")
+gwas2 <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map")
+gwas1 <- as.data.table(gwas1)
+gwas2 <- as.data.table(gwas2)
 
 # mess with some alleles
-gwas1[c(5,7,8), c("EA","OA") := list(c("T","I","I"),c("A","D","D"))]
-gwas2[c(5,6,7,8), c("EA","OA") := list(c("A","A","D","ACC"),c("T","A","I","A"))]
+gwas1[c(5,7,8), c("ea","oa") := list(c("T","I","I"),c("A","D","D"))]
+gwas2[c(5,6,7,8), c("ea","oa") := list(c("A","A","D","ACC"),c("T","A","I","A"))]
 
 # view
 gwas2
 
 # harmonise
-harmonised <- harmonise(gwas1, gwas2, merge=c("CHR"="CHR","BP"="BP"))[]
+harmonised <- harmonise(gwas1, gwas2, merge=c("chr"="chr","bp"="bp"))[]
 
 # view 
 harmonised
@@ -68,11 +66,11 @@ gwas1_sh <- SlopeHunter::read_incidence(gwas_incidence_path, snp_col="SNP", beta
 gwas2_sh <- SlopeHunter::read_prognosis(gwas_incidence_path, snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
 
 # TwoSampleMR read in 
-gwas1_2smr <- TwoSampleMR::format_data(gwas1, type="exposure", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
-gwas2_2smr <- TwoSampleMR::format_data(gwas1, type="outcome", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+gwas1_2smr <- TwoSampleMR::format_data(gwas1 |> as.data.frame(), type="exposure", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
+gwas2_2smr <- TwoSampleMR::format_data(gwas1 |> as.data.frame(), type="outcome", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ]
 
 # benchmarking harmonisation
-mbm <- microbenchmark("genepi.utils::harmonise()" = { genepi.utils::harmonise(gwas1, gwas2) },
+mbm <- microbenchmark("genepi.utils::harmonise()" = { genepi.utils::harmonise(gwas1, gwas2, merge=c("CHR"="CHR","BP"="BP")) },
                       "Slopehunter::harmonise_effects()" = { SlopeHunter::harmonise_effects(gwas1, gwas2) },
                       "TwoSampleMR::harmonise()" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },
                       times = 10L)

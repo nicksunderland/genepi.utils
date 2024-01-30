@@ -11,6 +11,7 @@ reference:
   # - ColumnMapping
   # - format_gwas_output
   - lift
+  - as.data.table
   # - get_map
   # - input_formats
   # - is.input_format
@@ -22,7 +23,7 @@ reference:
   - clump
   - harmonise
   - ld_matrix
-  - download_ukbb_ld
+  # - download_ukbb_ld
 
 - title: "RSID mapping"
   desc: >

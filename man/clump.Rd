@@ -16,7 +16,7 @@ clump(
 )
 }
 \arguments{
-\item{gwas}{a data.frame like object with at least columns RSID, EA, OA, and P}
+\item{gwas}{a data.frame like object with at least columns rsid, ea, oa, and p}
 
 \item{p1}{a numeric, the p-value threshold for inclusion as a clump}
 

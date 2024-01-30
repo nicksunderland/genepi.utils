@@ -13,7 +13,8 @@ conversion of odds ratio or and odds ratio standard error / upper and lower boun
 se; and conversion of z scores to p values.
 Standardise allele codingAlleles are standardised to upper case ACTGDI or combination of these letters. NA values
 are allowed in one of the ea or oa fields, but not both, where it is taken to represent a deletion.
-TODO: Harmonisation against a reference panel is an important step, however has not yet been implemented for this class constructor.
+Reference harmonisationTODO: harmonising against a reference panel is an important step, however has not yet been implemented
+for this class constructor.
 FiltersCustom filters can be added to the filters argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to keep. The defaults are:
 
@@ -109,8 +110,8 @@ return value table below).</td></tr><tr><td>Standardise columns</td><td>Core dat
 current conversions include: <em>chr</em> and <em>bp</em> extration from <em>rsid</em> column containing <em>chr:pos +/- allele</em> id coding;
 conversion of odds ratio <em>or</em> and odds ratio standard error / upper and lower bounds <em>or_se/or_ub/or_lb</em> to <em>beta</em> and
 <em>se</em>; and conversion of <em>z</em> scores to <em>p</em> values.</td></tr><tr><td>Standardise allele coding</td><td>Alleles are standardised to upper case <em>ACTGDI</em> or combination of these letters. <code>NA</code> values
-are allowed in one of the <em>ea</em> or <em>oa</em> fields, but not both, where it is taken to represent a deletion.
-TODO: Harmonisation against a reference panel is an important step, however has not yet been implemented for this class constructor.</td></tr><tr><td>Filters</td><td>Custom filters can be added to the <code>filters</code> argument. This should be a list of named string that can be evaluated as R
+are allowed in one of the <em>ea</em> or <em>oa</em> fields, but not both, where it is taken to represent a deletion.</td></tr><tr><td>Reference harmonisation</td><td>TODO: harmonising against a reference panel is an important step, however has not yet been implemented
+for this class constructor.</td></tr><tr><td>Filters</td><td>Custom filters can be added to the <code>filters</code> argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to <em>keep</em>. The defaults are:
 <ul><li><p>beta_invalid = "!is.infinite(beta) &amp; abs(beta) &lt; 20"</p></li>
 <li><p>eaf_invalid = "eaf &gt; 0 &amp; eaf &lt; 1"</p></li>
@@ -130,7 +131,6 @@ expressions and when applied to the standard column names result in a logical ve
 <span>  map <span class="op">=</span> <span class="st">"default"</span>,</span>
 <span>  drop <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fill <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  build <span class="op">=</span> <span class="st">"GRCh37"</span>,</span>
 <span>  fill_rsid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  missing_rsid <span class="op">=</span> <span class="st">"fill_CHR:BP"</span>,</span>
 <span>  parallel_cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -139,6 +139,8 @@ expressions and when applied to the standard column names result in a logical ve
 <span>    chr_missing <span class="op">=</span> <span class="st">"!is.na(chr)"</span>, bp_missing <span class="op">=</span> <span class="st">"!is.na(bp)"</span>, beta_missing <span class="op">=</span></span>
 <span>    <span class="st">"!is.na(beta)"</span>, se_missing <span class="op">=</span> <span class="st">"!is.na(se)"</span>, p_missing <span class="op">=</span> <span class="st">"!is.na(p)"</span>, eaf_missing <span class="op">=</span></span>
 <span>    <span class="st">"!is.na(eaf)"</span><span class="op">)</span>,</span>
+<span>  reference <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ref_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -176,7 +178,16 @@ expressions and when applied to the standard column names result in a logical ve
 
 
 <dt>filters</dt>
-<dd><p>a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above).</p></dd>
+<dd><p>a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)</p></dd>
+
+
+<dt>reference</dt>
+<dd><p>a valid string file path to be read by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread</a></code> or a <code><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table::data.table</a></code> object; the reference data</p></dd>
+
+
+<dt>ref_map</dt>
+<dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map id string, a named list or character vector, or a
+ColumMap object) defining at least columns <code>rsid</code> (or <code>chr</code>, <code>bp</code>), <code>ea</code>, <code>oa</code> and <code>eaf</code>.</p></dd>
 
 </dl></div>
     <div id="value">

@@ -20,8 +20,9 @@ Column <- new_class(
   ),
   validator = function(self) {
     stopifnot("standard column name not recognised" = self@name %in% c('rsid','chr','bp','ea','oa','eaf','p','beta','se','or',
+                                                                       'ncase', 'info',
                                                                        'or_se','or_lb','or_ub', 'beta_lb','beta_ub','z','q_stat',
-                                                                       'i2','nstudies','n'))
+                                                                       'i2','nstudies','n','effects'))
     stopifnot("standard column type not recognised" = self@type %in% c('character','integer','numeric','logical'))
   }
 )
@@ -46,19 +47,24 @@ ColumnMap <- new_class(
   ),
   constructor = function(x) {
 
+    # passing a genepi.utils::ColumnMap object
+    if(inherits(x, 'genepi.utils::ColumnMap')) {
+
+      map <- x@map
+
     # passing a list of genepi.utils::Column objects
-    if(all(sapply(x, function(x0) inherits(x0, 'genepi.utils::Column')))) {
+    } else if(all(sapply(x, function(x0) inherits(x0, 'genepi.utils::Column')))) {
 
       map <- x
 
-    # passing list of column names
+    # passing single/list/vector of column names
     } else {
 
       # possible column names and their meta-data
       base_map = list(
         rsid    = Column(name='rsid',    type='character', alias=c('rsid','RSID','SNP','MarkerName','MARKER','rs_number')),
         chr     = Column(name='chr',     type='character', alias=c('chr','CHR','chromosome')),
-        bp      = Column(name='bp',      type='integer',   alias=c('bp','BP','position')),
+        bp      = Column(name='bp',      type='integer',   alias=c('bp','BP','POS','position')),
         ea      = Column(name='ea',      type='character', alias=c('ea','EA','A1','Allele1','ALLELE1','Tested_Allele','reference_allele')),
         oa      = Column(name='oa',      type='character', alias=c('oa','OA','A2','Allele2','ALLELE0','Other_Allele','nea','other_allele')),
         eaf     = Column(name='eaf',     type='numeric',   alias=c('eaf','EAF','Freq1','A1FREQ','Freq_Tested_Allele')),
@@ -77,30 +83,33 @@ ColumnMap <- new_class(
         or_ub   = Column(name='or_ub',   type='numeric',   alias=c('or_ub','OR_UB')),
         q_stat  = Column(name='q_stat',  type='numeric',   alias=c('q_stat','q_statistic')),
         i2      = Column(name='i2',      type='numeric',   alias=c('i2')),
-        info    = Column(name='info',    type='numeric',   alias=c('info','INFO'))
+        info    = Column(name='info',    type='numeric',   alias=c('info','INFO')),
+        effects = Column(name='effects', type='character', alias=c('effects'))
       )
 
       # pre-specified maps
       defined_maps <- list(
-        default  = c('rsid','chr','bp','ea','oa','eaf','p','beta','se','or','or_se','or_lb','or_ub'),
-        metal    = c('rsid','ea','oa','eaf','p','beta','se'),
-        ieu_ukb  = c('rsid','ea','oa','eaf','p','beta','se'),
-        ieugwasr = c('rsid','chr','bp','ea','oa','eaf','p','beta','se','n'),
-        ns_map   = c('rsid','chr','bp','ea','oa','eaf','p','beta','se'),
-        gwama    = c('rsid','chr','bp','ea','oa','eaf','p','beta','se','beta_lb','beta_ub','z','q_stat','i2','nstudies','n'),
-        giant    = c('rsid','chr','bp','ea','oa','eaf','p','beta','se','n','info')
+        default  = c('RSID','CHR','BP','EA','OA','EAF','P','BETA','SE','OR','OR_SE','OR_LB','OR_UB'),
+        metal    = c('MarkerName','Allele1','Allele2','Freq1','P-value','Effect','StdErr'),
+        ieu_ukb  = c('SNP','ALLELE1','ALLELE0','A1FREQ','P_BOLT_LMM_INF','BETA','SE'),
+        ieugwasr = c('rsid','chr','position','ea','nea','eaf','p','beta','se','n'),
+        ns_map   = c('MARKER','CHR','POS','A1','A2','EAF','P','BETA','SE'),
+        gwama    = c('rs_number','chromosome','position','reference_allele','other_allele','eaf','p-value','beta','se','BETA_95L','beta_95U','z','q_statistic','i2','n_studies','n_samples','effects'),
+        giant    = c('SNP','CHR','POS','Tested_Allele','Other_Allele','Freq_Tested_Allele','P','BETA','SE','N','INFO')
       )
 
       # passing a single string
       if(length(x)==1 && x %in% names(defined_maps)) {
 
-        map <- base_map[names(base_map) %in% defined_maps[[x]]]
+        x <- defined_maps[[x]]
+
+      }
 
       # passing a named list or named character vector
-      } else if(!is.null(names(x))) {
+      if(!is.null(names(x))) {
 
         stopifnot("All names must be standard columns" = all(names(x) %in% names(base_map)))
-        map <- base_map[names(base_map) %in% names(x)]
+        map <- base_map[names(x)]
         map <- Map(function(map, name) {
           map@alias <- unique(c(name, map@alias)) # name to the front
           return(map)

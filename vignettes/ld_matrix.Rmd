@@ -23,10 +23,8 @@ See the setup process for the PLINK2 executable and reference file in the [Clump
 library(genepi.utils)
 
 # the gwas data
-gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
-
-# ensure annotated with rsID
-gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid="b37_dbsnp156")
+gwas <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map", fill_rsid="b37_dbsnp156")
+gwas <- as.data.table(gwas)
 
 # check path to reference
 which_1000G_reference("GRCh37")

@@ -21,7 +21,7 @@ the standardised column names and use pure data.table syntax for increased proce
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
@@ -75,7 +75,7 @@ the standardised column names and use pure data.table syntax for increased proce
     </div>
 
     <div class="ref-description">
-    <p>Harmonise effects across two GWAS datasets. The <code>gwas</code> objects are expected to be in standard format - see <code><a href="standardise_gwas.html">standardise_gwas()</a></code>.
+    <p>Harmonise effects across two GWAS datasets. The <code>gwas</code> objects are expected to be in standard format - see <code>standardise_gwas()</code>.
 Corrects strand for non-palindromic SNPs (flip BETAs). Drop palindromic variants. Drop non-matching variant alleles. <br>
 This function is based on the same function in the <a href="https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R" class="external-link">Slopehunter</a>
 and <a href="https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R" class="external-link">TwoSampleMR</a> packages. I have re-written it here to use
@@ -103,11 +103,11 @@ the standardised column names and use pure data.table syntax for increased proce
 
 
 <dt>gwas1_trait</dt>
-<dd><p>a string, suffix to add to gwas1 column names e.g. progression --&gt; columns CHR_progression, BP_progression, ..., etc.</p></dd>
+<dd><p>a string, suffix to add to gwas1 column names e.g. progression --&gt; columns chr_progression, bp_progression, ..., etc.</p></dd>
 
 
 <dt>gwas2_trait</dt>
-<dd><p>a string, suffix to add to gwas2 column names e.g. progression --&gt; columns CHR_progression, BP_progression, ..., etc.</p></dd>
+<dd><p>a string, suffix to add to gwas2 column names e.g. progression --&gt; columns chr_progression, bp_progression, ..., etc.</p></dd>
 
 
 <dt>merge</dt>

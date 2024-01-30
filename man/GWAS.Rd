@@ -9,7 +9,6 @@ GWAS(
   map = "default",
   drop = FALSE,
   fill = FALSE,
-  build = "GRCh37",
   fill_rsid = FALSE,
   missing_rsid = "fill_CHR:BP",
   parallel_cores = parallel::detectCores(),
@@ -18,6 +17,8 @@ GWAS(
     chr_missing = "!is.na(chr)", bp_missing = "!is.na(bp)", beta_missing =
     "!is.na(beta)", se_missing = "!is.na(se)", p_missing = "!is.na(p)", eaf_missing =
     "!is.na(eaf)"),
+  reference = NULL,
+  ref_map = NULL,
   verbose = TRUE,
   ...
 )
@@ -38,7 +39,12 @@ GWAS(
 
 \item{parallel_cores}{an integer, number of cores to used for RSID mapping, default is maximum machine cores}
 
-\item{filters}{a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above).}
+\item{filters}{a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)}
+
+\item{reference}{a valid string file path to be read by \code{data.table::fread} or a \code{data.table::data.table} object; the reference data}
+
+\item{ref_map}{a valid input to the \code{ColumnMap} class constructor (a predefined map id \link{string}, a named list or character vector, or a
+ColumMap object) defining at least columns \code{rsid} (or \code{chr}, \code{bp}), \code{ea}, \code{oa} and \code{eaf}.}
 }
 \value{
 an S7 class genepi.utils::GWAS object
@@ -58,8 +64,9 @@ current conversions include: \emph{chr} and \emph{bp} extration from \emph{rsid}
 conversion of odds ratio \emph{or} and odds ratio standard error / upper and lower bounds \emph{or_se/or_ub/or_lb} to \emph{beta} and
 \emph{se}; and conversion of \emph{z} scores to \emph{p} values. \cr
 Standardise allele coding \tab Alleles are standardised to upper case \emph{ACTGDI} or combination of these letters. \code{NA} values
-are allowed in one of the \emph{ea} or \emph{oa} fields, but not both, where it is taken to represent a deletion.
-TODO: Harmonisation against a reference panel is an important step, however has not yet been implemented for this class constructor. \cr
+are allowed in one of the \emph{ea} or \emph{oa} fields, but not both, where it is taken to represent a deletion. \cr
+Reference harmonisation \tab TODO: harmonising against a reference panel is an important step, however has not yet been implemented
+for this class constructor (under active development). \cr
 Filters \tab Custom filters can be added to the \code{filters} argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to \emph{keep}. The defaults are:
 \itemize{

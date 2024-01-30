@@ -38,10 +38,9 @@ You will need PLINK2 installed on your computer. The `clump()` function takes a 
 library(genepi.utils)
 
 # the gwas data
-gwas <- data.table::fread(system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"))
+gwas <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map", fill_rsid="b37_dbsnp156")
+gwas <- as.data.table(gwas)
 
-# ensure annotated with rsID
-gwas <- standardise_gwas(gwas, input_format="ns_map", build="GRCh37", populate_rsid="b37_dbsnp156")
 
 # check path to reference
 which_1000G_reference()

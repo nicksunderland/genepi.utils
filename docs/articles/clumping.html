@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
@@ -110,9 +110,9 @@ reference must contain the same variant IDs as your GWAS results. It is
 recommended to first annotate your GWAS with rsIDs - this can be
 achieved with the <code><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid()</a></code> function if your data is
 not already annotated. The data is also expected in genepi.utils
-standard form, so run <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> if needed. The
+standard form, so run <code>standardise_gwas()</code> if needed. The
 standardisation and rsID annotation can also be performed in one step
-with the <code><a href="../reference/standardise_gwas.html">standardise_gwas()</a></code> function, by passing an
+with the <code>standardise_gwas()</code> function, by passing an
 appropriate <code>populate_rsid</code> argument.</p>
 <p>A common reference dataset is the 1000 genomes phase 3 which can be
 downloaded from the PLINK <a href="https://www.cog-genomics.org/plink/2.0/resources#phase3_1kg" class="external-link">website</a>.
@@ -146,14 +146,21 @@ directly in your command line.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ensure annotated with rsID</span></span>
-<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas</span>, input_format<span class="op">=</span><span class="st">"ns_map"</span>, build<span class="op">=</span><span class="st">"GRCh37"</span>, populate_rsid<span class="op">=</span><span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Standardising GWAS ...</span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span>, fill_rsid<span class="op">=</span><span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading GWAS ...</span></span>
+<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
+<span><span class="co">#&gt; [i] applying column mapping</span></span>
+<span><span class="co">#&gt; [i] enforcing column types</span></span>
+<span><span class="co">#&gt; [i] standardising columns</span></span>
+<span><span class="co">#&gt; [i] standardising allele coding</span></span>
+<span><span class="co">#&gt; [i] applying filters</span></span>
+<span><span class="co">#&gt; [i] checking rsid coding</span></span>
+<span><span class="co">#&gt;  [?] 10 RSIDs could not be parsed, attempting to fetch from dbSNP.</span></span>
 <span><span class="co">#&gt; RSID mapping...</span></span>
 <span><span class="co">#&gt; Chromosomes to process:  10</span></span>
 <span><span class="co">#&gt; RSID coverage 100% (10/10), of which 0% (0/10) where found flipping alleles</span></span>
+<span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span>
+<span></span>
 <span></span>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -185,28 +192,30 @@ variant belongs to.</li>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># input gwas; n.b. trailing `[]` just for printing in rmarkdown</span></span>
 <span><span class="va">gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA      EAF   BETA    SE</span></span>
-<span><span class="co">#&gt;  1:  rs7899632 10:100000625[b37]A,G  10 100000625  G  A 7.10e-05 -0.037 0.137</span></span>
-<span><span class="co">#&gt;  2: rs61875309 10:100000645[b37]A,C  10 100000645  C  A 1.21e-01  0.045 0.173</span></span>
-<span><span class="co">#&gt;  3: rs12258651 10:100003242[b37]T,G  10 100003242  G  T 5.04e-07 -0.037 0.134</span></span>
-<span><span class="co">#&gt;  4:  rs1359508 10:100003785[b37]T,C  10 100003785  C  T 1.55e-01 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  5:  rs1048754 10:100004360[b37]G,A  10 100004360  A  G 8.38e-01  0.045 0.134</span></span>
-<span><span class="co">#&gt;  6:  rs3750595 10:100004906[b37]C,A  10 100004906  A  C 7.40e-01 -0.037 0.173</span></span>
-<span><span class="co">#&gt;  7:  rs2025625 10:100004996[b37]G,A  10 100004996  A  G 3.23e-10 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  8: rs10786405 10:100005282[b37]C,T  10 100005282  T  C 9.30e-04 -0.147 0.134</span></span>
-<span><span class="co">#&gt;  9: rs11816998 10:100007362[b37]G,C  10 100007362  C  G 8.16e-05  0.045 0.173</span></span>
-<span><span class="co">#&gt; 10:  rs3793692 10:100008436[b37]G,A  10 100008436  A  G 9.46e-04 -0.008 0.208</span></span>
-<span><span class="co">#&gt;         P</span></span>
-<span><span class="co">#&gt;  1: 0.781</span></span>
-<span><span class="co">#&gt;  2: 0.961</span></span>
-<span><span class="co">#&gt;  3: 0.480</span></span>
-<span><span class="co">#&gt;  4: 0.743</span></span>
-<span><span class="co">#&gt;  5: 0.961</span></span>
-<span><span class="co">#&gt;  6: 0.781</span></span>
-<span><span class="co">#&gt;  7: 0.743</span></span>
-<span><span class="co">#&gt;  8: 0.781</span></span>
-<span><span class="co">#&gt;  9: 0.961</span></span>
-<span><span class="co">#&gt; 10: 0.743</span></span>
+<span><span class="co">#&gt;           rsid    chr        bp     ea     oa      eaf   beta    se     p     n</span></span>
+<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1:  rs7899632     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781    NA</span></span>
+<span><span class="co">#&gt;  2: rs61875309     10 100000645      C      A 1.21e-01  0.045 0.173 0.961    NA</span></span>
+<span><span class="co">#&gt;  3: rs12258651     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480    NA</span></span>
+<span><span class="co">#&gt;  4:  rs1359508     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743    NA</span></span>
+<span><span class="co">#&gt;  5:  rs1048754     10 100004360      A      G 8.38e-01  0.045 0.134 0.961    NA</span></span>
+<span><span class="co">#&gt;  6:  rs3750595     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781    NA</span></span>
+<span><span class="co">#&gt;  7:  rs2025625     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743    NA</span></span>
+<span><span class="co">#&gt;  8: rs10786405     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781    NA</span></span>
+<span><span class="co">#&gt;  9: rs11816998     10 100007362      C      G 8.16e-05  0.045 0.173 0.961    NA</span></span>
+<span><span class="co">#&gt; 10:  rs3793692     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743    NA</span></span>
+<span><span class="co">#&gt;     ncase  trait     id</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  2:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  3:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  4:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  5:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  6:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  7:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  8:    NA  trait     id</span></span>
+<span><span class="co">#&gt;  9:    NA  trait     id</span></span>
+<span><span class="co">#&gt; 10:    NA  trait     id</span></span>
 <span></span>
 <span><span class="co"># run clumping</span></span>
 <span><span class="va">clumped_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clump.html">clump</a></span><span class="op">(</span><span class="va">gwas</span>, </span>
@@ -219,28 +228,31 @@ variant belongs to.</li>
 <span></span>
 <span><span class="co"># view result</span></span>
 <span><span class="va">clumped_gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           RSID                  SNP CHR        BP EA OA      EAF   BETA    SE</span></span>
-<span><span class="co">#&gt;  1:  rs1048754 10:100004360[b37]G,A  10 100004360  A  G 8.38e-01  0.045 0.134</span></span>
-<span><span class="co">#&gt;  2: rs10786405 10:100005282[b37]C,T  10 100005282  T  C 9.30e-04 -0.147 0.134</span></span>
-<span><span class="co">#&gt;  3: rs11816998 10:100007362[b37]G,C  10 100007362  C  G 8.16e-05  0.045 0.173</span></span>
-<span><span class="co">#&gt;  4: rs12258651 10:100003242[b37]T,G  10 100003242  G  T 5.04e-07 -0.037 0.134</span></span>
-<span><span class="co">#&gt;  5:  rs1359508 10:100003785[b37]T,C  10 100003785  C  T 1.55e-01 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  6:  rs2025625 10:100004996[b37]G,A  10 100004996  A  G 3.23e-10 -0.008 0.137</span></span>
-<span><span class="co">#&gt;  7:  rs3750595 10:100004906[b37]C,A  10 100004906  A  C 7.40e-01 -0.037 0.173</span></span>
-<span><span class="co">#&gt;  8:  rs3793692 10:100008436[b37]G,A  10 100008436  A  G 9.46e-04 -0.008 0.208</span></span>
-<span><span class="co">#&gt;  9: rs61875309 10:100000645[b37]A,C  10 100000645  C  A 1.21e-01  0.045 0.173</span></span>
-<span><span class="co">#&gt; 10:  rs7899632 10:100000625[b37]A,G  10 100000625  G  A 7.10e-05 -0.037 0.137</span></span>
-<span><span class="co">#&gt;         P index clump</span></span>
-<span><span class="co">#&gt;  1: 0.961 FALSE     2</span></span>
-<span><span class="co">#&gt;  2: 0.781 FALSE     1</span></span>
-<span><span class="co">#&gt;  3: 0.961 FALSE     2</span></span>
-<span><span class="co">#&gt;  4: 0.480  TRUE     1</span></span>
-<span><span class="co">#&gt;  5: 0.743  TRUE     2</span></span>
-<span><span class="co">#&gt;  6: 0.743 FALSE     2</span></span>
-<span><span class="co">#&gt;  7: 0.781 FALSE     1</span></span>
-<span><span class="co">#&gt;  8: 0.743 FALSE     2</span></span>
-<span><span class="co">#&gt;  9: 0.961 FALSE     2</span></span>
-<span><span class="co">#&gt; 10: 0.781 FALSE     1</span></span></code></pre></div>
+<span><span class="co">#&gt; Key: &lt;rsid&gt;</span></span>
+<span><span class="co">#&gt;           rsid    chr        bp     ea     oa      eaf   beta    se     P     n</span></span>
+<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1:  rs1048754     10 100004360      A      G 8.38e-01  0.045 0.134 0.961    NA</span></span>
+<span><span class="co">#&gt;  2: rs10786405     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781    NA</span></span>
+<span><span class="co">#&gt;  3: rs11816998     10 100007362      C      G 8.16e-05  0.045 0.173 0.961    NA</span></span>
+<span><span class="co">#&gt;  4: rs12258651     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480    NA</span></span>
+<span><span class="co">#&gt;  5:  rs1359508     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743    NA</span></span>
+<span><span class="co">#&gt;  6:  rs2025625     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743    NA</span></span>
+<span><span class="co">#&gt;  7:  rs3750595     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781    NA</span></span>
+<span><span class="co">#&gt;  8:  rs3793692     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743    NA</span></span>
+<span><span class="co">#&gt;  9: rs61875309     10 100000645      C      A 1.21e-01  0.045 0.173 0.961    NA</span></span>
+<span><span class="co">#&gt; 10:  rs7899632     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781    NA</span></span>
+<span><span class="co">#&gt;     ncase  trait     id        SNP  index  clump</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;     &lt;char&gt; &lt;lgcl&gt; &lt;fctr&gt;</span></span>
+<span><span class="co">#&gt;  1:    NA  trait     id  rs1048754  FALSE      2</span></span>
+<span><span class="co">#&gt;  2:    NA  trait     id rs10786405  FALSE      1</span></span>
+<span><span class="co">#&gt;  3:    NA  trait     id rs11816998  FALSE      2</span></span>
+<span><span class="co">#&gt;  4:    NA  trait     id rs12258651   TRUE      1</span></span>
+<span><span class="co">#&gt;  5:    NA  trait     id  rs1359508   TRUE      2</span></span>
+<span><span class="co">#&gt;  6:    NA  trait     id  rs2025625  FALSE      2</span></span>
+<span><span class="co">#&gt;  7:    NA  trait     id  rs3750595  FALSE      1</span></span>
+<span><span class="co">#&gt;  8:    NA  trait     id  rs3793692  FALSE      2</span></span>
+<span><span class="co">#&gt;  9:    NA  trait     id rs61875309  FALSE      2</span></span>
+<span><span class="co">#&gt; 10:    NA  trait     id  rs7899632  FALSE      1</span></span></code></pre></div>
 </div>
   </div>
 

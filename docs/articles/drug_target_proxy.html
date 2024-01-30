@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
       </span>
     </div>
 
@@ -130,7 +130,7 @@ choice (here LDL cholesterol).</p>
 <span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">hmgcoar_chr</span>,<span class="st">":"</span>,<span class="va">hmgcoar_start</span><span class="op">-</span><span class="va">flanking</span>,<span class="st">"-"</span>,<span class="va">hmgcoar_end</span><span class="op">+</span><span class="va">flanking</span><span class="op">)</span>, id<span class="op">=</span><span class="va">ldl_gwas_id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># standardise</span></span>
-<span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas_ldl_hmgcoar</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">gwas_ldl_hmgcoar</span> <span class="op">&lt;-</span> <span class="fu">standardise_gwas</span><span class="op">(</span><span class="va">gwas_ldl_hmgcoar</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="instrument-creation">Instrument creation<a class="anchor" aria-label="anchor" href="#instrument-creation"></a>
 </h3>
@@ -302,7 +302,7 @@ ensures effects are harmonised prior to merging.</p>
 <span><span class="va">flanking</span> <span class="op">&lt;-</span> <span class="fl">5e5</span></span>
 <span></span>
 <span><span class="co"># standardise  T2DM summary stats downloaded from Knowlegde Portal - transancestry, 2022</span></span>
-<span><span class="va">gwas_t2dm_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="st">"/Users/xx20081/Downloads/DIAMANTE/DIAMANTE-TA.sumstat.txt.gz"</span>, </span>
+<span><span class="va">gwas_t2dm_glp1r</span> <span class="op">&lt;-</span> <span class="fu">standardise_gwas</span><span class="op">(</span><span class="st">"/Users/xx20081/Downloads/DIAMANTE/DIAMANTE-TA.sumstat.txt.gz"</span>, </span>
 <span>                                    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SNP<span class="op">=</span><span class="st">"chrposID"</span>,CHR<span class="op">=</span><span class="st">"chromosome(b37)"</span>,BP<span class="op">=</span><span class="st">"position(b37)"</span>,EA<span class="op">=</span><span class="st">"effect_allele"</span>, OA<span class="op">=</span><span class="st">"other_allele"</span>, EAF<span class="op">=</span><span class="st">"MR-MEGA_p-value_association"</span>, BETA<span class="op">=</span><span class="st">"Fixed-effects_beta"</span>, SE<span class="op">=</span><span class="st">"Fixed-effects_SE"</span>, P<span class="op">=</span><span class="st">"Fixed-effects_p-value"</span>, RSID<span class="op">=</span><span class="st">"rsID"</span><span class="op">)</span>, </span>
 <span>                                    drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
 <span></span>
@@ -313,7 +313,7 @@ ensures effects are harmonised prior to merging.</p>
 <span><span class="va">gwas_hba1c_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ieugwasr/man/associations.html" class="external-link">associations</a></span><span class="op">(</span>variants <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">glp1r_chr</span>,<span class="st">":"</span>,<span class="va">glp1r_start</span><span class="op">-</span><span class="va">flanking</span>,<span class="st">"-"</span>,<span class="va">glp1r_end</span><span class="op">+</span><span class="va">flanking</span><span class="op">)</span>, id<span class="op">=</span><span class="va">hb1a1c_gwas_id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># standardise</span></span>
-<span><span class="va">gwas_hba1c_glp1r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/standardise_gwas.html">standardise_gwas</a></span><span class="op">(</span><span class="va">gwas_hba1c_glp1r</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
+<span><span class="va">gwas_hba1c_glp1r</span> <span class="op">&lt;-</span> <span class="fu">standardise_gwas</span><span class="op">(</span><span class="va">gwas_hba1c_glp1r</span>, <span class="st">"ieugwasr"</span>, drop<span class="op">=</span><span class="cn">TRUE</span>, build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># create a QTL object for the HbA1c data</span></span>
 <span><span class="va">hba1c_qtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/QTL.html">QTL</a></span><span class="op">(</span><span class="va">gwas_hba1c_glp1r</span>, p_val<span class="op">=</span><span class="fl">0.5</span>, join_key<span class="op">=</span><span class="st">"RSID"</span><span class="op">)</span></span>
