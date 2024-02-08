@@ -34,7 +34,7 @@ clump <- function(gwas,
                   plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
                   logging = TRUE) {
 
-  SNP = rsid = SP2 = ID = i.clump = clump_member = SNP_store = A1 = A2 = NULL
+  snp = rsid = SP2 = ID = i.clump = clump_member = snp_store = A1 = A2 = NULL
 
   # to data.table format
   gwas <- import_table(gwas)
@@ -52,7 +52,7 @@ clump <- function(gwas,
   data.table::fwrite(gwas[, list(SNP,A1,A2,P)] , plink_input, sep="\t", na=".", quote=FALSE, nThread=parallel::detectCores()) # plink doesn't like empty strings as NA
 
   # revert coding now it's written out
-  data.table::setnames(gwas, c("A1","A2"), c("ea","oa"))
+  data.table::setnames(gwas, c("A1","A2","SNP","P"), c("ea","oa","snp","p"))
 
   # see if using compressed files
   if(file.exists(paste0(plink_ref,".pvar.zst"))) {

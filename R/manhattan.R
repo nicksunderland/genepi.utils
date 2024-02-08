@@ -52,9 +52,9 @@ manhattan <- function(gwas,
 
   # checks
   stopifnot("gwas input must be a data.frame like object" = inherits(gwas, "data.frame"))
-  stopifnot("Input data must contain at least columns: SNP, CHR, BP, and P" = all(c("SNP","CHR","BP","P") %in% colnames(gwas)))
-  stopifnot("highlight_snps should be a character vector, a subset of the 'SNP' column" = is.null(highlight_snps) | is.character(highlight_snps))
-  stopifnot("Annotate should be a character vector, a subset of the 'SNP' column" = is.null(annotate_snps) | is.character(annotate_snps))
+  stopifnot("Input data must contain at least columns: snp, chr, bp, and p" = all(c("snp","chr","bp","p") %in% colnames(gwas)))
+  stopifnot("highlight_snps should be a character vector, a subset of the 'snp' column" = is.null(highlight_snps) | is.character(highlight_snps))
+  stopifnot("Annotate should be a character vector, a subset of the 'snp' column" = is.null(annotate_snps) | is.character(annotate_snps))
   stopifnot("highlight_win must be numeric (kb either side of each hit to highlight; default=0)" = is.numeric(highlight_win))
   stopifnot("downsample percentage must be numeric between 0 and 1" = is.numeric(downsample))
   stopifnot("downsample_pval must be numeric between 0 and 1" = is.numeric(downsample_pval))
@@ -65,13 +65,13 @@ manhattan <- function(gwas,
   # annotate_snps = c("15:135277414[b37]G,T")
 
   # create factor from CHR
-  gwas[, "CHR" := factor(CHR, levels=c(as.character(1:25), setdiff(as.character(unique(CHR)), as.character(1:25))))]
+  gwas[, chr := factor(chr, levels=c(as.character(1:25), setdiff(as.character(unique(chr)), as.character(1:25))))]
 
   # down-sample the insignificant dots for plotting
   if(downsample > 0) {
     set.seed(2023)
-    insig_rows <- which(gwas[["P"]] > downsample_pval)
-    insig_pval <- gwas[insig_rows, ][["P"]]
+    insig_rows <- which(gwas[["p"]] > downsample_pval)
+    insig_pval <- gwas[insig_rows, ][["p"]]
     prob       <- (insig_pval - min(insig_pval, na.rm=T)) / (max(insig_pval, na.rm=T) - min(insig_pval, na.rm=T)) # high P more likely to be removed
     n_remove   <- round(length(insig_pval)*downsample)
     remove_idxs<- sample(insig_rows, size=n_remove, prob=prob, replace=TRUE) # replace=FALSE takes ages, so just call unique after and accept exact % wont be quite accurate
@@ -79,17 +79,17 @@ manhattan <- function(gwas,
   }
 
   # prepare x axis
-  data.table::setkey(gwas, "CHR", "BP")
-  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "CHR"]
+  data.table::setkey(gwas, "chr", "bp")
+  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "chr"]
            [, tot := data.table::shift(cumsum(chr_len), fill=0)],
-       x := BP + i.tot,
-       on = "CHR"]
-  x_ticks <- gwas[, list("x_ticks"= (max(x) + min(x)) / 2), by = "CHR"]
+       x := bp + i.tot,
+       on = "chr"]
+  x_ticks <- gwas[, list("x_ticks"= (max(x) + min(x)) / 2), by = "chr"]
 
   # prepare y axis
   if(is.null(y_limits)) {
     # data max
-    max_p <- max(-log10(gwas$P),na.rm=T)
+    max_p <- max(-log10(gwas$p),na.rm=T)
     # data & line1 max
     if(!is.null(sig_line_1)) {
       max_p <- max(c(max_p, -log10(sig_line_1)),na.rm=T)
@@ -103,11 +103,11 @@ manhattan <- function(gwas,
   log10P <- expression(paste("-log"[10], plain(P)))
 
   # base plot
-  plot <- ggplot2::ggplot(gwas, ggplot2::aes(x=x, y=-log10(P), color=CHR)) +
+  plot <- ggplot2::ggplot(gwas, ggplot2::aes(x=x, y=-log10(p), color=chr)) +
     ggplot2::geom_point(alpha=0.8, size=0.2) +
-    ggplot2::scale_x_continuous(label=x_ticks$CHR, breaks=x_ticks$x_ticks, expand=c(0.01, 0.01)) +
+    ggplot2::scale_x_continuous(label=x_ticks$chr, breaks=x_ticks$x_ticks, expand=c(0.01, 0.01)) +
     ggplot2::scale_y_continuous(limits=y_limits, expand=c(0, 0)) +
-    ggplot2::scale_color_manual(values=rep(colours, length.out=length(levels(gwas$CHR)))) +
+    ggplot2::scale_color_manual(values=rep(colours, length.out=length(levels(gwas$chr)))) +
     ggplot2::theme_classic(base_size = base_text_size) +
     ggplot2::theme(
       legend.position ="none",
@@ -119,13 +119,13 @@ manhattan <- function(gwas,
 
   # add highlighted variants within requested kb BP window
   if(!is.null(highlight_snps) & length(highlight_snps)>0) {
-    gwas[SNP %in% highlight_snps, highlight := TRUE]
+    gwas[snp %in% highlight_snps, highlight := TRUE]
     if(highlight_win > 0) {
-      highlight_data <- gwas[SNP %in% highlight_snps, ]
+      highlight_data <- gwas[snp %in% highlight_snps, ]
       for(i in 1:nrow(highlight_data)) {
-        bp <- highlight_data[[i, "BP"]]
-        chr<- highlight_data[[i, "CHR"]]
-        gwas[BP > (bp - highlight_win*1000) & BP < (bp + highlight_win*1000) & CHR == chr, secondary_highlight := TRUE]
+        bp_  <- highlight_data[[i, "bp"]]
+        chr_ <- highlight_data[[i, "chr"]]
+        gwas[bp > (bp_ - highlight_win*1000) & bp < (bp_ + highlight_win*1000) & chr == chr_, secondary_highlight := TRUE]
       }
     }
     plot <- plot +
@@ -172,10 +172,10 @@ manhattan <- function(gwas,
 #'
 hit_table <- function(gwas, n) {
   # base columns and BETA and SE if provided
-  cols <- c(c("SNP","P"), names(gwas)[names(gwas) %in% c("BETA","SE")])
-  table_data <- utils::head(gwas[order(P), cols, with=FALSE], n=n)
-  table_data <- table_data[, lapply(.SD, signif, digits=2), by=SNP]
-  table_data[, SNP := strtrim(SNP, 23)]
+  cols <- c(c("snp","p"), names(gwas)[names(gwas) %in% c("beta","se")])
+  table_data <- utils::head(gwas[order(p), cols, with=FALSE], n=n)
+  table_data <- table_data[, lapply(.SD, signif, digits=2), by=snp]
+  table_data[, snp := strtrim(snp, 23)]
   table <- gridExtra::tableGrob(table_data, rows=NULL)
   return(table)
 }
@@ -254,7 +254,7 @@ miami <- function(gwases,
   # flipping overwrites manhattan() things so need to recalculate
   if(is.null(y_limits[[2]])) {
     # data max
-    max_p <- max(-log10(gwases[[2]]$P),na.rm=T)
+    max_p <- max(-log10(gwases[[2]]$p),na.rm=T)
     # data & line1 max
     if(!is.null(sig_line_1[[2]])) {
       max_p <- max(c(max_p, -log10(sig_line_1[[2]])),na.rm=T)
