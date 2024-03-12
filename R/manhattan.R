@@ -80,7 +80,7 @@ manhattan <- function(gwas,
 
   # prepare x axis
   data.table::setkey(gwas, "chr", "bp")
-  gwas[gwas[, list(chr_len = as.numeric(max(BP))), by = "chr"]
+  gwas[gwas[, list(chr_len = as.numeric(max(bp))), by = "chr"]
            [, tot := data.table::shift(cumsum(chr_len), fill=0)],
        x := bp + i.tot,
        on = "chr"]

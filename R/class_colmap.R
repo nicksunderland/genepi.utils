@@ -19,11 +19,13 @@ Column <- new_class(
     type  = class_character
   ),
   validator = function(self) {
-    stopifnot("standard column name not recognised" = self@name %in% c('rsid','chr','bp','ea','oa','eaf','p','beta','se','or',
-                                                                       'ncase', 'info',
-                                                                       'or_se','or_lb','or_ub', 'beta_lb','beta_ub','z','q_stat',
-                                                                       'i2','nstudies','n','effects'))
-    stopifnot("standard column type not recognised" = self@type %in% c('character','integer','numeric','logical'))
+    std_cols <- c('rsid','chr','bp','ea','oa','eaf','p','beta','se','or','ncase', 'info','or_se','or_lb','or_ub',
+                  'beta_lb','beta_ub','z','q_stat', 'strand', 'imputed', 'i2','nstudies','n','effects')
+    if (!self@name %in% std_cols) {
+      msg <- paste0("standard column name not recognised `", self@name, "` \nOptions: ", paste0(std_cols, collapse = ", "))
+      stop(msg)
+    }
+    stopifnot("standard column type not recognised; use atomic R types" = self@type %in% c('character','integer','numeric','logical'))
   }
 )
 
@@ -84,6 +86,8 @@ ColumnMap <- new_class(
         q_stat  = Column(name='q_stat',  type='numeric',   alias=c('q_stat','q_statistic')),
         i2      = Column(name='i2',      type='numeric',   alias=c('i2')),
         info    = Column(name='info',    type='numeric',   alias=c('info','INFO')),
+        imputed = Column(name='imputed', type='logical',   alias=c('imputed','Imputed')),
+        strand  = Column(name='strand',  type='character', alias=c('strand','STRAND','Strand','Orientation')),
         effects = Column(name='effects', type='character', alias=c('effects'))
       )
 
