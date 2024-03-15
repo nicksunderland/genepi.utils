@@ -1,3 +1,7 @@
+# Silence R CMD check
+globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation"),
+                package = "genepi.utils")
+
 #' @title GWAS object
 #' @description
 #' A GWAS object is a container for vectors of GWAS data, a correlation matrix, and
@@ -42,8 +46,10 @@
 #' @param parallel_cores an integer, number of cores to used for RSID mapping, default is maximum machine cores
 #' @param filters a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)
 #' @param reference a valid string file path to be read by `data.table::fread` or a `data.table::data.table` object; the reference data
-#' @param ref_map a valid input to the `ColumnMap` class constructor (a predefined map id [string], a named list or character vector, or a
+#' @param ref_map a valid input to the `ColumnMap` class constructor (a predefined map id (a string), a named list or character vector, or a
 #' ColumMap object) defining at least columns `rsid` (or `chr`, `bp`), `ea`, `oa` and `eaf`.
+#' @param verbose a logical, whether to print details
+#' @param ... variable capture to be passed to the constructor, e.g. individual vectors for the slots, rather that `dat`
 #'
 #' @slot rsid character, variant ID - usually in rs12345 format, however this can be changed with the `missing_rsid` argument
 #' @slot chr character, chromosome identifier
@@ -124,16 +130,17 @@ GWAS <- new_class(
                          missing_rsid   = "fill_CHR:BP",
                          parallel_cores = parallel::detectCores(),
                          filters = list(
-                           beta_invalid = "!is.infinite(beta) & abs(beta) < 20",
-                           eaf_invalid  = "eaf > 0 & eaf < 1",
-                           p_invalid    = "!is.infinite(p)",
-                           se_invalid   = "!is.infinite(se)",
-                           chr_missing  = "!is.na(chr)",
-                           bp_missing   = "!is.na(bp)",
-                           beta_missing = "!is.na(beta)",
-                           se_missing   = "!is.na(se)",
-                           p_missing    = "!is.na(p)",
-                           eaf_missing  = "!is.na(eaf)"),
+                           beta_invalid    = "!is.infinite(beta) & abs(beta) < 20",
+                           eaf_invalid     = "eaf > 0 & eaf < 1",
+                           p_invalid       = "!is.infinite(p)",
+                           se_invalid      = "!is.infinite(se)",
+                           alleles_invalid = "!is.na(ea) & !is.na(oa)",
+                           chr_missing     = "!is.na(chr)",
+                           bp_missing      = "!is.na(bp)",
+                           beta_missing    = "!is.na(beta)",
+                           se_missing      = "!is.na(se)",
+                           p_missing       = "!is.na(p)",
+                           eaf_missing     = "!is.na(eaf)"),
                          reference      = NULL,
                          ref_map        = NULL,
                          verbose        = TRUE,
@@ -168,7 +175,7 @@ GWAS <- new_class(
     gwas <- populate_rsid(gwas, fill_rsid=fill_rsid, missing_rsid=missing_rsid, parallel_cores=parallel_cores, verbose=verbose)
 
     # harmonise to reference
-    g <- harmonise_reference(gwas, ref=reference, map=ref_map, qc=qc, verbose=verbose)
+    g <- harmonise_reference(gwas, reference=reference, ref_map=ref_map, qc=qc, verbose=verbose)
     gwas <- g$gwas
     qc   <- g$qc
 
@@ -245,7 +252,8 @@ method(load_gwas, list(class_character, ColumnMap)) <- function(dat, map, drop=F
   if(verbose) message("[i] loading data from: ", basename(dat))
 
   h <- data.table::fread(dat, nrows=1, nThread=parallel::detectCores())
-  n <- raw_names(map)[raw_names(map) %in% names(h)]
+  n <- raw_names(map, names(h))
+  n <- n[!is.na(n)]
   d <- data.table::fread(dat, select=unname(n), nThread=parallel::detectCores())
   d <- load_gwas(dat=d, map=map, drop=drop, fill=fill, verbose=verbose)
 
@@ -255,11 +263,12 @@ method(load_gwas, list(new_S3_class('data.table'), ColumnMap)) <- function(dat, 
 
   if(verbose) message("[i] applying column mapping")
 
-  here <- map[ sapply(map@map, function(x) x@alias[[1]]) %in% names(dat)]
-  miss <- map[!sapply(map@map, function(x) x@alias[[1]]) %in% names(dat)]
+  n    <- raw_names(map, names(dat))
+  here <- map[!is.na(n)]
+  miss <- map[ is.na(n)]
 
   # rename to standard names
-  data.table::setnames(dat, sapply(here@map, function(x) x@alias[[1]]), sapply(here@map, function(x) x@name))
+  data.table::setnames(dat, unname(n[!is.na(n)]), names(n[!is.na(n)]))
 
   # add requested columns if not present
   stopifnot("Mapping column name(s) not found in data.table" = fill || length(miss@map)==0)
@@ -267,16 +276,16 @@ method(load_gwas, list(new_S3_class('data.table'), ColumnMap)) <- function(dat, 
     if(verbose) {
       message(paste0("\t[+] adding missing column(s) [", paste0(sapply(miss@map, function(x) x@name), collapse=", "), "] specified in mapping but not found in gwas data  (see `fill` option)"))
     }
-    dat[, sapply(miss@map, function(x) x@name) := lapply(miss, function(x) vector(mode=x@type, length=nrow(dat)))] # force col type
+    dat[, sapply(miss@map, function(x) x@name) := lapply(miss@map, function(x) vector(mode=x@type, length=nrow(dat)))] # force col type
     dat[, sapply(miss@map, function(x) x@name) := NA] # set to NA
   }
 
   # drop columns if requested
-  if(drop && length(names(dat)[!names(dat) %in% sapply(m@map, function(x) x@alias[[1]])]) > 0) {
+  if(drop && length(names(dat)[!names(dat) %in% names(n)]) > 0) {
     if(verbose) {
-      message(paste0("\t[-] dropping unwanted column(s) [", paste0(names(dat)[!names(dat) %in% sapply(m@map, function(x) x@alias[[1]])], collapse=", "), "] found in gwas data but not specified in mapping (see `drop` option)"))
+      message(paste0("\t[-] dropping unwanted column(s) [", paste0(names(dat)[!names(dat) %in% names(n)], collapse=", "), "] found in gwas data but not specified in mapping (see `drop` option)"))
     }
-    dat[, names(dat)[!names(dat) %in% sapply(m@map, function(x) x@alias[[1]])] := NULL]
+    dat[, names(dat)[!names(dat) %in% names(n)] := NULL]
   }
 
   return(dat)
@@ -301,6 +310,28 @@ method(standardise_columns, new_S3_class('data.table')) <- function(gwas, verbos
       example_failure <- gwas[[which(!valid_pattern)[[1]], "rsid"]]
       stop(paste0("problem standardising `chr` and `bp` columns. Cannot parse rsid` column with regex \\d[:_]\\d for enteries such as: ", example_failure))
     }
+  }
+
+  # check chromosome coding
+  invalid_chr <- which(gwas[, !chr %in% as.character(1:25)])
+  if (length(invalid_chr) > 0) {
+
+    message(paste0("\t[i] ", length( invalid_chr ), " invalid chromosome codings e.g. '", gwas[invalid_chr[1], chr], "', attempting recoding..."))
+
+    # recode chromosomes character integers 1:25
+    gwas[invalid_chr, chr := data.table::fcase(grepl("X|PAR1", chr, ignore.case = TRUE), "23",
+                                               grepl("Y|PAR2", chr, ignore.case = TRUE), "24",
+                                               grepl("M|MT",   chr, ignore.case = TRUE), "25",
+                                               default = NA_character_)]
+
+    # recheck
+    invalid_chr <- which(gwas[, !chr %in% as.character(1:25)])
+    if (length(invalid_chr) > 0) {
+
+      message(paste0("\t[i] ", length( invalid_chr ), " chromosome codings still invalid after recoding to 1:25 e.g. '", gwas[invalid_chr[1], chr], "'"))
+
+    }
+
   }
 
   # convert odds ratio to betas and standard error, if beta, se not provided
@@ -358,7 +389,7 @@ method(apply_filters, list(new_S3_class('data.table'), class_list)) <- function(
 
   if(verbose) message("[i] applying filters")
 
-  if(length(filters) == 0) return(gwas)
+  if(length(filters) == 0) return(list(gwas=gwas, qc=filters))
 
   if(is.null(names(filters))) { names(filters) <- paste0('filter_', 1:length(filters)) }
 
@@ -407,26 +438,83 @@ method(standardise_alleles, new_S3_class('data.table')) <- function(gwas, verbos
   # report invalid
   if(verbose && any(!valid_alleles)) {
     example_invalid <- paste0(gwas[[which(!valid_alleles)[[1]], "ea"]], "/", gwas[[which(!valid_alleles)[[1]], "oa"]])
-    message(paste0("\t[-] ", sum(!valid_alleles), " rows removed due to invalid alleles. Example: '", example_invalid, "'"))
+    message(paste0("\t[-] ", sum(!valid_alleles), " variant alleles set to NA due to invalid alleles. Example: '", example_invalid, "'"))
   }
 
-  # filter out invalid
-  if(any(!valid_alleles)) {
-    gwas <- gwas[valid_alleles, ]
-  }
+  # invalid alleles to NA
+  gwas[!valid_alleles, c("ea", "oa") := list(NA_character_, NA_character_)]
 
   return(gwas)
 }
 
 
 
-harmonise_reference <- new_generic('harmonise_reference', 'gwas', function(gwas, ref, map, qc, verbose=TRUE) { S7_dispatch() })
-method(harmonise_reference, new_S3_class('data.table')) <- function(gwas, ref, map, qc, verbose=TRUE) {
+harmonise_reference <- new_generic('harmonise_reference', 'gwas', function(gwas, reference, ref_map, qc, verbose=TRUE) { S7_dispatch() })
+method(harmonise_reference, new_S3_class('data.table')) <- function(gwas, reference, ref_map, qc, verbose=TRUE) {
 
-  if(is.null(ref) || is.null(map)) return(list(gwas=gwas, qc=qc))
+  # if null just return
+  if (is.null(reference) || is.null(ref_map)) return(list(gwas=gwas, qc=qc))
 
-  # TODO: harmonise function
-  warning("harmonise_reference() not implemented yet")
+  stop("harmonise_reference not implemented yet")
+
+#   # ensure base reference columns present in mapping
+#   req_cols <- c("rsid", "chr", "bp", "ea", "oa", "eaf")
+#   req_map  <- sapply(ref_map@map, function(x) x@name %in% req_cols)
+#   ref_map  <- ref_map[req_map]
+#   map_names<- sapply(ref_map@map, function(x) x@name)
+#   stopifnot("Reference map must contain `rsid`, `chr`, `bp`, `ea`, `oa`, `eaf`" = all(sapply(req_cols, function(x) x %in% map_names)))
+#
+#   # read the reference header and the mapping, ensure base cols in data
+#   h <- data.table::fread(reference, nrows=1, nThread=parallel::detectCores())
+#   n <- raw_names(ref_map, names(h))
+#   n <- n[names(n) %in% req_cols & !is.na(n)]
+#   stopifnot("Reference data must contain columns `rsid`, `chr`, `bp`, `ea`, `oa`, `eaf`" = all(sapply(req_cols, function(x) x %in% names(n))))
+#
+#   # read in all of the reference data
+#   r <- data.table::fread(reference, select=unname(n), nThread=parallel::detectCores())
+#   r <- load_gwas(dat=r, map=ref_map, drop=TRUE, fill=FALSE, verbose=verbose)
+#
+#   # enforce types
+#   r <- type_columns(r, ref_map, verbose=verbose)
+#
+#   # check chromosome coding
+#   if (any(!r$chr %in% as.character(1:25))) {
+#     warning("Non-standard chromosome coding (character '1'-'25') in reference file, please change.")
+#   }
+#
+#   # make all of the non-rsid IDs chr:pos
+#   gwas[grepl("^rs[0-9]+$", rsid), rsid := paste0(chr, ":", bp)]
+#   r[grepl("^rs[0-9]+$", rsid), rsid := paste0(chr, ":", bp)]
+#   r[, c("beta", "se", "p") := list(-9, -9, -9)]
+#
+#   # format for TSMR
+#   r_formatted <- TwoSampleMR::format_data(
+#     dat               = r[1:10,] |> as.data.frame(),
+#     type              = "outcome",
+#     snp_col           = "rsid",
+#     chr_col           = "chr",
+#     pos_col           = "bp",
+#     effect_allele_col = "ea",
+#     other_allele_col  = "oa",
+#     beta_col          = "beta",
+#     eaf_col           = "eaf",
+#     se_col            = "se",
+#     pval_col          = "p") |> data.table::as.data.table()
+#
+#   g_formatted <- TwoSampleMR::format_data(
+#     dat               = gwas[1:10,] |> as.data.frame(),
+#     type              = "exposure",
+#     snp_col           = "rsid",
+#     chr_col           = "chr",
+#     pos_col           = "bp",
+#     effect_allele_col = "ea",
+#     other_allele_col  = "oa",
+#     eaf_col           = "eaf",
+#     beta_col          = "beta",
+#     se_col            = "se") |> data.table::as.data.table()
+#
+#   harm <- TwoSampleMR::harmonise_data(g_formatted, r_formatted)
+
 
   return(list(gwas=gwas, qc=qc))
 }
@@ -469,7 +557,7 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
                                verbose   = verbose,
                                parallel_cores=parallel_cores)
     # add back
-    gwas[invalid, rsid := rsid_dat$RSID]
+    gwas[rsid_dat, rsid := i.RSID, on = c("chr", "bp", "ea", "oa")]
     rm(rsid_dat)
   }
 
@@ -500,6 +588,7 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
 
 #' @title as.data.table
 #' @param object GWAS object to covert to data.table
+#' @param ... argument for data.table generic, ignored in this implementation
 #' @export
 as.data.table <- new_generic('as.data.table', 'object')
 method(as.data.table, GWAS) <- function(object, ...) {

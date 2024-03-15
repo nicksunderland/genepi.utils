@@ -14,9 +14,9 @@ GWAS(
   parallel_cores = parallel::detectCores(),
   filters = list(beta_invalid = "!is.infinite(beta) & abs(beta) < 20", eaf_invalid =
     "eaf > 0 & eaf < 1", p_invalid = "!is.infinite(p)", se_invalid = "!is.infinite(se)",
-    chr_missing = "!is.na(chr)", bp_missing = "!is.na(bp)", beta_missing =
-    "!is.na(beta)", se_missing = "!is.na(se)", p_missing = "!is.na(p)", eaf_missing =
-    "!is.na(eaf)"),
+    alleles_invalid = "!is.na(ea) & !is.na(oa)", chr_missing = "!is.na(chr)", bp_missing
+    = "!is.na(bp)", beta_missing = "!is.na(beta)", se_missing = "!is.na(se)", p_missing =
+    "!is.na(p)", eaf_missing = "!is.na(eaf)"),
   reference = NULL,
   ref_map = NULL,
   verbose = TRUE,
@@ -26,7 +26,7 @@ GWAS(
 \arguments{
 \item{dat}{a valid string file path to be read by \code{data.table::fread} or a \code{data.table::data.table} object; the GWAS data source}
 
-\item{map}{a valid input to the \code{ColumnMap} class constructor (a predefined map id \link{string}, a named list or character vector, or a ColumMap object)}
+\item{map}{a valid input to the \code{ColumnMap} class constructor (a predefined map string id, a named list or character vector, or a ColumMap object)}
 
 \item{drop}{a logical, whether to drop data source columns not in the column \code{map}}
 
@@ -43,8 +43,12 @@ GWAS(
 
 \item{reference}{a valid string file path to be read by \code{data.table::fread} or a \code{data.table::data.table} object; the reference data}
 
-\item{ref_map}{a valid input to the \code{ColumnMap} class constructor (a predefined map id \link{string}, a named list or character vector, or a
+\item{ref_map}{a valid input to the \code{ColumnMap} class constructor (a predefined map id (a string), a named list or character vector, or a
 ColumMap object) defining at least columns \code{rsid} (or \code{chr}, \code{bp}), \code{ea}, \code{oa} and \code{eaf}.}
+
+\item{verbose}{a logical, whether to print details}
+
+\item{...}{variable capture to be passed to the constructor, e.g. individual vectors for the slots, rather that \code{dat}}
 }
 \value{
 an S7 class genepi.utils::GWAS object

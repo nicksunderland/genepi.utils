@@ -8,6 +8,8 @@ as.data.table(object, ...)
 }
 \arguments{
 \item{object}{GWAS object to covert to data.table}
+
+\item{...}{argument for data.table generic, ignored in this implementation}
 }
 \description{
 as.data.table

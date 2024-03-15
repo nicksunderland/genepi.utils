@@ -147,7 +147,11 @@ ColumnMap <- new_class(
 
 
 raw_names <- new_generic('raw_names', 'map')
-method(raw_names, ColumnMap) <- function(map) { sapply(map@map, function(x) x@alias[[1]]) }
+method(raw_names, ColumnMap) <- function(map, dat_cols) {
+
+  sapply(lapply(map@map, function(x) x@alias), function(y) y[which(y %in% dat_cols)[1]])
+
+}
 
 method(`[[`, ColumnMap) <- function(map, i) { map@map[[i]] }
 method(`$`, ColumnMap) <- function(map, i) { map@map[[i]] }
