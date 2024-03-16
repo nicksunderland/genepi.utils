@@ -435,12 +435,6 @@ method(standardise_alleles, new_S3_class('data.table')) <- function(gwas, verbos
                     ((grepl("^([AGCT]+|[D])$", gwas[["oa"]]) | is.na(gwas[["oa"]])) & grepl("^([AGCT]+|[I])$", gwas[["ea"]]))) &  # positive assertion - OA valid SNP or deleteion, EA valid SNP or insertion
                    (!gwas[["ea"]]==gwas[["oa"]])                                                                                  # negative assertion - OA can't be the same as EA
 
-  # report invalid
-  if(verbose && any(!valid_alleles)) {
-    example_invalid <- paste0(gwas[[which(!valid_alleles)[[1]], "ea"]], "/", gwas[[which(!valid_alleles)[[1]], "oa"]])
-    message(paste0("\t[-] ", sum(!valid_alleles), " variant alleles set to NA due to invalid alleles. Example: '", example_invalid, "'"))
-  }
-
   # invalid alleles to NA
   gwas[!valid_alleles, c("ea", "oa") := list(NA_character_, NA_character_)]
 
