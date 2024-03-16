@@ -272,7 +272,7 @@ method(load_gwas, list(new_S3_class('data.table'), ColumnMap)) <- function(dat, 
 
   # add requested columns if not present
   stopifnot("Mapping column name(s) not found in data.table" = fill || length(miss@map)==0)
-  if(fill && length(miss) > 0) {
+  if(fill && length(miss@map) > 0) {
     if(verbose) {
       message(paste0("\t[+] adding missing column(s) [", paste0(sapply(miss@map, function(x) x@name), collapse=", "), "] specified in mapping but not found in gwas data  (see `fill` option)"))
     }
