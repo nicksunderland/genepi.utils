@@ -107,6 +107,9 @@ GWAS <- new_class(
     p       = class_numeric,
     n       = class_integer,
     ncase   = class_integer,
+    strand  = class_character,
+    imputed = class_logical,
+    info    = class_numeric,
     #----------------------------
     # correlation matrix
     #----------------------------
@@ -186,14 +189,18 @@ GWAS <- new_class(
     props <- c(gwas, list(map=map, ...))
 
     # don't need to save all of repetitive columns
-    if(!"n"      %in% names(props))                                   { props$n     <- NA_integer_         }
-    if(!"ncase"  %in% names(props))                                   { props$ncase <- NA_integer_         }
-    if("n"       %in% names(props) && length(unique(props$n))==1    ) { props$n     <- unique(props$n)     }
-    if("ncase"   %in% names(props) && length(unique(props$ncase))==1) { props$ncase <- unique(props$ncase) }
-    if(!"trait"  %in% names(props))                                   { props$trait <- "trait"}
-    if(!"id"     %in% names(props))                                   { props$id    <- "id" }
-    if(length(unique(props$trait))==1)                                { props$trait <- unique(props$trait) }
-    if(length(unique(props$id))==1)                                   { props$id    <- unique(props$id)    }
+    if(!"n"      %in% names(props))                                   { props$n       <- NA_integer_         }
+    if(!"ncase"  %in% names(props))                                   { props$ncase   <- NA_integer_         }
+    if(!"strand" %in% names(props))                                   { props$strand  <- NA_character_       }
+    if(!"imputed"%in% names(props))                                   { props$imputed <- NA                  }
+    if(!"info"   %in% names(props))                                   { props$info    <- NA_real_            }
+    if("n"       %in% names(props) && length(unique(props$n))==1    ) { props$n       <- unique(props$n)     }
+    if("ncase"   %in% names(props) && length(unique(props$ncase))==1) { props$ncase   <- unique(props$ncase) }
+    if("strand"  %in% names(props) && length(unique(props$strand))==1){ props$strand  <- unique(props$strand)}
+    if(!"trait"  %in% names(props))                                   { props$trait   <- "trait"}
+    if(!"id"     %in% names(props))                                   { props$id      <- "id" }
+    if(length(unique(props$trait))==1)                                { props$trait   <- unique(props$trait) }
+    if(length(unique(props$id))==1)                                   { props$id      <- unique(props$id)    }
 
     # set filters and qc
     props$qc <- qc
@@ -223,6 +230,9 @@ GWAS <- new_class(
                p           = props$p,
                n           = props$n,
                ncase       = props$ncase,
+               strand      = props$strand,
+               imputed     = props$imputed,
+               info        = props$info,
                trait       = props$trait,
                id          = props$id,
                source      = props$source,
@@ -237,10 +247,13 @@ GWAS <- new_class(
   #==============================
   validator = function(self) {
     stopifnot("Unequal vector lengths" = sapply(lengths(list(self@rsid, self@chr, self@bp, self@ea, self@oa, self@eaf, self@beta, self@se, self@p)), function(x) x == length(self@rsid)))
-    stopifnot("Invalid sample size `n`" = length(self@n)<=1 || length(self@n)==length(self@rsid))
-    stopifnot("Invalid sample size `ncase`" = length(self@n)<=1 || length(self@n)==length(self@rsid))
-    stopifnot("Invalid `trait` field length" = length(self@trait)<=1)
-    stopifnot("Invalid `id` field length" = length(self@id)<=1)
+    stopifnot("Invalid sample size `n`"       = length(self@n)<=1 || length(self@n)==length(self@rsid))
+    stopifnot("Invalid sample size `ncase`"   = length(self@n)<=1 || length(self@n)==length(self@rsid))
+    stopifnot("Invalid sample size `strand`"  = length(self@strand)<=1 || length(self@strand)==length(self@rsid))
+    stopifnot("Invalid sample size `imputed`" = length(self@imputed)<=1 || length(self@imputed)==length(self@rsid))
+    stopifnot("Invalid sample size `info`"    = length(self@info)<=1 || length(self@info)==length(self@rsid))
+    stopifnot("Invalid `trait` field length"  = length(self@trait)<=1)
+    stopifnot("Invalid `id` field length"     = length(self@id)<=1)
   }
 )
 
@@ -597,10 +610,13 @@ method(as.data.table, GWAS) <- function(object, ...) {
     beta  = object@beta,
     se    = object@se,
     p     = object@p,
-    n     = if(length(object@n)==0) { rep(NA_integer_, length(object@rsid)) } else if(length(object@n)==1) { rep(object@n, length(object@rsid)) } else { object@n },
-    ncase = if(length(object@ncase)==0) { rep(NA_integer_, length(object@rsid)) } else if(length(object@ncase)==1) { rep(object@ncase, length(object@rsid)) } else { object@ncase },
-    trait = if(length(object@trait)==0) { rep(NA_character_, length(object@rsid)) } else if(length(object@trait)==1) { rep(object@trait, length(object@rsid)) } else { object@trait },
-    id    = if(length(object@id)==0) { rep(NA_character_, length(object@rsid)) } else if(length(object@id)==1) { rep(object@id, length(object@rsid)) } else { object@id }
+    strand  = if(length(object@strand)==0)  { rep(NA_character_, length(object@rsid)) } else if(length(object@strand)==1)  { rep(object@strand, length(object@rsid)) }  else { object@strand },
+    imputed = if(length(object@imputed)==0) { rep(NA, length(object@rsid)) }            else if(length(object@imputed)==1) { rep(object@imputed, length(object@rsid)) } else { object@imputed },
+    info    = if(length(object@info)==0)    { rep(NA_real_, length(object@rsid)) }      else if(length(object@info)==1)    { rep(object@info, length(object@rsid)) }    else { object@info },
+    n       = if(length(object@n)==0)       { rep(NA_integer_, length(object@rsid)) }   else if(length(object@n)==1)       { rep(object@n, length(object@rsid)) }       else { object@n },
+    ncase   = if(length(object@ncase)==0)   { rep(NA_integer_, length(object@rsid)) }   else if(length(object@ncase)==1)   { rep(object@ncase, length(object@rsid)) }   else { object@ncase },
+    trait   = if(length(object@trait)==0)   { rep(NA_character_, length(object@rsid)) } else if(length(object@trait)==1)   { rep(object@trait, length(object@rsid)) }   else { object@trait },
+    id      = if(length(object@id)==0)      { rep(NA_character_, length(object@rsid)) } else if(length(object@id)==1)      { rep(object@id, length(object@rsid)) }      else { object@id }
   )
 
 }
