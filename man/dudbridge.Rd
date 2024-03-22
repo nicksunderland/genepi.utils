@@ -2,22 +2,25 @@
 % Please edit documentation in R/collider_bias.R
 \name{dudbridge}
 \alias{dudbridge}
-\title{Dudbridge CWLS collider bias method}
+\title{Dudbridge collider bias method}
 \usage{
-dudbridge(gwas_i, gwas_p, merge = c(CHR = "CHR", BP = "BP"), ...)
+dudbridge(
+  x,
+  weighted = TRUE,
+  prune = NULL,
+  method = "Simex",
+  B = 1000,
+  lambda = seq(0.25, 5, 0.25),
+  seed = 2018,
+  ...
+)
 }
 \arguments{
-\item{gwas_i}{a data.frame like object, clumped incidence GWAS summary statistics in \code{standardise_gwas()} format}
-
-\item{gwas_p}{a data.frame like object, progression GWAS summary statistics in \code{standardise_gwas()} format}
-
-\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
-
 \item{...}{parameter sink, additional ignored parameters}
 }
 \value{
-an S3 ColliderBiasResult object
+an object of class MRResult
 }
 \description{
-The Dudbridge corrected weighted least-squares method for assessing collider bias.
+Dudbridge collider bias method
 }

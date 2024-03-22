@@ -2,106 +2,24 @@
 % Please edit documentation in R/collider_bias.R
 \name{slopehunter}
 \alias{slopehunter}
-\title{Slope-hunter collider bias method}
+\title{Slope-Hunter collider bias method}
 \usage{
 slopehunter(
-  gwas_i,
-  gwas_p,
-  merge = c(CHR = "CHR", BP = "BP"),
+  x,
   ip = 0.001,
   pi0 = 0.6,
   sxy1 = 1e-05,
   bootstraps = 100,
-  seed = 2023,
+  seed = 777,
   ...
 )
 }
 \arguments{
-\item{gwas_i}{a data.frame like object, clumped incidence GWAS summary statistics in \code{standardise_gwas()} format}
-
-\item{gwas_p}{a data.frame like object, progression GWAS summary statistics in \code{standardise_gwas()} format}
-
-\item{merge}{a named character vector c(gwas1_col=gwas2_col) of the columns to join on; e.g. c("CHR1"="CHR2","BP1"="BP2"); can be NULL, in which case the gwases must be data.tables and already have keys set}
-
-\item{ip}{a numeric, range 0-1, the initial p-value by which to filter the incidence GWAS}
-
-\item{pi0}{a numeric, range 0-1, the initial weight / percentage of SNPs that affect incidence only}
-
-\item{sxy1}{a numeric, the initial (guess) of the covariance between incidence and progression BETAs}
-
-\item{bootstraps}{a whole-number numeric, the number of bootstrap samples to estimate the SE of the adjustment factor
-(can be zero, in which case no SE is returned)}
-
-\item{seed}{an integer, seed for reproducibility}
-
 \item{...}{parameter sink, additional ignored parameters}
 }
 \value{
-an S3 ColliderBiasResult object
+an object of class MRResult
 }
 \description{
-The Slope-hunter method has it's own R package and does not need to be re-implemented.
-I have re-written it here primarily for my own learning and to implement new plotting functions,
-such as the iteration plotting output. \cr
-Run the SlopeHunter expectation-maximization method to estimate the bias adjustment
-factor. The algorithm uses model-based clustering and proposes that the distributions
-of the incidence(GI) and progression (GP) BETAs can be written like so:  \cr
-\cr
-\eqn{
-\binom{\beta_{GI}}{\beta'_{GI}}
-\sim
-\pi_{1}N
-\begin{pmatrix}
-\underline{0},
-\begin{bmatrix}
-\sigma_{I}^{2} & b_{1}\sigma_{I}^{2} \\
-b_1\sigma_{I}^{2} & b_{1}^{2}\sigma_{I}^{2} \\
-\end{bmatrix}
-\end{pmatrix}
-+
-\pi_{2}N
-\begin{pmatrix}
-\underline{0},
-\begin{bmatrix}
-\sigma_{I}^{2} & b_{1}\sigma_{I}^{2} + \sigma_{IP} \\
-b_1\sigma_{I}^{2} + \sigma_{IP} & b_{1}^{2}\sigma_{I}^{2} + \sigma_{P}^{2} + 2b_{1}\sigma_{IP} \\
-\end{bmatrix}
-\end{pmatrix}
-+
-\pi_{3}
-\begin{pmatrix}
-\eta_{0} \\
-N(0, \sigma_{P}^{2})
-\end{pmatrix}
-+
-\pi_{4}
-\begin{pmatrix}
-\eta_{0} \\
-\eta_{0}
-\end{pmatrix}
-} \cr
-\itemize{
-\item Cluster 1: SNPs that cause incidence but not progression
-\item Cluster 2: SNPs that cause incidence and progression
-\item Cluster 3: SNPs that cause progression but not incidence
-\item Cluster 4: SNPs that cause neither incidence or progression
-\item The values \eqn{\pi_{1}, \pi_{2}, \pi_{3}, \pi_{4}} are the probabilities that a SNP
-belongs to the respective clusters.
-}
-The first thing to note is that we can filter out SNPs from cluster
-3 and 4 by only including SNPs with a significant association (P-value)
-with incidence - this is the \code{ip} parameter. The problem is then reduced
-to finding two clusters that best fit distributions 1 and 2 of the equation
-above. The SlopeHunter EM algorithm iteratively determines which SNPs
-belong to each distribution (probabilistically) and once complete the
-adjustment factor (slope gradient) can be determined from group 1, i.e. only
-those SNPs thought to solely cause incidence. \cr
-This function's code is adapted from the SlopeHunter R package and if using
-this method the SlopeHunter package should be referenced as the original
-source (see references).
-}
-\references{
-https://github.com/Osmahmoud/SlopeHunter/blob/b0686fe0c7a4e6d056d902765ba9cd0a0b35ad5c/R/SH-utils.R#L53
-
-https://doi.org/10.1038/s41467-022-28119-9
+Slope-Hunter collider bias method
 }

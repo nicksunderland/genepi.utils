@@ -545,31 +545,37 @@ MRResult <- new_class(
     Fstat          = class_numeric,
     CondFstat      = class_numeric,
     Overdispersion = class_numeric,
-    PCs            = class_integer
+    PCs            = class_integer,
+    Hunted         = class_integer,
+    SlopeHunter.Pi = class_numeric,
+    SlopeHunter.Ent= class_numeric
   ),
   #==============================
   # MRResult class constructor func.
   #==============================
-  constructor = function(res, mr_obj, method) {
+  constructor = function(res = NULL, mr_obj = NULL, method = NULL) {
 
     object <- new_object(S7::S7_object(),
-                         Method         = method,
-                         Correl         = tryCatch({ ifelse(all(is.na(res@Correlation)),F,T)}, error=function(e){ F }),
-                         Exposure       = mr_obj@exposure,
-                         Outcome        = mr_obj@outcome,
-                         SNPs           = tryCatch({ res@SNPs }, error=function(e){ NA_integer_ }),
-                         Estimate       = tryCatch({ res@Estimate }, error=function(e){  NA_real_ }),
-                         StdError       = tryCatch({ res@StdError }, error=function(e){ tryCatch({ res@StdError.Est }, error=function(e){ NA_real_ }) }),
-                         Pvalue         = tryCatch({ res@Pvalue   }, error=function(e){ tryCatch({ res@Pvalue.Est   }, error=function(e){ NA_real_ }) }),
-                         Intercept      = tryCatch({ res@Intercept }, error=function(e){ 0 }),
-                         Int.SE         = tryCatch({ res@StdError.Int }, error=function(e){ NA_real_ }),
-                         Int.Pval       = tryCatch({ res@Pvalue.Int }, error=function(e){ NA_real_ }),
-                         Qstat          = tryCatch({ res@Heter.Stat[1] }, error=function(e){ NA_real_ }),
-                         Qstat.Pval     = tryCatch({ res@Heter.Stat[2] }, error=function(e){ NA_real_ }),
-                         Fstat          = tryCatch({ res@Fstat }, error=function(e){ NA_real_ }),
-                         CondFstat      = tryCatch({ res@CondFstat }, error=function(e){ NA_real_ }),
-                         Overdispersion = tryCatch({ res@Overdispersion }, error=function(e){ NA_real_ }),
-                         PCs            = tryCatch({ res@PCs }, error=function(e){ NA_integer_ }))
+                         Method         = ifelse(is.null(method), NA_character_, method),
+                         Correl         = tryCatch({ifelse(all(is.na(res@Correlation)),F,T)}, error=function(e){ F }),
+                         Exposure       = tryCatch({mr_obj@exposure},   error=function(e){ NA_character_ }),
+                         Outcome        = tryCatch({mr_obj@outcome},    error=function(e){ NA_character_ }),
+                         SNPs           = tryCatch({res@SNPs},          error=function(e){ NA_integer_ }),
+                         Estimate       = tryCatch({res@Estimate},      error=function(e){ NA_real_ }),
+                         StdError       = tryCatch({res@StdError},      error=function(e){ tryCatch({ res@StdError.Est }, error=function(e){ NA_real_ }) }),
+                         Pvalue         = tryCatch({res@Pvalue},        error=function(e){ tryCatch({ res@Pvalue.Est   }, error=function(e){ NA_real_ }) }),
+                         Intercept      = tryCatch({res@Intercept},     error=function(e){ 0 }),
+                         Int.SE         = tryCatch({res@StdError.Int},  error=function(e){ NA_real_ }),
+                         Int.Pval       = tryCatch({res@Pvalue.Int},    error=function(e){ NA_real_ }),
+                         Qstat          = tryCatch({res@Heter.Stat[1]}, error=function(e){ NA_real_ }),
+                         Qstat.Pval     = tryCatch({res@Heter.Stat[2]}, error=function(e){ NA_real_ }),
+                         Fstat          = tryCatch({res@Fstat},         error=function(e){ NA_real_ }),
+                         CondFstat      = tryCatch({res@CondFstat},     error=function(e){ NA_real_ }),
+                         Overdispersion = tryCatch({res@Overdispersion},error=function(e){ NA_real_ }),
+                         PCs            = tryCatch({res@PCs },          error=function(e){ NA_integer_ }),
+                         Hunted         = tryCatch({res@Hunted},        error=function(e){ NA_integer_ }),
+                         SlopeHunter.Pi = tryCatch({res@SlopeHunter.Pi},error=function(e){ NA_real_ }),
+                         SlopeHunter.Ent= tryCatch({res@SlopeHunter.Ent},error=function(e){ NA_real_ }))
 
     # return the object
     return(object)
@@ -602,7 +608,10 @@ method(mr_results_to_data_table, MRResult) <- function(x) {
     Fstat    = x@Fstat,
     CondFstat= x@CondFstat,
     Overdispersion = x@Overdispersion,
-    PCs      = x@PCs
+    PCs      = x@PCs,
+    Hunted   = x@Hunted,
+    SlopeHunter.Pi = x@SlopeHunter.Pi,
+    SlopeHunter.Ent= x@SlopeHunter.Ent
   )
 
 }

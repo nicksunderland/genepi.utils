@@ -30,7 +30,8 @@ Imports:
     IRanges,
     rtracklayer,
     TwoSampleMR,
-    S7
+    S7,
+    indexevent
 Remotes:
     github::MRCIEU/TwoSampleMR,
     github::Osmahmoud/SlopeHunter
@@ -50,6 +51,7 @@ Collate:
     'class_mr.R'
     'clump.R'
     'collider_bias.R'
+    'collider_bias_old.R'
     'colocalisation.R'
     'drug_target_proxy.R'
     'eaf_plot.R'
