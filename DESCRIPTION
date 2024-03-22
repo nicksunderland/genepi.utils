@@ -46,8 +46,8 @@ Config/testthat/edition: 3
 Collate: 
     'chrpos_to_rsid.R'
     'class_colmap.R'
-    'class_column_map.R'
     'class_gwas.R'
+    'class_mr.R'
     'clump.R'
     'collider_bias.R'
     'colocalisation.R'

@@ -248,7 +248,7 @@ GWAS <- new_class(
   validator = function(self) {
     stopifnot("Unequal vector lengths" = sapply(lengths(list(self@rsid, self@chr, self@bp, self@ea, self@oa, self@eaf, self@beta, self@se, self@p)), function(x) x == length(self@rsid)))
     stopifnot("Invalid sample size `n`"       = length(self@n)<=1 || length(self@n)==length(self@rsid))
-    stopifnot("Invalid sample size `ncase`"   = length(self@n)<=1 || length(self@n)==length(self@rsid))
+    stopifnot("Invalid sample size `ncase`"   = length(self@ncase)<=1 || length(self@ncase)==length(self@rsid))
     stopifnot("Invalid sample size `strand`"  = length(self@strand)<=1 || length(self@strand)==length(self@rsid))
     stopifnot("Invalid sample size `imputed`" = length(self@imputed)<=1 || length(self@imputed)==length(self@rsid))
     stopifnot("Invalid sample size `info`"    = length(self@info)<=1 || length(self@info)==length(self@rsid))
