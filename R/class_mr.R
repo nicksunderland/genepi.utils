@@ -54,7 +54,7 @@ MR <- new_class(
   package = "genepi.utils",
 
   #==============================
-  # GWAS class properties
+  # MR class properties
   #==============================
   properties = list(
     #----------------------------
@@ -296,6 +296,22 @@ num_exposures <- new_generic("num_exposures", "x", function(x) { S7_dispatch() }
 method(num_exposures, MR) <- function(x) { ncol(x@bx) }
 
 
+#' @title Strip variant IDs of any trailing allele information
+#' @noRd
+snps_no_alleles <- new_generic("snps_no_alleles", "x", function(x) { S7_dispatch() })
+method(snps_no_alleles, MR) <- function(x) {
+  return( sub("(.*)_(?:[ACTG]+|[DI])_(?:[ACTG]+|[DI])$", "\\1", x@snps, ignore.case = TRUE) )
+}
+
+#' @title Reset index SNP
+#' @export
+reset_index_snp <- new_generic("reset_index_snp", "x", function(x) { S7_dispatch() })
+method(reset_index_snp, MR) <- function(x) {
+  x@index_snp <- rep(TRUE, length(x@index_snp))
+  return(x)
+}
+
+
 #' @title Convert to MendelianRandomization::MRInput object
 #' @export
 to_MRInput <- new_generic("to_MRInput", "x", function(x, corr = FALSE) { S7_dispatch() })
@@ -306,14 +322,14 @@ method(to_MRInput, MR) <- function(x, corr = FALSE) {
   if(corr && length(mr_obj@ld_info) == 0) warning("Correlation MR requested but no LD info / matrix found")
 
   mr_input <- MendelianRandomization::mr_input(
-    bx          = x@bx[x@index_snp,1],
-    bxse        = x@bxse[x@index_snp,1],
-    by          = x@by[x@index_snp],
-    byse        = x@byse[x@index_snp],
+    bx          = x@bx[which(x@index_snp == TRUE), 1],
+    bxse        = x@bxse[which(x@index_snp == TRUE), 1],
+    by          = x@by[which(x@index_snp == TRUE)],
+    byse        = x@byse[which(x@index_snp == TRUE)],
     exposure    = x@exposure[1],
     outcome     = x@outcome,
-    snps        = x@snps[x@index_snp],
-    correlation = if(!corr || length(x@ld_info)==0) { matrix() } else { as.matrix(x@correlation[x@index_snp,x@index_snp]) }  # as.matrix in case just one value
+    snps        = x@snps[which(x@index_snp == TRUE)],
+    correlation = if(!corr || length(x@ld_info)==0) { matrix() } else { as.matrix(x@correlation[which(x@index_snp == TRUE), which(x@index_snp == TRUE)]) }  # as.matrix in case just one value
   )
 
   return(mr_input)
@@ -330,14 +346,14 @@ method(to_MRMVInput, MR) <- function(x, corr = FALSE) {
   if(corr && length(x@ld_info) == 0) warning("Correlation MR requested but no LD info / matrix found")
 
   mr_input <- MendelianRandomization::mr_mvinput(
-    bx          = x@bx[x@index_snp, ],
-    bxse        = x@bxse[x@index_snp, ],
-    by          = x@by[x@index_snp],
-    byse        = x@byse[x@index_snp],
+    bx          = x@bx[which(x@index_snp == TRUE), ],
+    bxse        = x@bxse[which(x@index_snp == TRUE), ],
+    by          = x@by[which(x@index_snp == TRUE)],
+    byse        = x@byse[which(x@index_snp == TRUE)],
     exposure    = x@exposure,
     outcome     = x@outcome,
-    snps        = x@snps[x@index_snp],
-    correlation = if(!corr || length(x@ld_info)==0) { matrix() } else { as.matrix(x@correlation[x@index_snp,x@index_snp]) }
+    snps        = x@snps[which(x@index_snp == TRUE)],
+    correlation = if(!corr || length(x@ld_info)==0) { matrix() } else { as.matrix(x@correlation[which(x@index_snp == TRUE),which(x@index_snp == TRUE)]) }
   )
 
   return(mr_input)
@@ -497,65 +513,78 @@ method(mr_pcgmm, MR) <- function(x, corr = TRUE, ...) {
 }
 
 
+#' @title Helper MRResult class
+#' @noRd
+MRResult <- new_class(
+  #==============================
+  # MRResult class name
+  #==============================
+  name    = "MRResult",
+  package = "genepi.utils",
 
-
-
-
-
-MRResult <- setClass(
-  Class = "MRResult",
-  slots = list(
-    Method   = 'character',
-    Correl   = 'logical',
-    Exposure = 'character',
-    Outcome  = 'character',
-    SNPs     = 'integer',
-    Estimate = 'numeric',
-    StdError = 'numeric',
-    Pvalue   = 'numeric',
-    Intercept= 'numeric',
-    Int.SE   = 'numeric',
-    Int.Pval = 'numeric',
-    Qstat    = "numeric",
-    Qstat.Pval= 'numeric',
-    Fstat    = 'numeric',
-    CondFstat= 'numeric',
-    Overdispersion = 'numeric',
-    PCs      = 'integer'
+  #==============================
+  # MRResult class properties
+  #==============================
+  properties = list(
+    #----------------------------
+    # column names / data vectors
+    #----------------------------
+    Method         = class_character,
+    Correl         = class_logical,
+    Exposure       = class_character,
+    Outcome        = class_character,
+    SNPs           = class_integer,
+    Estimate       = class_numeric,
+    StdError       = class_numeric,
+    Pvalue         = class_numeric,
+    Intercept      = class_numeric,
+    Int.SE         = class_numeric,
+    Int.Pval       = class_numeric,
+    Qstat          = class_numeric,
+    Qstat.Pval     = class_numeric,
+    Fstat          = class_numeric,
+    CondFstat      = class_numeric,
+    Overdispersion = class_numeric,
+    PCs            = class_integer
   ),
-  prototype = list(
-    Method   = NA_character_,
-    Correl   = NA,
-    Exposure = NA_character_,
-    Outcome  = NA_character_,
-    SNPs     = NA_integer_,
-    Estimate = NA_real_,
-    StdError = NA_real_,
-    Pvalue   = NA_real_,
-    Intercept= 0,
-    Int.SE   = NA_real_,
-    Int.Pval = NA_real_,
-    Qstat    = NA_real_,
-    Qstat.Pval=NA_real_,
-    Fstat    = NA_real_,
-    CondFstat= NA_real_,
-    Overdispersion = NA_real_,
-    PCs      = NA_integer_
-  )
+  #==============================
+  # MRResult class constructor func.
+  #==============================
+  constructor = function(res, mr_obj, method) {
+
+    object <- new_object(S7::S7_object(),
+                         Method         = method,
+                         Correl         = tryCatch({ ifelse(all(is.na(res@Correlation)),F,T)}, error=function(e){ F }),
+                         Exposure       = mr_obj@exposure,
+                         Outcome        = mr_obj@outcome,
+                         SNPs           = tryCatch({ res@SNPs }, error=function(e){ NA_integer_ }),
+                         Estimate       = tryCatch({ res@Estimate }, error=function(e){  NA_real_ }),
+                         StdError       = tryCatch({ res@StdError }, error=function(e){ tryCatch({ res@StdError.Est }, error=function(e){ NA_real_ }) }),
+                         Pvalue         = tryCatch({ res@Pvalue   }, error=function(e){ tryCatch({ res@Pvalue.Est   }, error=function(e){ NA_real_ }) }),
+                         Intercept      = tryCatch({ res@Intercept }, error=function(e){ 0 }),
+                         Int.SE         = tryCatch({ res@StdError.Int }, error=function(e){ NA_real_ }),
+                         Int.Pval       = tryCatch({ res@Pvalue.Int }, error=function(e){ NA_real_ }),
+                         Qstat          = tryCatch({ res@Heter.Stat[1] }, error=function(e){ NA_real_ }),
+                         Qstat.Pval     = tryCatch({ res@Heter.Stat[2] }, error=function(e){ NA_real_ }),
+                         Fstat          = tryCatch({ res@Fstat }, error=function(e){ NA_real_ }),
+                         CondFstat      = tryCatch({ res@CondFstat }, error=function(e){ NA_real_ }),
+                         Overdispersion = tryCatch({ res@Overdispersion }, error=function(e){ NA_real_ }),
+                         PCs            = tryCatch({ res@PCs }, error=function(e){ NA_integer_ }))
+
+    # return the object
+    return(object)
+  }
 )
 
-setMethod("initialize", c("MRResult"), function(.Object, ...){
-  .Object <- parse_mr_result(.Object, ...)
-  validObject(.Object)
-  return(.Object)
-})
 
 #' @title MR results to data.table
+#' @param x MRResult object to covert to data.table
+#' @param ... argument for data.table generic, ignored in this implementation
 #' @export
-setGeneric("mr_results_to_data_table", function(x) standardGeneric("mr_results_to_data_table"))
-#' @rdname mr_results_to_data_table-methods
-#' @aliases mr_results_to_data_table,MRResult,ANY-method
-setMethod("mr_results_to_data_table", "MRResult", function(x) {
+mr_results_to_data_table <- new_generic("mr_results_to_data_table", "x", function(x) { S7_dispatch() })
+#' @name mr_results_to_data_table
+method(mr_results_to_data_table, MRResult) <- function(x) {
+
   d <- data.table::data.table(
     Method   = x@Method,
     Correl   = x@Correl,
@@ -575,146 +604,197 @@ setMethod("mr_results_to_data_table", "MRResult", function(x) {
     Overdispersion = x@Overdispersion,
     PCs      = x@PCs
   )
-})
-setMethod("mr_results_to_data_table", "list", function(x) {
-  stopifnot("Should be a list of MRResult objects" = sapply(x, function(r) inherits(r, "MRResult")))
+
+}
+
+#' @name mr_results_to_data_table
+method(mr_results_to_data_table, class_list) <- function(x) {
+  stopifnot("Should be a list of MRResult objects" = sapply(x, function(r) inherits(r, "genepi.utils::MRResult")))
   lapply(x, function(r) mr_results_to_data_table(r)) |> data.table::rbindlist()
-})
+}
 
-setGeneric("parse_mr_result", function(x, res, mr_obj, method) standardGeneric("parse_mr_result"))
-setMethod("parse_mr_result", c("MRResult"), function(x, res, mr_obj, method) {
 
-  x@Method         <- method
-  x@Correl         <- tryCatch({ ifelse(all(is.na(res@Correlation)),F,T)}, error=function(e){ F })
-  x@Exposure       <- mr_obj@exposure
-  x@Outcome        <- mr_obj@outcome
-  x@SNPs           <- tryCatch({ res@SNPs }, error=function(e){ NA_integer_ })
-  x@Estimate       <- tryCatch({ res@Estimate }, error=function(e){  NA_real_ })
-  x@StdError       <- tryCatch({ res@StdError }, error=function(e){ tryCatch({ res@StdError.Est }, error=function(e){ NA_real_ }) })
-  x@Pvalue         <- tryCatch({ res@Pvalue   }, error=function(e){ tryCatch({ res@Pvalue.Est   }, error=function(e){ NA_real_ }) })
-  x@Intercept      <- tryCatch({ res@Intercept }, error=function(e){ 0 })
-  x@Int.SE         <- tryCatch({ res@StdError.Int }, error=function(e){ NA_real_ })
-  x@Int.Pval       <- tryCatch({ res@Pvalue.Int }, error=function(e){ NA_real_ })
-  x@Qstat          <- tryCatch({ res@Heter.Stat[1] }, error=function(e){ NA_real_ })
-  x@Qstat.Pval     <- tryCatch({ res@Heter.Stat[2] }, error=function(e){ NA_real_ })
-  x@Fstat          <- tryCatch({ res@Fstat }, error=function(e){ NA_real_ })
-  x@CondFstat      <- tryCatch({ res@CondFstat }, error=function(e){ NA_real_ })
-  x@Overdispersion <- tryCatch({ res@Overdispersion }, error=function(e){ NA_real_ })
-  x@PCs            <- tryCatch({ res@PCs }, error=function(e){ NA_integer_ })
+#' @title Set the LD matrix
+#' @export
+set_ld_mat <- new_generic("set_ld_mat", "x", function(x, correlation) { S7_dispatch() })
+method(set_ld_mat, MR) <- function(x, correlation) {
+
+  # LD variants info
+  ld_info <- data.table::data.table(
+    idx  = 1:length(rownames(correlation)),
+    rsid = sub("^(rs[0-9]+|[0-9XY]+:[0-9]+).*","\\1",rownames(correlation)),
+    oa   = sub("^(?:rs[0-9]+|[0-9XY]+:[0-9]+)_([ACTG]+|[DI])_.*","\\1",rownames(correlation)),
+    ea   = sub("^(?:rs[0-9]+|[0-9XY]+:[0-9]+)_(?:[ACTG]+|[DI])_([ACTG]+|[DI]).*","\\1",rownames(correlation))
+  )
+  stopifnot("Incorrect correlation matrix naming detected" = all(grepl("^(rs[0-9]+|[0-9XY]+:[0-9]+)$", ld_info$rsid) &
+                                                                   grepl("^([ACTG]+|[DI])$", ld_info$oa) &
+                                                                   grepl("^([ACTG]+|[DI])$", ld_info$ea)))
+
+  # current object's (harmonised) mr datasets (just take first exposure if multiple)
+  current <- as.data.table(x, exposure=1)
+
+  # strip the alleles from the RSID
+  current[, rsid := snps_no_alleles(x)]
+
+  # join and flag those that need flipping
+  current[ld_info, c('flip','ld_mat_idx') := list(FALSE, i.idx), on=c('rsid','ea','oa')]
+  current[ld_info, c('flip','ld_mat_idx') := list(TRUE,  i.idx) , on=c('rsid'='rsid','ea'='oa','oa'='ea')]
+
+  # flag those with LD data
+  x@ld_info <- !is.na(current$flip)
+
+  # the indices of those that need flipping
+  flip <- which(current$flip==TRUE)
+
+  # do the flipping
+  ea_store       <- x@ea
+  x@ea[flip]     <- x@oa[flip]
+  x@oa[flip]     <- ea_store[flip]
+  x@snps         <- paste0(snps_no_alleles(x),"_",x@ea,"_",x@oa)
+  x@eafx[flip, ] <- as.matrix(1-x@eafx[flip, ])
+  x@bx[flip, ]   <- as.matrix(x@bx[flip, ]*-1)
+  x@by[flip]     <- x@by[flip]*-1
+  x@eafy[flip]   <- 1-x@eafy[flip]
+
+  # set the LD matrix and ensure order of ld matrix matches data (this will probably have NAs - but deal with at use time)
+  x@correlation <- correlation[current$ld_mat_idx, current$ld_mat_idx]
+  rownames(x@correlation) <- colnames(x@correlation) <- x@snps
+
+  # return
   return(x)
-})
+}
+
+
+#' @title Clump MR object exposure
+#' @export
+clump_mr <- new_generic("clump_mr", "x", function(x,
+                                            p1 = 1,
+                                            p2 = 1,
+                                            r2 = 0.001,
+                                            kb = 250,
+                                            plink2    = genepi.utils::which_plink2(),
+                                            plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) { S7_dispatch() })
+#' @name clump_mr
+method(clump_mr, MR) <- function(x,
+                              p1 = 1,
+                              p2 = 1,
+                              r2 = 0.001,
+                              kb = 250,
+                              plink2    = genepi.utils::which_plink2(),
+                              plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) {
+
+  # extract data to work with - might be multiple exposures with multivariable MR
+  if(ncol(x@bx)==1) {
+
+    d <- as.data.table(x, exposure=1)
+
+  } else {
+    warning('Experimental, multi-exposure clumping')
+    warning('Need to make sure finding min P doesnt mess order up')
+    d <- lapply(1:ncol(x@bx), function(exp_idx) as.data.table(x, exposure=exp_idx)) |> rbindlist()
+    d <- d[ , .SD[which.min(px)], by='rsid']
+
+  }
+
+  # use object's LD data if available
+  if (!all(is.na(x@correlation))) {
+
+    # subset with LD data, maintain index, then order by exposure p-value
+    d[, i := 1:.N] # i is now the index of `d`, into the LD matrix
+    data.table::setorder(d, px)
+
+    # setup data.table
+    d[, c('index_snp','group') := list(FALSE, NA_integer_)]
+
+    # loop
+    flank = kb*1000
+    row = 1
+    grp = 1
+    while(TRUE) {
+
+      if(d$px[row]<p1 & is.na(d$group[row]) & !d$index_snp[row] & d$ld_info[row]) {
+
+        # Found a significant hit, flag it
+        d[row, index_snp := TRUE]
+
+        # Take region and r2/p2 threshold it, ignore previously grouped SNPs in the region
+        region <- d[bp >= d[row,bp]-flank & bp <= d[row,bp]+flank & ld_info, ]
+        region[, rsq := x@correlation[d[row,i], region$i]^2, drop=TRUE]
+        region <- region[!is.na(rsq) & rsq>r2 & px<p2 & is.na(group), ]
+
+        # mutate the group back to d
+        d[match(region$i, d$i), group := grp]
+
+      }
+
+      # find the next row
+      tbc <- which(d$px<p1 & is.na(d$group) & !d$index_snp & d$ld_info)
+      if(length(tbc)>0) {
+
+        row <- tbc[1]
+        grp <- grp + 1
+
+      } else {
+
+        # reset the order of d and put the grouping back
+        data.table::setorder(d, i)
+        x@index_snp <- d$index_snp
+        x@group <- d$group
+        break
+
+      }
+    }
+
+  # if no LD matrix, try to use plink2
+  } else {
+
+    # remove allele info from rsids
+    d[grepl("rs[0-9]+", rsid), rsid := sub(".*?(rs[0-9]+).*", "\\1", rsid)]
+
+    # rename p for clump function
+    data.table::setnames(d, "px", "p")
+
+    # run clumping and rejoin result
+    clumps <- clump(d, p1 = p1, p2 = p2, r2 = r2, kb = kb, plink2 = plink2, plink_ref = plink_ref)
+    d[clumps, c("index_snp", "group") := list(i.index, i.group), on = "rsid"]
+
+    # add back to object
+    x@index_snp <- d$index
+    x@group <- d$group
+  }
+
+  # return
+  return(x)
+}
+
+
+#' @include class_gwas.R
+method(as.data.table, MR) <- function(object, exposure = 1) {
+
+  d <- data.table::data.table(
+    rsid      = object@snps,
+    chr       = object@chr,
+    bp        = object@bp,
+    ea        = object@ea,
+    oa        = object@oa,
+    bx        = object@bx[,exposure],
+    bxse      = object@bxse[,exposure],
+    px        = object@px[,exposure],
+    by        = object@by,
+    byse      = object@byse,
+    py        = object@py,
+    proxy_snp = if(length(object@proxy_snp)==0) { rep(NA_character_, length(object@snps)) } else { object@proxy_snp },
+    index_snp = if(length(object@index_snp)==0) { rep(TRUE,          length(object@snps)) } else { object@index_snp },
+    group     = if(length(object@group)==0)     { rep(NA_integer_,   length(object@snps)) } else { object@group },
+    ld_info   = if(length(object@ld_info)==0)   { rep(NA_integer_,   length(object@snps)) } else { object@ld_info },
+    exposure  = if(length(object@exposure)==0)  { rep(NA_character_, length(object@snps)) } else if(length(object@exposure)==length(object@snps)) { object@exposure } else { rep(object@exposure[exposure], length(object@snps)) },
+    outcome   = if(length(object@outcome)==0)   { rep(NA_character_, length(object@snps)) } else if(length(object@outcome)==1)  { rep(object@outcome,  length(object@snps)) } else { object@outcome }
+  )
+
+}
 
 
 
-
-
-
-
-
-
-
-
-
-
-#' #' @include class-gwas.R
-#' setMethod("as_data_table", "MR", function(object, exposure=1) {
-#'
-#'   d <- data.table::data.table(
-#'     rsid      = object@snps,
-#'     chr       = object@chr,
-#'     bp        = object@bp,
-#'     ea        = object@ea,
-#'     oa        = object@oa,
-#'     bx        = object@bx[,exposure],
-#'     bxse      = object@bxse[,exposure],
-#'     px        = object@px[,exposure],
-#'     by        = object@by,
-#'     byse      = object@byse,
-#'     py        = object@py,
-#'     proxy_snp = if(length(object@proxy_snp)==0) { rep(NA_character_, length(object@snps)) } else { object@proxy_snp },
-#'     index_snp = if(length(object@index_snp)==0) { rep(TRUE,          length(object@snps)) } else { object@index_snp },
-#'     group     = if(length(object@group)==0)     { rep(NA_integer_,   length(object@snps)) } else { object@group },
-#'     ld_info   = if(length(object@ld_info)==0)   { rep(NA_integer_,   length(object@snps)) } else { object@ld_info },
-#'     exposure  = if(length(object@exposure)==0)  { rep(NA_character_, length(object@snps)) } else if(length(object@exposure)==length(object@snps)) { object@exposure } else { rep(object@exposure[exposure], length(object@snps)) },
-#'     outcome   = if(length(object@outcome)==0)   { rep(NA_character_, length(object@snps)) } else if(length(object@outcome)==1)  { rep(object@outcome,  length(object@snps)) } else { object@outcome }
-#'   )
-#'
-#' })
-#'
-#'
-#' #' @title Clump
-#' #' @export
-#' setGeneric("clump", function(x, p1=1, p2=1, r2=0.001, kb=250) standardGeneric("clump"))
-#' #' @rdname clump-methods
-#' #' @aliases clump,MR,ANY-method
-#' setMethod("clump", "MR", function(x, p1, p2, r2, kb) {
-#'
-#'   # checks
-#'   stopifnot("No correlation. matrix data found" = !all(is.na(x@correlation)))
-#'
-#'   # extract data to work with - might be multipl exposures with multivariable MR
-#'   if(ncol(x@bx)==1) {
-#'
-#'     d <- as_data_table(x, exposure=1)
-#'
-#'   } else {
-#'     warning('Experimental, multi-exposure clumping')
-#'
-#'     d <- lapply(1:ncol(x@bx), function(exp_idx) as_data_table(x, exposure=exp_idx)) |> rbindlist()
-#'     d <- d[ , .SD[which.min(px)], by='rsid']
-#'
-#'   }
-#'
-#'   # subset with LD data, maintain index, then order by exposure p-value
-#'   d[, i := 1:.N] # i is now the index of `d`, into the LD matrix
-#'   data.table::setorder(d, px)
-#'
-#'   # setup data.table
-#'   d[, c('index_snp','group') := list(FALSE,NA_integer_)]
-#'
-#'   # loop
-#'   flank = kb*1000
-#'   row = 1
-#'   grp = 1
-#'   while(TRUE) {
-#'
-#'     if(d$px[row]<p1 & is.na(d$group[row]) & !d$index_snp[row] & d$ld_info[row]) {
-#'
-#'       # Found a significant hit, flag it
-#'       d[row, index_snp := TRUE]
-#'
-#'       # Take region and r2/p2 threshold it, ignore previously grouped SNPs in the region
-#'       region <- d[bp >= d[row,bp]-flank & bp <= d[row,bp]+flank & ld_info, ]
-#'       region[, rsq := x@correlation[d[row,i], region$i]^2, drop=TRUE]
-#'       region <- region[!is.na(rsq) & rsq>r2 & px<p2 & is.na(group), ]
-#'
-#'       # mutate the group back to d
-#'       d[match(region$i, d$i), group := grp]
-#'
-#'     }
-#'
-#'     # find the next row
-#'     tbc <- which(d$px<p1 & is.na(d$group) & !d$index_snp & d$ld_info)
-#'     if(length(tbc)>0) {
-#'
-#'       row <- tbc[1]
-#'       grp <- grp + 1
-#'
-#'     } else {
-#'
-#'       # reset the order of d and put the grouping back
-#'       data.table::setorder(d, i)
-#'       x@index_snp <- d$index_snp
-#'       x@group <- d$group
-#'       break
-#'
-#'     }
-#'   }
-#'
-#'   # return
-#'   validObject(x)
-#'   return(x)
-#' })
 #'
 #' #' @title Plot clumps
 #' #' @export
@@ -724,7 +804,7 @@ setMethod("parse_mr_result", c("MRResult"), function(x, res, mr_obj, method) {
 #' setMethod("plot_clumps", "MR", function(object, gene_start, gene_end, gene_flanks, with_corr) {
 #'
 #'   # convert object to dt
-#'   plot_dat <- as_data_table(object)
+#'   plot_dat <- as.data.table(object)
 #'
 #'   # base plot
 #'   p <- ggplot2::ggplot(mapping = ggplot2::aes(x=bp, y=-log10(px))) +
@@ -784,7 +864,7 @@ setMethod("parse_mr_result", c("MRResult"), function(x, res, mr_obj, method) {
 #'   stopifnot("results must be an `MRResult` class object, or the data.table output from mr_results_to_data_table(), or NULL" = is.null(result) || inherits(result, "MRResult") || inherits(result, "data.table"))
 #'
 #'   # convert MR object
-#'   p_dat <- as_data_table(object)[index_snp==TRUE, ]
+#'   p_dat <- as.data.table(object)[index_snp==TRUE, ]
 #'
 #'   # plot orientated if requested
 #'   if(orientate) { p_dat[bx<0, c('bx','by') := list(bx*-1, by*-1)] }
@@ -940,54 +1020,7 @@ setMethod("parse_mr_result", c("MRResult"), function(x, res, mr_obj, method) {
 #'
 #'
 #'
-#' setGeneric("set_ld_mat", function(x, correlation) standardGeneric("set_ld_mat"))
-#' setMethod("set_ld_mat", "MR", function(x, correlation) {
-#'
-#'   # LD variants info
-#'   ld_info <- data.table::data.table(
-#'     idx  = 1:length(rownames(correlation)),
-#'     rsid = sub("^(rs[0-9]+|[0-9XY]+:[0-9]+).*","\\1",rownames(correlation)),
-#'     oa   = sub("^(?:rs[0-9]+|[0-9XY]+:[0-9]+)_([ACTG]+|[DI])_.*","\\1",rownames(correlation)),
-#'     ea   = sub("^(?:rs[0-9]+|[0-9XY]+:[0-9]+)_(?:[ACTG]+|[DI])_([ACTG]+|[DI]).*","\\1",rownames(correlation))
-#'   )
-#'   stopifnot("Incorrect correlation matrix naming detected" = all(grepl("^(rs[0-9]+|[0-9XY]+:[0-9]+)$", ld_info$rsid) &
-#'                                                                    grepl("^([ACTG]+|[DI])$", ld_info$oa) &
-#'                                                                    grepl("^([ACTG]+|[DI])$", ld_info$ea)))
-#'
-#'   # current object's (harmonised) mr datasets (just take first exposure if multiple)
-#'   current <- as_data_table(x, exposure=1)
-#'
-#'   # strip the alleles from the RSID
-#'   current[, rsid := snps_no_alleles(x)]
-#'
-#'   # join and flag those that need flipping
-#'   current[ld_info, c('flip','ld_mat_idx') := list(FALSE, i.idx), on=c('rsid','ea','oa')]
-#'   current[ld_info, c('flip','ld_mat_idx') := list(TRUE,  i.idx) , on=c('rsid'='rsid','ea'='oa','oa'='ea')]
-#'
-#'   # flag those with LD data
-#'   x@ld_info <- !is.na(current$flip)
-#'
-#'   # the indices of those that need flipping
-#'   flip <- which(current$flip==TRUE)
-#'
-#'   # do the flipping
-#'   ea_store       <- x@ea
-#'   x@ea[flip]     <- x@oa[flip]
-#'   x@oa[flip]     <- ea_store[flip]
-#'   x@snps         <- paste0(snps_no_alleles(x),"_",x@ea,"_",x@oa)
-#'   x@eafx[flip, ] <- as.matrix(1-x@eafx[flip, ])
-#'   x@bx[flip, ]   <- as.matrix(x@bx[flip, ]*-1)
-#'   x@by[flip]     <- x@by[flip]*-1
-#'   x@eafy[flip]   <- 1-x@eafy[flip]
-#'
-#'   # set the LD matrix and ensure order of ld matrix matches data (this will probably have NAs - but deal with at use time)
-#'   x@correlation <- correlation[current$ld_mat_idx, current$ld_mat_idx]
-#'   rownames(x@correlation) <- colnames(x@correlation) <- x@snps
-#'
-#'   # validate and return
-#'   validObject(x)
-#'   return(x)
-#' })
+
 #'
 #' #' @title Reset index SNP
 #' #' @export

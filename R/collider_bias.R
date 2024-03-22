@@ -1,3 +1,96 @@
+#' @title Run collider bias assessment
+#' @param x an object of class MR
+#' @param method a character or character vector, one or more of c("dudbridge", "slopehunter", "mr_ivw", "mr_egger", "mr_weighted_median", "mr_weighted_mode")
+#' @param r2 a numeric 0-1, r2 used for clumping - set all clumping params to NA to turn off
+#' @param p1 a numeric 0-1, p1 used for clumping - set all clumping params to NA to turn off
+#' @param kb an integer, kb used for clumping - set all clumping params to NA to turn off
+#' @param plink2 a path, the plink2 binary
+#' @param plink_ref a path, the reference genome pfile
+#' @param ip a numeric 0-1, threshold for removing incidence variants
+#' @param pi0 a numeric 0-1, proportion of SNPs in the incidence only cluster (see Slope-Hunter)
+#' @param sxy1 a numeric, the covariance between incidence and progression Gip SNPs (see Slope-Hunter)
+#' @param bootstraps an integer, number of bootstraps to estimate SE (see Slope-Hunter)
+#' @export
+collider_bias <- new_generic("collider_bias", "x", function(x, method = "dudbridge", r2 = 0.001, p1 = 5e-8, kb = 250, ip = 0.001, pi0 = 0.6, sxy1 = 1e-5, bootstraps = 100, plink2 = genepi.utils::which_plink2(), plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) { S7_dispatch() })
+#' @name collider_bias
+method(collider_bias, MR) <- function(x,
+                                      method     = "dudbridge",
+                                      r2         = 0.001,
+                                      p1         = 5e-8,
+                                      kb         = 250,
+                                      ip         = 0.001,
+                                      pi0        = 0.6,
+                                      sxy1       = 1e-5,
+                                      bootstraps = 100,
+                                      plink2     = genepi.utils::which_plink2(),
+                                      plink_ref  = genepi.utils::which_1000G_reference(build="GRCh37")) {
+
+  cat("Running collider bias assessment...\n")
+
+  # params: check method; multivariable not supported
+  method <- match.arg(method, choices = c("dudbridge", "slopehunter", "mr_ivw", "mr_egger", "mr_weighted_median", "mr_weighted_mode"))
+  if (is_multivariable(x)) {
+    stop("collider bias assessment only supported between one incidence and one progression GWAS, MR object is multivariable (multiple exposures)")
+  }
+  seed   <- 2023
+
+  # expand the parameters
+  params <- expand.grid(method = method, r2 = r2, p1 = p1, kb = kb, ip = ip, pi0 = pi0, sxy1 = sxy1, bootstraps = bootstraps)
+
+  # results from each combination of parameters
+  results <- list()
+  for(i in 1:nrow(params)) {
+    cat("[i]", as.character(params$method[i]), "-",
+        "p1:", params$p1[i],
+        "r2:", params$p1[i],
+        "kb:", params$kb[i],
+        "ip:", params$ip[i],
+        "pi0:", params$pi0[i],
+        "sxy1:", params$sxy1[i],
+        "bootstraps:", params$bootstraps[i], "\n")
+
+    # clump if parameters provided
+    if (all(!is.na(c(r2, p1, kb)))) {
+      x <- clump_mr(x, r2 = r2, p1 = p1, kb = kb, plink2 = plink2, plink_ref = plink_ref)
+    } else if(any(!x@index_snp)) {
+      warning("No clumping requested but the MR object already has altered index_snp field. If you have processed this prior then this is fine.")
+    }
+
+    # run the method
+    res <- do.call(what = as.character(params$method[i]),
+                   args = list(x,
+                               ip          = params$ip[i],
+                               pi0         = params$pi0[i],
+                               sxy1        = params$sxy1[i],
+                               bootstraps  = params$bootstraps[i]))
+
+    results <- c(results, list(res))
+  }
+
+  print(results)
+
+  # combine parameters and results
+  results_dt <- mr_results_to_data_table(results)
+  results_dt <- cbind(results_dt, params)
+
+  # return
+  return(results_dt)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #' @title Collider bias result object
 #' @description
 #' An S3 class which is the standard output from various collider bias analyses.
