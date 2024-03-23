@@ -19,7 +19,6 @@ collider_bias(
   weighted = TRUE,
   method = "Simex",
   B = 1000,
-  lambda = seq(0.25, 5, 0.25),
   seed = 2023
 )
 }
@@ -38,13 +37,21 @@ collider_bias(
 
 \item{plink_ref}{a path, the reference genome pfile}
 
-\item{ip}{a numeric 0-1, threshold for removing incidence variants}
+\item{ip}{a numeric 0-1, threshold for removing incidence variants;  see \code{xp_thresh} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
 
-\item{pi0}{a numeric 0-1, proportion of SNPs in the incidence only cluster (see Slope-Hunter)}
+\item{pi0}{a numeric 0-1, proportion of SNPs in the incidence only cluster; see \code{init_pi} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
 
-\item{sxy1}{a numeric, the covariance between incidence and progression Gip SNPs (see Slope-Hunter)}
+\item{sxy1}{a numeric, the covariance between incidence and progression Gip SNPs; see \code{init_sigmaIP} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
 
-\item{bootstraps}{an integer, number of bootstraps to estimate SE (see Slope-Hunter)}
+\item{bootstraps}{an integer, number of bootstraps to estimate SE; see \code{M} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
+\item{weighted}{see \code{weighted} \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+
+\item{method}{see \code{method} \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+
+\item{B}{see \code{B} \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+
+\item{seed}{seed, for reproducibility}
 }
 \description{
 Run collider bias assessment

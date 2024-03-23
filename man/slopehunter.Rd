@@ -15,6 +15,18 @@ slopehunter(
 )
 }
 \arguments{
+\item{x}{an object of class MR}
+
+\item{ip}{see \code{xp_thresh} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
+\item{pi0}{see \code{init_pi} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
+\item{sxy1}{see \code{init_sigmaIP} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
+\item{bootstraps}{see \code{M} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
+\item{seed}{see \code{seed} \code{\link[SlopeHunter:hunt]{SlopeHunter::hunt()}}}
+
 \item{...}{parameter sink, additional ignored parameters}
 }
 \value{

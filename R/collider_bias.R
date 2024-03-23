@@ -6,10 +6,14 @@
 #' @param kb an integer, kb used for clumping - set all clumping params to NA to turn off
 #' @param plink2 a path, the plink2 binary
 #' @param plink_ref a path, the reference genome pfile
-#' @param ip a numeric 0-1, threshold for removing incidence variants
-#' @param pi0 a numeric 0-1, proportion of SNPs in the incidence only cluster (see Slope-Hunter)
-#' @param sxy1 a numeric, the covariance between incidence and progression Gip SNPs (see Slope-Hunter)
-#' @param bootstraps an integer, number of bootstraps to estimate SE (see Slope-Hunter)
+#' @param ip a numeric 0-1, threshold for removing incidence variants;  see `xp_thresh` [SlopeHunter::hunt()]
+#' @param pi0 a numeric 0-1, proportion of SNPs in the incidence only cluster; see `init_pi` [SlopeHunter::hunt()]
+#' @param sxy1 a numeric, the covariance between incidence and progression Gip SNPs; see `init_sigmaIP` [SlopeHunter::hunt()]
+#' @param bootstraps an integer, number of bootstraps to estimate SE; see `M` [SlopeHunter::hunt()]
+#' @param weighted see `weighted` [indexevent::indexevent()]
+#' @param method see `method` [indexevent::indexevent()]
+#' @param B see `B` [indexevent::indexevent()]
+#' @param seed seed, for reproducibility
 #' @export
 collider_bias <- new_generic("collider_bias", "x", function(x,
                                                             bias_method= "dudbridge",
@@ -28,7 +32,6 @@ collider_bias <- new_generic("collider_bias", "x", function(x,
                                                             weighted   = TRUE,
                                                             method     = "Simex",
                                                             B          = 1000,
-                                                            lambda     = seq(0.25, 5, 0.25),
                                                             # cwls
                                                             # ip       = 0.001 - use the same as SH above
                                                             seed       = 2023
@@ -51,7 +54,6 @@ method(collider_bias, MR) <- function(x,
                                       weighted   = TRUE,
                                       method     = "Simex",
                                       B          = 1000,
-                                      lambda     = seq(0.25, 5, 0.25),
                                       # cwls
                                       # ip       = 0.001 - use the same as SH above
                                       seed       = 2023
@@ -60,7 +62,7 @@ method(collider_bias, MR) <- function(x,
   cat("Running collider bias assessment...\n")
 
   # params: check method; multivariable not supported
-  bias_method <- match.arg(bias_method, choices = c("dudbridge", "slopehunter", "mr_ivw", "mr_egger", "mr_weighted_median", "mr_weighted_mode"), several.ok = TRUE)
+  bias_method <- match.arg(bias_method, choices = c("dudbridge", "cwls", "slopehunter", "mr_ivw", "mr_egger", "mr_weighted_median", "mr_weighted_mode"), several.ok = TRUE)
   method <- match.arg(method, choices = c("Hedges-Olkin", "Simex"))
   if (is_multivariable(x)) {
     stop("collider bias assessment only supported between one incidence and one progression GWAS, MR object is multivariable (multiple exposures)")
@@ -68,8 +70,6 @@ method(collider_bias, MR) <- function(x,
 
   # expand the parameters
   params <- expand.grid(bias_method= bias_method,
-                        Exposure   = x@exposure,
-                        Outcome    = x@outcome,
                         r2         = r2,
                         p1         = p1,
                         kb         = kb,
@@ -105,7 +105,7 @@ method(collider_bias, MR) <- function(x,
 
   # combine parameters and results
   results_dt <- mr_results_to_data_table(results)
-  results_dt <- cbind(results_dt, params[, names(params)[!names(params) %in% c("Exposure", "Outcome")]])
+  results_dt <- cbind(results_dt, params)
   results_dt[, c("Method", "Correl") := NULL]
 
   # return
@@ -115,6 +115,13 @@ method(collider_bias, MR) <- function(x,
 
 
 #' @title Dudbridge collider bias method
+#' @param x an object of class MR
+#' @param weighted see [indexevent::indexevent()]
+#' @param prune see [indexevent::indexevent()]
+#' @param method see [indexevent::indexevent()]
+#' @param B see [indexevent::indexevent()]
+#' @param lambda see [indexevent::indexevent()]
+#' @param seed see [indexevent::indexevent()]
 #' @param ... parameter sink, additional ignored parameters
 #' @return an object of class MRResult
 #' @export
@@ -129,9 +136,6 @@ method(dudbridge, MR) <- function(x,
                                   lambda   = seq(0.25, 5, 0.25),
                                   seed     = 2018,
                                   ...) {
-
-  # Outcome and Exposure params in here
-  extra_args <- list(...)
 
   # to_MRInput filters by index_snp
   dat <- to_MRInput(x, corr = FALSE)
@@ -155,9 +159,8 @@ method(dudbridge, MR) <- function(x,
   res_obj@StdError  <- res$b.se
   res_obj@Intercept <- 0
   res_obj@SNPs      <- length(dat@snps)
-  res_obj@Method    <- "dudbridge"
-  res_obj@Outcome   <- extra_args[["Outcome"]]
-  res_obj@Exposure  <- extra_args[["Exposure"]]
+  res_obj@Outcome   <- x@outcome
+  res_obj@Exposure  <- x@exposure
 
   # return
   return(res_obj)
@@ -165,6 +168,12 @@ method(dudbridge, MR) <- function(x,
 
 
 #' @title Slope-Hunter collider bias method
+#' @param x an object of class MR
+#' @param ip see `xp_thresh` [SlopeHunter::hunt()]
+#' @param pi0 see `init_pi` [SlopeHunter::hunt()]
+#' @param sxy1 see `init_sigmaIP` [SlopeHunter::hunt()]
+#' @param bootstraps see `M` [SlopeHunter::hunt()]
+#' @param seed  see `seed` [SlopeHunter::hunt()]
 #' @param ... parameter sink, additional ignored parameters
 #' @return an object of class MRResult
 #' @export
@@ -178,9 +187,6 @@ method(slopehunter, MR) <- function(x,
                                     bootstraps = 100,
                                     seed       = 777,
                                     ...) {
-
-  # Outcome and Exposure params in here
-  extra_args <- list(...)
 
   # to_MRInput filters by index_snp
   dat <- to_MRInput(x, corr = FALSE)
@@ -214,8 +220,49 @@ method(slopehunter, MR) <- function(x,
   res_obj@Hunted          <- sum(res$Fit$clusters == "Hunted", na.rm = TRUE)
   res_obj@SlopeHunter.Pi  <- res$pi
   res_obj@SlopeHunter.Ent <- res$entropy
-  res_obj@Outcome         <- extra_args[["Outcome"]]
-  res_obj@Exposure        <- extra_args[["Exposure"]]
+  res_obj@Outcome         <- x@outcome
+  res_obj@Exposure        <- x@exposure
+
+  # return
+  return(res_obj)
+}
+
+
+
+#' @title Corrected Weighted Least Squares collider bias method
+#' @param x an object of class MR
+#' @param ip P-value threshold
+#' @param ... parameter sink, additional ignored parameters
+#' @return an object of class MRResult
+#' @export
+cwls <- new_generic("cwls", "x", function(x, ip = 0.001, ...) { S7_dispatch() })
+#' @name dudbridge
+method(cwls, MR) <- function(x, ip = 0.001, ...) {
+
+  # to_MRInput filters by index_snp
+  dat <- to_MRInput(x, corr = FALSE)
+
+  # CWLS
+  cwls_correction <- MendelianRandomization::mr_ivw(dat)
+
+  # weighting
+  weights   <- 1 / dat@betaYse ^ 2
+  weighting <-  (sum(weights * dat@betaX ^ 2)) /
+               ((sum(weights * dat@betaX ^ 2)) - (sum(weights * dat@betaXse ^ 2)))
+
+  # slope
+  b   <- cwls_correction$Estimate * weighting
+  bse <- cwls_correction$StdError * weighting
+
+  # populate an MRResult object with the results
+  res_obj <- MRResult()
+  res_obj@Method    <- "cwls"
+  res_obj@Estimate  <- b
+  res_obj@StdError  <- bse
+  res_obj@Intercept <- 0
+  res_obj@SNPs      <- length(dat@snps)
+  res_obj@Outcome   <- x@outcome
+  res_obj@Exposure  <- x@exposure
 
   # return
   return(res_obj)
