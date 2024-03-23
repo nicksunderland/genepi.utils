@@ -231,13 +231,12 @@ method(slopehunter, MR) <- function(x,
 
 #' @title Corrected Weighted Least Squares collider bias method
 #' @param x an object of class MR
-#' @param ip P-value threshold
 #' @param ... parameter sink, additional ignored parameters
 #' @return an object of class MRResult
 #' @export
-cwls <- new_generic("cwls", "x", function(x, ip = 0.001, ...) { S7_dispatch() })
+cwls <- new_generic("cwls", "x", function(x, ...) { S7_dispatch() })
 #' @name dudbridge
-method(cwls, MR) <- function(x, ip = 0.001, ...) {
+method(cwls, MR) <- function(x, ...) {
 
   # to_MRInput filters by index_snp
   dat <- to_MRInput(x, corr = FALSE)
