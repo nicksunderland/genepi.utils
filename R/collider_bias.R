@@ -105,13 +105,14 @@ method(collider_bias, MR) <- function(x,
 
   # combine parameters and results
   results_dt <- mr_results_to_data_table(results)
+  results_dt[, c("method", "correlation", "int_se", "int_p", "qstat", "qstat_p",
+                 "fstat", "condfstat", "overdispersion", "n_pc") := NULL]
   results_dt <- cbind(results_dt, params)
-  results_dt[, c("Method", "Correl") := NULL]
+  data.table::setcolorder(results_dt, "bias_method")
 
   # return
   return(results_dt)
 }
-
 
 
 #' @title Dudbridge collider bias method
@@ -154,13 +155,13 @@ method(dudbridge, MR) <- function(x,
 
   # populate an MRResult object with the results
   res_obj <- MRResult()
-  res_obj@Method    <- "dudbridge"
-  res_obj@Estimate  <- res$b
-  res_obj@StdError  <- res$b.se
-  res_obj@Intercept <- 0
-  res_obj@SNPs      <- length(dat@snps)
-  res_obj@Outcome   <- x@outcome
-  res_obj@Exposure  <- x@exposure
+  res_obj@method    <- "dudbridge"
+  res_obj@b         <- res$b
+  res_obj@b_se      <- res$b.se
+  res_obj@intercept <- 0
+  res_obj@n_snp     <- length(dat@snps)
+  res_obj@outcome   <- x@outcome
+  res_obj@exposure  <- x@exposure
 
   # return
   return(res_obj)
@@ -212,16 +213,16 @@ method(slopehunter, MR) <- function(x,
 
   # populate an MRResult object with the results
   res_obj <- MRResult()
-  res_obj@Method          <- "slopehunter"
-  res_obj@Estimate        <- res$b
-  res_obj@StdError        <- res$bse
-  res_obj@Intercept       <- 0
-  res_obj@SNPs            <- nrow(res$Fit)
-  res_obj@Hunted          <- sum(res$Fit$clusters == "Hunted", na.rm = TRUE)
-  res_obj@SlopeHunter.Pi  <- res$pi
-  res_obj@SlopeHunter.Ent <- res$entropy
-  res_obj@Outcome         <- x@outcome
-  res_obj@Exposure        <- x@exposure
+  res_obj@method          <- "slopehunter"
+  res_obj@b               <- res$b
+  res_obj@b_se            <- res$bse
+  res_obj@intercept       <- 0
+  res_obj@n_snp           <- nrow(res$Fit)
+  res_obj@n_hunted        <- sum(res$Fit$clusters == "Hunted", na.rm = TRUE)
+  res_obj@slopehunter_pi  <- res$pi
+  res_obj@slopehunter_ent <- res$entropy
+  res_obj@outcome         <- x@outcome
+  res_obj@exposure        <- x@exposure
 
   # return
   return(res_obj)
@@ -255,13 +256,13 @@ method(cwls, MR) <- function(x, ...) {
 
   # populate an MRResult object with the results
   res_obj <- MRResult()
-  res_obj@Method    <- "cwls"
-  res_obj@Estimate  <- b
-  res_obj@StdError  <- bse
-  res_obj@Intercept <- 0
-  res_obj@SNPs      <- length(dat@snps)
-  res_obj@Outcome   <- x@outcome
-  res_obj@Exposure  <- x@exposure
+  res_obj@method    <- "cwls"
+  res_obj@b         <- b
+  res_obj@b_se      <- bse
+  res_obj@intercept <- 0
+  res_obj@n_snp     <- length(dat@snps)
+  res_obj@outcome   <- x@outcome
+  res_obj@exposure  <- x@exposure
 
   # return
   return(res_obj)
