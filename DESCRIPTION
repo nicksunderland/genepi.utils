@@ -34,7 +34,7 @@ Imports:
     indexevent
 Remotes:
     github::MRCIEU/TwoSampleMR,
-    github::Osmahmoud/SlopeHunter
+    github::Osmahmoud/SlopeHunter,
     github::DudbridgeLab/indexevent
 Suggests: 
     knitr,
