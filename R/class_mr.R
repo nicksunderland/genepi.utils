@@ -188,7 +188,7 @@ MR <- new_class(
 
     # harmonise the (pre-harmonised) exposure data with the outcome data
     if(verbose) message("[i] harmonising GWASs")
-    h <- TwoSampleMR::harmonise_data(e, o, action = harmonise_strictness) |> data.table::as.data.table()
+    h <- TwoSampleMR::harmonise_data(e, o[SNP %in% e$SNP, ] , action = harmonise_strictness) |> data.table::as.data.table()
     h <- h[mr_keep == TRUE, ]
 
     # rename SNPs now harmonised
@@ -382,10 +382,14 @@ method(mr_ivw, MR) <- function(x, corr = FALSE, ...) {
   tryCatch({
     if(is_multivariable(x)) {
       method <- "mr_mvivw"
-      res    <- MendelianRandomization::mr_mvivw(to_MRMVInput(x, corr), nx=apply(x@nx,2,max,na.rm=TRUE), ...)
+      args   <- list(object = to_MRMVInput(x, corr), nx = apply(x@nx,2,max,na.rm=TRUE), ...)
+      args   <- args[names(args) %in% c("object", "model", "robust", "correl", "correl.x ", "nx", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_mvivw", "MendelianRandomization"), args)
     } else {
       method <- "mr_ivw"
-      res <- MendelianRandomization::mr_ivw(to_MRInput(x, corr), ...)
+      args   <- list(object = to_MRInput(x, corr), ...)
+      args   <- args[names(args) %in% c("object", "model", "robust", "penalized", "weights", "psi", "correl", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_ivw", "MendelianRandomization"), args)
     }
   },
   error=function(e) {
@@ -407,14 +411,16 @@ method(mr_egger, MR) <- function(x, corr = FALSE, ...) {
 
   tryCatch({
 
-    # if(sum(x@index_snp, na.rm=TRUE)) stop("less than 3 data points detected, unable to run.") # leave errors to MR package
-
     if(is_multivariable(x)) {
       method <- "mr_mvegger"
-      res    <- MendelianRandomization::mr_mvegger(to_MRMVInput(x, corr), ...)
+      args   <- list(object = to_MRMVInput(x, corr), ...)
+      args   <- args[names(args) %in% c("object", "orientate", "correl", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_mvegger", "MendelianRandomization"), args)
     } else {
       method <- "mr_egger"
-      res    <- MendelianRandomization::mr_egger(to_MRInput(x, corr), ...)
+      args   <- list(object = to_MRInput(x, corr), ...)
+      args   <- args[names(args) %in% c("object", "robust", "penalized", "correl", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_egger", "MendelianRandomization"), args)
     }
   },
   error=function(e) {
@@ -436,15 +442,16 @@ method(mr_weighted_median, MR) <- function(x, corr = FALSE, ...) {
 
   tryCatch({
 
-    # if(sum(x@index_snp, na.rm=TRUE)) stop("less than 3 data points detected, unable to run.")# leave errors to MR package
-
     if(is_multivariable(x)) {
       method <- "mr_mvweighted_median"
-      res    <- MendelianRandomization::mr_mvmedian(to_MRMVInput(x, corr), ...)
-      return(MRResult(res=res, mr_obj=x, ))
+      args   <- list(object = to_MRMVInput(x, corr), ...)
+      args   <- args[names(args) %in% c("object", "seed", "iterations", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_mvmedian", "MendelianRandomization"), args)
     } else {
       method = "mr_weighted_median"
-      res <- MendelianRandomization::mr_median(to_MRInput(x, corr), weighting="weighted", ...)
+      args   <- list(object = to_MRInput(x, corr), weighting="weighted", ...)
+      args   <- args[names(args) %in% c("object", "seed", "weighting", "iterations", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_median", "MendelianRandomization"), args)
     }
   },
   error=function(e) {
@@ -471,7 +478,9 @@ method(mr_weighted_mode, MR) <- function(x, corr = FALSE, ...) {
       res    <- NULL
     } else {
       method <- "mr_weighted_mode"
-      res    <- MendelianRandomization::mr_mbe(to_MRInput(x, corr), weighting='weighted', ...)
+      args   <- list(object = to_MRInput(x, corr), ...)
+      args   <- args[names(args) %in% c("object", "stderror", "phi", "seed", "iterations", "distribution", "alpha")]
+      res    <- do.call(getFromNamespace("mr_mbe", "MendelianRandomization"), args)
     }
   },
   error=function(e) {
@@ -496,10 +505,14 @@ method(mr_pcgmm, MR) <- function(x, corr = TRUE, ...) {
 
     if(is_multivariable(x)) {
       method <- "mr_mvpcgmm"
-      res    <- MendelianRandomization::mr_mvpcgmm(to_MRMVInput(x, TRUE), nx=apply(x@nx,2,max,na.rm=TRUE), ny=max(x@ny,na.rm=TRUE), ...)
+      args   <- list(object = to_MRMVInput(x, TRUE), nx = apply(x@nx,2,max,na.rm=TRUE), ny = max(x@ny,na.rm=TRUE), ...)
+      args   <- args[names(args) %in% c("object", "nx", "ny", "cor.x", "r", "thresh", "robust", "alpha")]
+      res    <- do.call(getFromNamespace("mr_mvpcgmm", "MendelianRandomization"), args)
     } else {
       method <- "mr_pcgmm"
-      res    <- MendelianRandomization::mr_pcgmm(to_MRInput(x, TRUE), nx=max(x@nx[,1],na.rm=TRUE), ny=max(x@ny,na.rm=TRUE), ...)
+      args   <- list(object = to_MRInput(x, TRUE), nx = max(x@nx[,1],na.rm=TRUE), ny = max(x@ny,na.rm=TRUE), ...)
+      args   <- args[names(args) %in% c("object", "nx", "ny", "r", "thresh", "robust", "alpha")]
+      res    <- do.call(getFromNamespace("mr_pcgmm", "MendelianRandomization"), args)
     }
   },
   error=function(e) {
