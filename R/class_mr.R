@@ -364,7 +364,7 @@ method(to_MRMVInput, MR) <- function(x, corr = FALSE) {
 #' @export
 mr <- new_generic("mr", "x", function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) { S7_dispatch() })
 #' @name mr
-method(mr, MR) <- function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode')) {
+method(mr, MR) <- function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) {
 
   res <- lapply(methods, function(method) do.call(method, args=list(x=x, corr=corr, ...))) |> `names<-`(methods)
   dat <- mr_results_to_data_table(res)
