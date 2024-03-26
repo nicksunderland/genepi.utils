@@ -446,7 +446,7 @@ method(standardise_alleles, new_S3_class('data.table')) <- function(gwas, verbos
   # define valid allele formats - NA allowed as deletion
   valid_alleles <- (((grepl("^([AGCT]+|[D])$", gwas[["ea"]]) | is.na(gwas[["ea"]])) & grepl("^([AGCT]+|[I])$", gwas[["oa"]])) |   # positive assertion - EA valid SNP or deleteion, OA valid SNP or insertion
                     ((grepl("^([AGCT]+|[D])$", gwas[["oa"]]) | is.na(gwas[["oa"]])) & grepl("^([AGCT]+|[I])$", gwas[["ea"]]))) &  # positive assertion - OA valid SNP or deleteion, EA valid SNP or insertion
-                   (!gwas[["ea"]]==gwas[["oa"]])                                                                                  # negative assertion - OA can't be the same as EA
+                    (!gwas[["ea"]]==gwas[["oa"]])                                                                                  # negative assertion - OA can't be the same as EA
 
   # invalid alleles to NA
   gwas[!valid_alleles, c("ea", "oa") := list(NA_character_, NA_character_)]
@@ -662,7 +662,7 @@ method(as.twosample.mr, class_list) <- function(x, type) {
     phenotype_col     = "trait") |> data.table::as.data.table()
 
   # 2SMR converts to all lower-case - put the alleles back
-  formatted[, SNP := sub("^(rs)(.*)","\\1\\U\\2", SNP, perl=TRUE)]
+  formatted[, SNP := sub("^(rs[0-9]+|[0-9X]+:[0-9]+)(.*)","\\1\\U\\2", SNP, perl=TRUE)]
 
   # return
   return(formatted)

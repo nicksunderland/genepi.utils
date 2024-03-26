@@ -320,7 +320,7 @@
 #'   h[, adjusted_se   := sqrt(
 #'     (SE_progression^2) +
 #'       ((SE_incidence^2) * (b_correction_factor^2)) +
-#'       ((SE_incidence^2) * (b_std_err^2)) +
+#'       ((BETA_incidence^2) * (b_std_err^2)) +
 #'       ((SE_incidence^2) * (b_std_err^2))
 #'   )
 #'   ]
