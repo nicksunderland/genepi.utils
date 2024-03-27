@@ -1,3 +1,7 @@
+# Silence R CMD check
+globalVariables(c("snp", "rsid", "SP2", "ID", "i.clump", "clump_member", "snp_store", "A1", "A2", "P"),
+                package = "genepi.utils")
+
 #' @title Clump a GWAS
 #' @description
 #' Clump variants in a GWAS using PLINK2 and an appropriate reference panel.
@@ -33,8 +37,6 @@ clump <- function(gwas,
                   plink2    = genepi.utils::which_plink2(),
                   plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
                   logging = TRUE) {
-
-  snp = rsid = SP2 = ID = i.clump = clump_member = snp_store = A1 = A2 = NULL
 
   # to data.table format
   gwas <- import_table(gwas)

@@ -14,6 +14,21 @@ clump_mr(
   plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37")
 )
 }
+\arguments{
+\item{x}{an object of class MR description}
+
+\item{p1}{a numeric, the p-value threshold for inclusion as a clump}
+
+\item{p2}{a numeric, the p-value threshold for incorporation into a clump}
+
+\item{r2}{a numeric, the r2 value}
+
+\item{kb}{a integer, the window for clumping}
+
+\item{plink2}{a string, path to the plink executable}
+
+\item{plink_ref}{a string, path to the pfile genome reference}
+}
 \description{
 Clump MR object exposure
 }

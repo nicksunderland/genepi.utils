@@ -1,3 +1,7 @@
+# Silence R CMD check
+globalVariables(c("ind", "seqnames", "start"),
+                package = "genepi.utils")
+
 #' @title Liftover GWAS positions
 #' @description
 #' Determine GWAS build and liftover to required build. This is the same function from the

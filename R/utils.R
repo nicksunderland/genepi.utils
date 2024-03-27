@@ -187,7 +187,7 @@ which_1000G_reference <- function(build=NULL) {
 #'
 generate_random_gwas_data <- function(n, seed=2023) {
 
-  EAF = EUR_EAF = SNP = NULL
+  EAF = EUR_EAF = SNP = OA = EA = CHR = BP = NULL
 
   set.seed(seed)
 

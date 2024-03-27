@@ -14,7 +14,7 @@
 plot_coloc_probabilities <- function(coloc, rule="H4 > 0.5", type="prior", row=1) {
 
   # RCMD check warnings
-  h <- x <- NULL
+  h <- x <- priors <- NULL
 
   # checks
   type <- match.arg(type, choices=c('prior','posterior'))

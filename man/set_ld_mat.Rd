@@ -6,6 +6,11 @@
 \usage{
 set_ld_mat(x, correlation)
 }
+\arguments{
+\item{x}{an object of class MR}
+
+\item{correlation}{a matrix, the correlation ('r') matrix}
+}
 \description{
 Set the LD matrix
 }

@@ -6,6 +6,9 @@
 \usage{
 reset_index_snp(x)
 }
+\arguments{
+\item{x}{an object of class MR}
+}
 \description{
 Reset index SNP
 }

@@ -1,5 +1,6 @@
-# silence R CMD checks for data.table columns
-BETA = BP = CHR = P = SE = SNP = chr_len = tot = x = i.tot = highlight = secondary_highlight = NULL
+# Silence R CMD check
+globalVariables(c("beta", "bp", "chr", "p", "se", "snp", "chr_len", "tot", "x", "i.tot", "highlight", "secondary_highlight"),
+                package = "genepi.utils")
 
 #' @title Manhattan plot
 #' @description
@@ -143,10 +144,10 @@ manhattan <- function(gwas,
 
   # add SNP label annotations
   if(!is.null(annotate_snps) & length(annotate_snps)>0) {
-    gwas[SNP %in% annotate_snps, annotate := TRUE]
+    gwas[snp %in% annotate_snps, annotate := TRUE]
     label_x_nudge <- max(gwas[["x"]], na.rm=TRUE) / 22
     plot <- plot +
-      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=SNP), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
+      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=snp), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
   }
 
   # add titles and labels

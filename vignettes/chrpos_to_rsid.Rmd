@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", 
+  eval = FALSE
 )
 ```
 
@@ -52,11 +53,9 @@ which_dbsnp_builds()
 
 ## Monitoring progress
 
-The mapping can take some time, depending on the number of cores on your machine. To monitor progress we have to use the form below. First we set up the parallel processing plan with the number of workers - this should be <= the number of cores on your machine, which can be queried with `parallel::detectCores()`. Then to monitor progress in the console we need to wrap the function in `progressr::with_progress({  })`.
+The mapping can take some time, depending on the number of cores on your machine. To monitor progress we have to use the form below. We need to wrap the function in `progressr::with_progress({  })`.
 
 ```{r example_3, eval=FALSE}
-future::plan(future::multisession, workers = 6)
-
 progressr::with_progress({
   
   gwas_with_rsids <- genepi.utils::chrpos_to_rsid(gwas,
@@ -151,7 +150,6 @@ dt <- data.table::fread( gwas_sumstats_4.3million_rows )
 
 # benchmarking
 mbm <- microbenchmark("chrpos_to_rsid: no alleles, no alt rsids" = {
-                              future::plan(future::multisession, workers = 10)
                               progressr::with_progress({
                                 genepi.utils::chrpos_to_rsid(dt,
                                                              chr_col="CHR",
@@ -164,7 +162,6 @@ mbm <- microbenchmark("chrpos_to_rsid: no alleles, no alt rsids" = {
                               })
                         },
                       "chrpos_to_rsid: no alleles, with alt rsids" = {
-                        future::plan(future::multisession, workers = 10)
                         progressr::with_progress({
                           genepi.utils::chrpos_to_rsid(dt,
                                                        chr_col="CHR",
@@ -177,7 +174,6 @@ mbm <- microbenchmark("chrpos_to_rsid: no alleles, no alt rsids" = {
                         })
                       },
                       "chrpos_to_rsid: with alleles, no alt rsids" = {
-                        future::plan(future::multisession, workers = 10)
                         progressr::with_progress({
                           genepi.utils::chrpos_to_rsid(dt,
                                                        chr_col="CHR",
@@ -190,7 +186,6 @@ mbm <- microbenchmark("chrpos_to_rsid: no alleles, no alt rsids" = {
                         })
                       },
                       "chrpos_to_rsid: with alleles, with alt rsids" = {
-                        future::plan(future::multisession, workers = 10)
                         progressr::with_progress({
                           genepi.utils::chrpos_to_rsid(dt,
                                                        chr_col="CHR",

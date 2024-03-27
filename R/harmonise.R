@@ -1,3 +1,7 @@
+# Silence R CMD check
+globalVariables(c(),
+                package = "genepi.utils")
+
 #' @title Harmonise GWAS effects
 #' @description
 #' Harmonise effects across two GWAS datasets. The `gwas` objects are expected to be in standard format - see `standardise_gwas()`.
@@ -17,7 +21,7 @@
 #'
 harmonise <- function(gwas1, gwas2, gwas1_trait="incidence", gwas2_trait="progression", merge=NULL) {
 
-  chr_1 = bp_1 = rsid_2 = rsid_1 = keep = to_swap = ea_1 = oa_1 = ea_2 = oa_2 = EA2tmp = beta_2 = eaf_2 = palindromic = OK = ii = NULL
+  chr_1 = bp_1 = rsid_2 = rsid_1 = keep = to_swap = ea_1 = oa_1 = ea_2 = oa_2 = ea2tmp = beta_2 = eaf_2 = palindromic = OK = ii = NULL
 
   # get the gwas from file or object
   gwas1 <- import_table(gwas1)

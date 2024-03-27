@@ -1,5 +1,7 @@
 # Silence R CMD check
-globalVariables(c(),
+globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.outcome", "effect_allele.outcome", "proxy_snp.outcome", "chr.exposure",
+                  "pos.exposure", "effect_allele.exposure", "other_allele.exposure", "eaf.outcome", "samplesize.outcome",
+                  "ncase.outcome", "beta.outcome", "se.outcome", "pval.outcome", "V1"),
                 package = "genepi.utils")
 
 #' @title MR object
@@ -14,6 +16,8 @@ globalVariables(c(),
 #' @param proxy_kb an integer, the maximum distance in kb that a proxy variant can be from the index variant.
 #' @param proxy_window an integer, the maximum number of variants to search either side of the index variant.
 #' @param proxy_eaf a numeric, the minimum minor allele frequency required to define a suitable proxy.
+#' @param correlation a matrix, correlation matrix of signed R values between variants
+#' @param verbose a logical, print more information
 #'
 #' @slot snps character, variant ID
 #' @slot chr character, chromosome identifier
@@ -45,6 +49,7 @@ globalVariables(c(),
 #' @return an S7 class genepi.utils::MR object
 #'
 #' @import S7
+#' @importFrom MendelianRandomization mr_ivw
 #' @export
 MR <- new_class(
   #==============================
@@ -304,6 +309,7 @@ method(snps_no_alleles, MR) <- function(x) {
 }
 
 #' @title Reset index SNP
+#' @param x an object of class MR
 #' @export
 reset_index_snp <- new_generic("reset_index_snp", "x", function(x) { S7_dispatch() })
 method(reset_index_snp, MR) <- function(x) {
@@ -313,6 +319,7 @@ method(reset_index_snp, MR) <- function(x) {
 
 
 #' @title Convert to MendelianRandomization::MRInput object
+#' @inheritParams run_mr
 #' @export
 to_MRInput <- new_generic("to_MRInput", "x", function(x, corr = FALSE) { S7_dispatch() })
 #' @name to_MRInput
@@ -337,6 +344,7 @@ method(to_MRInput, MR) <- function(x, corr = FALSE) {
 
 
 #' @title Convert to MendelianRandomization::MRMVInput object
+#' @inheritParams run_mr
 #' @export
 to_MRMVInput <- new_generic("to_MRMVInput", "x", function(x, corr = FALSE) { S7_dispatch() })
 #' @name to_MRMVInput
@@ -361,10 +369,14 @@ method(to_MRMVInput, MR) <- function(x, corr = FALSE) {
 
 
 #' @title Run MR
+#' @param x an object of class MR
+#' @param corr a logical, whether to use the correlation matrix when running MR
+#' @param methods a string, one of c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode', 'mr_pcgmm')
+#' @param ... parameter sink, not used
 #' @export
-mr <- new_generic("mr", "x", function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) { S7_dispatch() })
-#' @name mr
-method(mr, MR) <- function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) {
+run_mr <- new_generic("run_mr", "x", function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) { S7_dispatch() })
+#' @name run_mr
+method(run_mr, MR) <- function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_weighted_median','mr_weighted_mode'), ...) {
 
   res <- lapply(methods, function(method) do.call(method, args=c(list(x=x, corr=corr), list(...)))) |> `names<-`(methods)
   dat <- mr_results_to_data_table(res)
@@ -374,6 +386,7 @@ method(mr, MR) <- function(x, corr = FALSE, methods=c('mr_ivw','mr_egger','mr_we
 
 
 #' @title Run IVW MR
+#' @inheritParams run_mr
 #' @export
 mr_ivw <- new_generic("mr_ivw", "x", function(x, corr = FALSE, ...) { S7_dispatch() })
 #' @name mr_ivw
@@ -404,6 +417,7 @@ method(mr_ivw, MR) <- function(x, corr = FALSE, ...) {
 
 
 #' @title Run Egger MR
+#' @inheritParams run_mr
 #' @export
 mr_egger <- new_generic("mr_egger", "x", function(x, corr = FALSE, ...) { S7_dispatch() })
 #' @name mr_egger
@@ -435,6 +449,7 @@ method(mr_egger, MR) <- function(x, corr = FALSE, ...) {
 
 
 #' @title Run weighted median MR
+#' @inheritParams run_mr
 #' @export
 mr_weighted_median <- new_generic("mr_weighted_median", "x", function(x, corr = FALSE, ...) { S7_dispatch() })
 #' @name mr_egger
@@ -466,6 +481,7 @@ method(mr_weighted_median, MR) <- function(x, corr = FALSE, ...) {
 
 
 #' @title Run weighted mode MR
+#' @inheritParams run_mr
 #' @export
 mr_weighted_mode <- new_generic("mr_weighted_mode", "x", function(x, corr = FALSE, ...) { S7_dispatch() })
 #' @name mr_weighted_mode
@@ -495,6 +511,7 @@ method(mr_weighted_mode, MR) <- function(x, corr = FALSE, ...) {
 
 
 #' @title Run PC-GMM MR
+#' @inheritParams run_mr
 #' @export
 mr_pcgmm <- new_generic("mr_pcgmm", "x", function(x, corr = TRUE, ...) { S7_dispatch() })
 #' @name mr_pcgmm
@@ -598,7 +615,6 @@ MRResult <- new_class(
 
 #' @title MR results to data.table
 #' @param x MRResult object to covert to data.table
-#' @param ... argument for data.table generic, ignored in this implementation
 #' @export
 mr_results_to_data_table <- new_generic("mr_results_to_data_table", "x", function(x) { S7_dispatch() })
 #' @name mr_results_to_data_table
@@ -636,6 +652,8 @@ method(mr_results_to_data_table, class_list) <- function(x) {
 
 
 #' @title Set the LD matrix
+#' @param x an object of class MR
+#' @param correlation a matrix, the correlation ('r') matrix
 #' @export
 set_ld_mat <- new_generic("set_ld_mat", "x", function(x, correlation) { S7_dispatch() })
 method(set_ld_mat, MR) <- function(x, correlation) {
@@ -687,6 +705,8 @@ method(set_ld_mat, MR) <- function(x, correlation) {
 
 
 #' @title Clump MR object exposure
+#' @param x an object of class MR description
+#' @inheritParams clump
 #' @export
 clump_mr <- new_generic("clump_mr", "x", function(x,
                                             p1 = 1,

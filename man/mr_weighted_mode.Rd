@@ -6,6 +6,13 @@
 \usage{
 mr_weighted_mode(x, corr = FALSE, ...)
 }
+\arguments{
+\item{x}{an object of class MR}
+
+\item{corr}{a logical, whether to use the correlation matrix when running MR}
+
+\item{...}{parameter sink, not used}
+}
 \description{
 Run weighted mode MR
 }

@@ -8,8 +8,6 @@ mr_results_to_data_table(x)
 }
 \arguments{
 \item{x}{MRResult object to covert to data.table}
-
-\item{...}{argument for data.table generic, ignored in this implementation}
 }
 \description{
 MR results to data.table

@@ -1,37 +1,36 @@
 Package: genepi.utils
 Title: GenEpi Utility Functions
-Version: 0.0.8
+Version: 0.0.9
 Authors@R: c(person("Nicholas", "Sunderland", , "nicholas.sunderland@bristol.ac.uk", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-3625-630X")))
 Description: The `genepi.utils` package is a collection of utility functions for working with genetic epidemiology data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.1
 biocViews:
 Imports: 
     data.table,
     fst,
     furrr,
     future,
+    MendelianRandomization,
+    TwoSampleMR,
+    indexevent,
+    SlopeHunter,
     ggplot2,
     ggpubr,
     ggrepel,
-    gridExtra,
+    gridExtra, 
     progressr,
     stats,
     utils,
     yaml,
-    mclust,
-    gganimate,
     viridis,
     tibble,
-    MendelianRandomization,
     GenomicRanges,
     IRanges,
     rtracklayer,
-    TwoSampleMR,
-    S7,
-    indexevent
+    S7
 Remotes:
     github::MRCIEU/TwoSampleMR,
     github::Osmahmoud/SlopeHunter,
@@ -40,9 +39,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    usethis, 
-    devtools,
-    SlopeHunter
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Collate: 

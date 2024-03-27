@@ -6,6 +6,11 @@
 \usage{
 to_MRInput(x, corr = FALSE)
 }
+\arguments{
+\item{x}{an object of class MR}
+
+\item{corr}{a logical, whether to use the correlation matrix when running MR}
+}
 \description{
 Convert to MendelianRandomization::MRInput object
 }

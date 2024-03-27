@@ -1,5 +1,5 @@
 # Silence R CMD check
-globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation"),
+globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation", "strand", "imputed", "info"),
                 package = "genepi.utils")
 
 #' @title GWAS object

@@ -1,3 +1,7 @@
+# Silence R CMD check
+globalVariables(c("RSID", "rsid_allele", "i.rsid_allele", "LD_rsid_allele"),
+                package = "genepi.utils")
+
 #' @title Calculate LD matrix
 #' @description
 #' Based on the ieugwasr function (see reference)
