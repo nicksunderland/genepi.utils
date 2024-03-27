@@ -68,7 +68,8 @@ clumped_gwas <- clump(gwas,
                       r2 = 0.1, 
                       kb = 250, 
                       plink2    = which_plink2(), 
-                      plink_ref = which_1000G_reference(build="GRCh37"))
+                      plink_ref = which_1000G_reference(build="GRCh37"), 
+                      parallel_cores = 4)
 
 # view result
 clumped_gwas[]

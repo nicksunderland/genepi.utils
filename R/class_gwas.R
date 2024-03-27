@@ -641,7 +641,7 @@ method(as.twosample.mr, class_list) <- function(x, type) {
   dat <- lapply(x, function(x0) as.data.table(x0)) |> data.table::rbindlist()
 
   # recode as sorted alleles (to allow matching of unharmonised mutliallelic)
-  dat[, rsid := paste0(c(rsid, sort(c(oa,ea))), collapse="_"), by=1:nrow(dat)]
+  dat[, rsid := ifelse(oa < ea, paste0(rsid, "_", oa, "_", ea), paste0(rsid, "_", ea, "_", oa))]
 
   # 2SMR format
   formatted <- TwoSampleMR::format_data(

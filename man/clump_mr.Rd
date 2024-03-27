@@ -11,7 +11,8 @@ clump_mr(
   r2 = 0.001,
   kb = 250,
   plink2 = genepi.utils::which_plink2(),
-  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37")
+  plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37"),
+  parallel_cores = parallel::detectCores()
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ clump_mr(
 \item{plink2}{a string, path to the plink executable}
 
 \item{plink_ref}{a string, path to the pfile genome reference}
+
+\item{parallel_cores}{an integer, how many cores / threads to use}
 }
 \description{
 Clump MR object exposure

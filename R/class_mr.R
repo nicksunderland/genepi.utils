@@ -714,7 +714,8 @@ clump_mr <- new_generic("clump_mr", "x", function(x,
                                             r2 = 0.001,
                                             kb = 250,
                                             plink2    = genepi.utils::which_plink2(),
-                                            plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) { S7_dispatch() })
+                                            plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
+                                            parallel_cores = parallel::detectCores()) { S7_dispatch() })
 #' @name clump_mr
 method(clump_mr, MR) <- function(x,
                               p1 = 1,
@@ -722,7 +723,8 @@ method(clump_mr, MR) <- function(x,
                               r2 = 0.001,
                               kb = 250,
                               plink2    = genepi.utils::which_plink2(),
-                              plink_ref = genepi.utils::which_1000G_reference(build="GRCh37")) {
+                              plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
+                              parallel_cores = parallel::detectCores()) {
 
   # extract data to work with - might be multiple exposures with multivariable MR
   if(ncol(x@bx)==1) {

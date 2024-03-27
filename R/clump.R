@@ -26,6 +26,7 @@ globalVariables(c("snp", "rsid", "SP2", "ID", "i.clump", "clump_member", "snp_st
 #' @param plink2 a string, path to the plink executable
 #' @param plink_ref a string, path to the pfile genome reference
 #' @param logging a logical, whether to set the plink logging information as attributes (`log`, `missing_id`, `missing_allele`) on the returned data.table
+#' @param parallel_cores an integer, how many cores / threads to use
 #' @return a data.table with additional columns `index` (logical, whether the variant is an index SNP) and `clump` (integer, the clump the variant belongs to)
 #' @export
 #'
@@ -36,7 +37,8 @@ clump <- function(gwas,
                   kb = 250,
                   plink2    = genepi.utils::which_plink2(),
                   plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
-                  logging = TRUE) {
+                  logging = TRUE,
+                  parallel_cores = parallel::detectCores()) {
 
   # to data.table format
   gwas <- import_table(gwas)
@@ -71,7 +73,8 @@ clump <- function(gwas,
                "--clump-p1", p1,
                "--clump-p2", p2,
                "--clump-r2", r2,
-               "--clump-kb", kb)
+               "--clump-kb", kb,
+               "--threads", parallel_cores)
 
   # run clumping
   system(cmd)
