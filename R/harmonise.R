@@ -6,11 +6,11 @@ globalVariables(c(),
 #' @description
 #' Harmonise effects across two GWAS datasets. The `gwas` objects are expected to be in standard format - see `standardise_gwas()`.
 #' Corrects strand for non-palindromic SNPs (flip BETAs). Drop palindromic variants. Drop non-matching variant alleles. \cr
-#' This function is based on the same function in the [Slopehunter](https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R)
-#' and [TwoSampleMR](https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R) packages. I have re-written it here to use
+#' This function is based on the same function in the Slopehunter
+#' and TwoSampleMR packages. I have re-written it here to use
 #' the standardised column names and use pure data.table syntax for increased processing speed.
-#' @references [Slopehunter](https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R) - https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R
-#' @references [TwoSampleMR](https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R) - https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R
+#' @references Slopehunter https://github.com/Osmahmoud/SlopeHunter
+#' @references TwoSampleMR https://github.com/MRCIEU/TwoSampleMR
 #' @param gwas1 a data.frame like object or file path, GWAS 1
 #' @param gwas1_trait a string, suffix to add to gwas1 column names e.g. progression --> columns chr_progression, bp_progression, ..., etc.
 #' @param gwas2_trait a string, suffix to add to gwas2 column names e.g. progression --> columns chr_progression, bp_progression, ..., etc.

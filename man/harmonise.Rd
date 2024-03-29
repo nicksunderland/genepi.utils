@@ -29,12 +29,12 @@ a data.table, the harmonised dataset
 \description{
 Harmonise effects across two GWAS datasets. The \code{gwas} objects are expected to be in standard format - see \code{standardise_gwas()}.
 Corrects strand for non-palindromic SNPs (flip BETAs). Drop palindromic variants. Drop non-matching variant alleles. \cr
-This function is based on the same function in the \href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter}
-and \href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR} packages. I have re-written it here to use
+This function is based on the same function in the Slopehunter
+and TwoSampleMR packages. I have re-written it here to use
 the standardised column names and use pure data.table syntax for increased processing speed.
 }
 \references{
-\href{https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R}{Slopehunter} - https://github.com/Osmahmoud/SlopeHunter/blob/master/R/harmonise_effects.R
+Slopehunter https://github.com/Osmahmoud/SlopeHunter
 
-\href{https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R}{TwoSampleMR} - https://github.com/MRCIEU/TwoSampleMR/blob/master/R/harmonise.R
+TwoSampleMR https://github.com/MRCIEU/TwoSampleMR
 }
