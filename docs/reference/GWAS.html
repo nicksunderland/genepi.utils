@@ -14,7 +14,7 @@ se; and conversion of z scores to p values.
 Standardise allele codingAlleles are standardised to upper case ACTGDI or combination of these letters. NA values
 are allowed in one of the ea or oa fields, but not both, where it is taken to represent a deletion.
 Reference harmonisationTODO: harmonising against a reference panel is an important step, however has not yet been implemented
-for this class constructor.
+for this class constructor (under active development).
 FiltersCustom filters can be added to the filters argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to keep. The defaults are:
 
@@ -49,7 +49,7 @@ eaf_missing = "!is.na(eaf)"
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
       </span>
     </div>
 
@@ -111,7 +111,7 @@ current conversions include: <em>chr</em> and <em>bp</em> extration from <em>rsi
 conversion of odds ratio <em>or</em> and odds ratio standard error / upper and lower bounds <em>or_se/or_ub/or_lb</em> to <em>beta</em> and
 <em>se</em>; and conversion of <em>z</em> scores to <em>p</em> values.</td></tr><tr><td>Standardise allele coding</td><td>Alleles are standardised to upper case <em>ACTGDI</em> or combination of these letters. <code>NA</code> values
 are allowed in one of the <em>ea</em> or <em>oa</em> fields, but not both, where it is taken to represent a deletion.</td></tr><tr><td>Reference harmonisation</td><td>TODO: harmonising against a reference panel is an important step, however has not yet been implemented
-for this class constructor.</td></tr><tr><td>Filters</td><td>Custom filters can be added to the <code>filters</code> argument. This should be a list of named string that can be evaluated as R
+for this class constructor (under active development).</td></tr><tr><td>Filters</td><td>Custom filters can be added to the <code>filters</code> argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to <em>keep</em>. The defaults are:
 <ul><li><p>beta_invalid = "!is.infinite(beta) &amp; abs(beta) &lt; 20"</p></li>
 <li><p>eaf_invalid = "eaf &gt; 0 &amp; eaf &lt; 1"</p></li>
@@ -136,9 +136,9 @@ expressions and when applied to the standard column names result in a logical ve
 <span>  parallel_cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  filters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta_invalid <span class="op">=</span> <span class="st">"!is.infinite(beta) &amp; abs(beta) &lt; 20"</span>, eaf_invalid <span class="op">=</span></span>
 <span>    <span class="st">"eaf &gt; 0 &amp; eaf &lt; 1"</span>, p_invalid <span class="op">=</span> <span class="st">"!is.infinite(p)"</span>, se_invalid <span class="op">=</span> <span class="st">"!is.infinite(se)"</span>,</span>
-<span>    chr_missing <span class="op">=</span> <span class="st">"!is.na(chr)"</span>, bp_missing <span class="op">=</span> <span class="st">"!is.na(bp)"</span>, beta_missing <span class="op">=</span></span>
-<span>    <span class="st">"!is.na(beta)"</span>, se_missing <span class="op">=</span> <span class="st">"!is.na(se)"</span>, p_missing <span class="op">=</span> <span class="st">"!is.na(p)"</span>, eaf_missing <span class="op">=</span></span>
-<span>    <span class="st">"!is.na(eaf)"</span><span class="op">)</span>,</span>
+<span>    alleles_invalid <span class="op">=</span> <span class="st">"!is.na(ea) &amp; !is.na(oa)"</span>, chr_missing <span class="op">=</span> <span class="st">"!is.na(chr)"</span>, bp_missing</span>
+<span>    <span class="op">=</span> <span class="st">"!is.na(bp)"</span>, beta_missing <span class="op">=</span> <span class="st">"!is.na(beta)"</span>, se_missing <span class="op">=</span> <span class="st">"!is.na(se)"</span>, p_missing <span class="op">=</span></span>
+<span>    <span class="st">"!is.na(p)"</span>, eaf_missing <span class="op">=</span> <span class="st">"!is.na(eaf)"</span><span class="op">)</span>,</span>
 <span>  reference <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ref_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -153,7 +153,7 @@ expressions and when applied to the standard column names result in a logical ve
 
 
 <dt>map</dt>
-<dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map id string, a named list or character vector, or a ColumMap object)</p></dd>
+<dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map string id, a named list or character vector, or a ColumMap object)</p></dd>
 
 
 <dt>drop</dt>
@@ -186,8 +186,16 @@ expressions and when applied to the standard column names result in a logical ve
 
 
 <dt>ref_map</dt>
-<dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map id string, a named list or character vector, or a
+<dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map id (a string), a named list or character vector, or a
 ColumMap object) defining at least columns <code>rsid</code> (or <code>chr</code>, <code>bp</code>), <code>ea</code>, <code>oa</code> and <code>eaf</code>.</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>a logical, whether to print details</p></dd>
+
+
+<dt>...</dt>
+<dd><p>variable capture to be passed to the constructor, e.g. individual vectors for the slots, rather that <code>dat</code></p></dd>
 
 </dl></div>
     <div id="value">

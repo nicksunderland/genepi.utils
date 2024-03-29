@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
       </span>
     </div>
 
@@ -120,44 +120,7 @@ initial step.</p>
 <p>Run the SlopeHunter expectation-maximization method to estimate the
 bias adjustment factor. The algorithm uses model-based clustering and
 proposes that the distributions of the incidence(GI) and progression
-(GP) BETAs can be written like so:</p>
-<p><span class="math display">\[
-  \binom{\beta_{GI}}{\beta'_{GP}}
-  \sim
-  \color{#F8766D}{
-  \pi_{1}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} &amp; b_{1}\sigma_{I}^{2} \\
-  b_1\sigma_{I}^{2} &amp; b_{1}^{2}\sigma_{I}^{2} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-  +
-  \color{#619CFF}{
-  \pi_{2}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} &amp; b_{1}\sigma_{I}^{2} + \sigma_{IP} \\
-  b_1\sigma_{I}^{2} + \sigma_{IP} &amp; b_{1}^{2}\sigma_{I}^{2} +
-\sigma_{P}^{2} + 2b_{1}\sigma_{IP} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-  \color{gray}{
-  +
-  \pi_{3}
-  \begin{pmatrix}
-  \eta_{0} \\
-  N(0, \sigma_{P}^{2})
-  \end{pmatrix}
-  +
-  \pi_{4}
-  \begin{pmatrix}
-  \eta_{0} \\
-  \eta_{0}
-  \end{pmatrix}}
-\]</span></p>
+(GP) BETAs.</p>
 <ul>
 <li>Cluster 1: SNPs that cause incidence but not progression (red)<br>
 </li>
@@ -169,9 +132,6 @@ proposes that the distributions of the incidence(GI) and progression
 <li>Cluster 4: SNPs that cause neither incidence or progression
 (gray)</li>
 </ul>
-<p>The values: <span class="math display">\[{\pi_{1}, \pi_{2}, \pi_{3},
-\pi_{4}}\]</span> … are the probabilities that a SNP belongs to the
-respective clusters.</p>
 <p>The first thing to note is that we can filter out SNPs from cluster 3
 and 4 by only including SNPs with a significant association (P-value)
 with incidence - this is the <code>ip</code> parameter. The problem is
@@ -229,7 +189,7 @@ passing through the origin. At each iteration the distribution
 parameters are recalculated (variance / s.dev / cov) and variant
 reassigned to either cluster 1 or 2, until the model converges.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slopehunter_iters.html">plot_slopehunter_iters</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_slopehunter_iters</span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                            gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
 <span>                            ip     <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>                            pi0    <span class="op">=</span> <span class="fl">0.6</span>,</span>
@@ -245,22 +205,12 @@ reassigned to either cluster 1 or 2, until the model converges.</p>
 <h2 id="the-b-slope">The b-slope<a class="anchor" aria-label="anchor" href="#the-b-slope"></a>
 </h2>
 <p>In the expectation (E) part of the Slope-hunter algorithm we
-initially set the covariance matrix of the first component: <span class="math display">\[
-\color{#F8766D}{
-  \pi_{1}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} &amp; b_{1}\sigma_{I}^{2} \\
-  b_1\sigma_{I}^{2} &amp; b_{1}^{2}\sigma_{I}^{2} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-\]</span> The off-diagonal components are set to
-<code>sxy0 = sx0*sy0*dir0*0.95</code> where <code>sx0</code> and
-<code>sy0</code> are the standard deviations of the incidence and
-progression betas, respectively, and the <code>dir0</code> term is the
-<code><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign()</a></code> of the covariance - which is positive in this
-case:</p>
+initially set the covariance matrix of the first component. The
+off-diagonal components are set to <code>sxy0 = sx0*sy0*dir0*0.95</code>
+where <code>sx0</code> and <code>sy0</code> are the standard deviations
+of the incidence and progression betas, respectively, and the
+<code>dir0</code> term is the <code><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign()</a></code> of the covariance -
+which is positive in this case:</p>
 <div class="figure" style="text-align: center">
 <img src="figures/slopehunter_cov_x_y.png" alt="Cov(incidence, progression)" width="90%"><p class="caption">
 Cov(incidence, progression)
@@ -303,11 +253,11 @@ e.g. </p>
 <li>sxy1 = c(1e-5, 1e-4, 1e-3)</li>
 </ul>
 <p>…will lead to 27 separate analyses.</p>
-<p>We can use the <code><a href="../reference/analyse_collider_bias.html">analyse_collider_bias()</a></code> function to run
+<p>We can use the <code>analyse_collider_bias()</code> function to run
 all combinations of methods and parameters. Here is the stability of the
 b-slope with different p-values (<code>ip</code>).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse_collider_bias.html">analyse_collider_bias</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
+<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyse_collider_bias</span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_clumped_incidence</span>,</span>
 <span>                                 gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
 <span>                                 merge  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>, <span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span>,</span>
 <span>                                 methods<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slopehunter"</span>,<span class="st">"mr_collider_bias"</span>,<span class="st">"dudbridge"</span><span class="op">)</span>,</span>
@@ -317,13 +267,13 @@ b-slope with different p-values (<code>ip</code>).</p>
 <span>                                 sxy1   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-05</span><span class="op">)</span>,</span>
 <span>                                 bootstraps <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_slope.html">plot_slope</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_slope</span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/collider_slopes.png" width="98%" style="display: block; margin: auto;"></p>
 <p>Plotted another way with
-<code><a href="../reference/plot_correction_stability.html">plot_correction_stability()</a></code>.</p>
+<code>plot_correction_stability()</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_correction_stability.html">plot_correction_stability</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_correction_stability</span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
 <span><span class="va">p</span></span></code></pre></div>
 <p><img src="figures/collider_stability.png" width="98%" style="display: block; margin: auto;"></p>
 </div>
@@ -335,12 +285,9 @@ correction calculated we next need to apply the correction to the
 (biased) progression GWAS data. As the correction uses the incidence
 data we can only apply this to variants that appear in both incidence
 and progression datasets (the harmonised dataset).</p>
-<p><span class="math display">\[
-\beta_{GP} = \beta_{GP}^{'} - b_{1}\beta_{GI}
-\]</span></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># apply correction</span></span>
-<span><span class="va">corrected_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_collider_correction.html">apply_collider_correction</a></span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_incidence</span>, </span>
+<span><span class="va">corrected_gwas</span> <span class="op">&lt;-</span> <span class="fu">apply_collider_correction</span><span class="op">(</span>gwas_i <span class="op">=</span> <span class="va">gwas_incidence</span>, </span>
 <span>                                            gwas_p <span class="op">=</span> <span class="va">gwas_progression</span>,</span>
 <span>                                            merge  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>, <span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span>,</span>
 <span>                                            b_correction_factor <span class="op">=</span> <span class="fl">0.6473</span>,</span>

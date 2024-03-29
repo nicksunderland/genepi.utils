@@ -25,6 +25,26 @@ reference:
   - ld_matrix
   # - download_ukbb_ld
 
+- title: "Mendelian Randomization"
+  desc: >
+    Functions for performing MR
+  contents:
+  - MR
+  - reset_index_snp
+  - clump_mr
+  - mr_egger
+  - mr_ivw
+  - mr_pcgmm
+  - mr_results_to_data_table
+  - mr_weighted_median
+  - mr_weighted_mode
+  - run_mr
+  - set_ld_mat
+  - to_MRInput
+  - to_MRMVInput
+  - ld_matrix
+  # - download_ukbb_ld
+
 - title: "RSID mapping"
   desc: >
     Functions for mapping chromosome and position data to variant RSIDs
@@ -35,24 +55,10 @@ reference:
   desc: >
     Functions for analysing collider / index event bias and adjust GWAS data for this bias.
   contents:
-  - ColliderBiasResult
-  - collider_results_to_data_table
+  - collider_bias
+  - cwls
   - slopehunter
-  - apply_collider_correction
   - dudbridge
-  - mr_collider_bias
-  - analyse_collider_bias
-  - plot_slope
-  - plot_slopehunter_iters
-  - plot_correction_stability
-
-- title: "Drug target proxies"
-  desc: >
-    Functions for creating genetically proxied drug target instruments.
-  contents:
-  - QTL
-  - drug_target_proxy
-  - plot_drug_proxy_instrument
 
 - title: "Plotting"
   desc: >

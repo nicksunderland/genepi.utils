@@ -64,6 +64,9 @@
     <loc>/reference/GWAS.html</loc>
   </url>
   <url>
+    <loc>/reference/MR.html</loc>
+  </url>
+  <url>
     <loc>/reference/QTL.html</loc>
   </url>
   <url>
@@ -88,7 +91,16 @@
     <loc>/reference/clump.html</loc>
   </url>
   <url>
+    <loc>/reference/clump_mr.html</loc>
+  </url>
+  <url>
+    <loc>/reference/collider_bias.html</loc>
+  </url>
+  <url>
     <loc>/reference/collider_results_to_data_table.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cwls.html</loc>
   </url>
   <url>
     <loc>/reference/download_ukbb_ld.html</loc>
@@ -154,6 +166,24 @@
     <loc>/reference/mr_collider_bias.html</loc>
   </url>
   <url>
+    <loc>/reference/mr_egger.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mr_ivw.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mr_pcgmm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mr_results_to_data_table.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mr_weighted_median.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mr_weighted_mode.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot_coloc_probabilities.html</loc>
   </url>
   <url>
@@ -178,10 +208,19 @@
     <loc>/reference/qq_plot.html</loc>
   </url>
   <url>
+    <loc>/reference/reset_index_snp.html</loc>
+  </url>
+  <url>
+    <loc>/reference/run_mr.html</loc>
+  </url>
+  <url>
     <loc>/reference/set_1000G_reference.html</loc>
   </url>
   <url>
     <loc>/reference/set_dbsnp_directory.html</loc>
+  </url>
+  <url>
+    <loc>/reference/set_ld_mat.html</loc>
   </url>
   <url>
     <loc>/reference/set_plink.html</loc>
@@ -194,6 +233,12 @@
   </url>
   <url>
     <loc>/reference/standardise_gwas.html</loc>
+  </url>
+  <url>
+    <loc>/reference/to_MRInput.html</loc>
+  </url>
+  <url>
+    <loc>/reference/to_MRMVInput.html</loc>
   </url>
   <url>
     <loc>/reference/which_1000G_reference.html</loc>

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
       </span>
     </div>
 
@@ -109,6 +109,66 @@
         </td>
         <td><p>Calculate LD matrix</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="mendelian-randomization">Mendelian Randomization <a href="#mendelian-randomization" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for performing MR</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="MR.html">MR()</a></code> </p>
+        </td>
+        <td><p>MR object</p></td>
+      </tr><tr><td>
+          <p><code><a href="reset_index_snp.html">reset_index_snp()</a></code> </p>
+        </td>
+        <td><p>Reset index SNP</p></td>
+      </tr><tr><td>
+          <p><code><a href="clump_mr.html">clump_mr()</a></code> </p>
+        </td>
+        <td><p>Clump MR object exposure</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_egger.html">mr_egger()</a></code> </p>
+        </td>
+        <td><p>Run Egger MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_ivw.html">mr_ivw()</a></code> </p>
+        </td>
+        <td><p>Run IVW MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_pcgmm.html">mr_pcgmm()</a></code> </p>
+        </td>
+        <td><p>Run PC-GMM MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_results_to_data_table.html">mr_results_to_data_table()</a></code> </p>
+        </td>
+        <td><p>MR results to data.table</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_weighted_median.html">mr_weighted_median()</a></code> </p>
+        </td>
+        <td><p>Run weighted median MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="mr_weighted_mode.html">mr_weighted_mode()</a></code> </p>
+        </td>
+        <td><p>Run weighted mode MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="run_mr.html">run_mr()</a></code> </p>
+        </td>
+        <td><p>Run MR</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_ld_mat.html">set_ld_mat()</a></code> </p>
+        </td>
+        <td><p>Set the LD matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="to_MRInput.html">to_MRInput()</a></code> </p>
+        </td>
+        <td><p>Convert to MendelianRandomization::MRInput object</p></td>
+      </tr><tr><td>
+          <p><code><a href="to_MRMVInput.html">to_MRMVInput()</a></code> </p>
+        </td>
+        <td><p>Convert to MendelianRandomization::MRMVInput object</p></td>
+      </tr><tr><td>
+          <p><code><a href="ld_matrix.html">ld_matrix()</a></code> </p>
+        </td>
+        <td><p>Calculate LD matrix</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="rsid-mapping">RSID mapping <a href="#rsid-mapping" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for mapping chromosome and position data to variant RSIDs</p>
         </th>
@@ -121,61 +181,21 @@
           <p class="section-desc"></p><p>Functions for analysing collider / index event bias and adjust GWAS data for this bias.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="ColliderBiasResult.html">ColliderBiasResult()</a></code> </p>
+          <p><code><a href="collider_bias.html">collider_bias()</a></code> </p>
         </td>
-        <td><p>Collider bias result object</p></td>
+        <td><p>Run collider bias assessment</p></td>
       </tr><tr><td>
-          <p><code><a href="collider_results_to_data_table.html">collider_results_to_data_table()</a></code> </p>
+          <p><code><a href="cwls.html">cwls()</a></code> </p>
         </td>
-        <td><p>ColliderBiasResult to data.table</p></td>
+        <td><p>Corrected Weighted Least Squares collider bias method</p></td>
       </tr><tr><td>
           <p><code><a href="slopehunter.html">slopehunter()</a></code> </p>
         </td>
-        <td><p>Slope-hunter collider bias method</p></td>
-      </tr><tr><td>
-          <p><code><a href="apply_collider_correction.html">apply_collider_correction()</a></code> </p>
-        </td>
-        <td><p>Apply correction factor to GWAS data</p></td>
+        <td><p>Slope-Hunter collider bias method</p></td>
       </tr><tr><td>
           <p><code><a href="dudbridge.html">dudbridge()</a></code> </p>
         </td>
-        <td><p>Dudbridge CWLS collider bias method</p></td>
-      </tr><tr><td>
-          <p><code><a href="mr_collider_bias.html">mr_collider_bias()</a></code> </p>
-        </td>
-        <td><p>IVW MR collider bias method</p></td>
-      </tr><tr><td>
-          <p><code><a href="analyse_collider_bias.html">analyse_collider_bias()</a></code> </p>
-        </td>
-        <td><p>Run collider bias analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_slope.html">plot_slope()</a></code> </p>
-        </td>
-        <td><p>Plot the Slope-hunter scatter plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_slopehunter_iters.html">plot_slopehunter_iters()</a></code> </p>
-        </td>
-        <td><p>Create an animation of Slope-hunter iterations</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_correction_stability.html">plot_correction_stability()</a></code> </p>
-        </td>
-        <td><p>Plot the estimated correction factor variability</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="drug-target-proxies">Drug target proxies <a href="#drug-target-proxies" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions for creating genetically proxied drug target instruments.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="QTL.html">QTL()</a></code> </p>
-        </td>
-        <td><p>QTL class</p></td>
-      </tr><tr><td>
-          <p><code><a href="drug_target_proxy.html">drug_target_proxy()</a></code> </p>
-        </td>
-        <td><p>Create a drug target proxy instrument</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_drug_proxy_instrument.html">plot_drug_proxy_instrument()</a></code> </p>
-        </td>
-        <td><p>Plot the drug proxy instrument</p></td>
+        <td><p>Dudbridge collider bias method</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="plotting">Plotting <a href="#plotting" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions for creating common GenEpi data plots</p>

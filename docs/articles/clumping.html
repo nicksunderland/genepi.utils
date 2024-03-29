@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
       </span>
     </div>
 
@@ -147,32 +147,14 @@ directly in your command line.</p>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span>, fill_rsid<span class="op">=</span><span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading GWAS ...</span></span>
-<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
-<span><span class="co">#&gt; [i] applying column mapping</span></span>
-<span><span class="co">#&gt; [i] enforcing column types</span></span>
-<span><span class="co">#&gt; [i] standardising columns</span></span>
-<span><span class="co">#&gt; [i] standardising allele coding</span></span>
-<span><span class="co">#&gt; [i] applying filters</span></span>
-<span><span class="co">#&gt; [i] checking rsid coding</span></span>
-<span><span class="co">#&gt;  [?] 10 RSIDs could not be parsed, attempting to fetch from dbSNP.</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (10/10), of which 0% (0/10) where found flipping alleles</span></span>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="co"># check path to reference</span></span>
 <span><span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $pfile_1000G_GRCh37</span></span>
-<span><span class="co">#&gt; [1] "/Users/xx20081/Documents/local_data/genome_reference/ref_1000GP_phase3_plink/EUR_1kGv3"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $pfile_1000G_GRCh38</span></span>
-<span><span class="co">#&gt; [1] "not_set_yet"</span></span>
 <span></span>
 <span><span class="co"># check path to plink2 executable</span></span>
-<span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/usr/local/plink/plink2"</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="clumping">Clumping<a class="anchor" aria-label="anchor" href="#clumping"></a>
@@ -192,30 +174,6 @@ variant belongs to.</li>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># input gwas; n.b. trailing `[]` just for printing in rmarkdown</span></span>
 <span><span class="va">gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           rsid    chr        bp     ea     oa      eaf   beta    se     p     n</span></span>
-<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:  rs7899632     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781    NA</span></span>
-<span><span class="co">#&gt;  2: rs61875309     10 100000645      C      A 1.21e-01  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt;  3: rs12258651     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480    NA</span></span>
-<span><span class="co">#&gt;  4:  rs1359508     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  5:  rs1048754     10 100004360      A      G 8.38e-01  0.045 0.134 0.961    NA</span></span>
-<span><span class="co">#&gt;  6:  rs3750595     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781    NA</span></span>
-<span><span class="co">#&gt;  7:  rs2025625     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  8: rs10786405     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781    NA</span></span>
-<span><span class="co">#&gt;  9: rs11816998     10 100007362      C      G 8.16e-05  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt; 10:  rs3793692     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743    NA</span></span>
-<span><span class="co">#&gt;     ncase  trait     id</span></span>
-<span><span class="co">#&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  2:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  3:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  4:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  5:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  6:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  7:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  8:    NA  trait     id</span></span>
-<span><span class="co">#&gt;  9:    NA  trait     id</span></span>
-<span><span class="co">#&gt; 10:    NA  trait     id</span></span>
 <span></span>
 <span><span class="co"># run clumping</span></span>
 <span><span class="va">clumped_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clump.html">clump</a></span><span class="op">(</span><span class="va">gwas</span>, </span>
@@ -224,35 +182,11 @@ variant belongs to.</li>
 <span>                      r2 <span class="op">=</span> <span class="fl">0.1</span>, </span>
 <span>                      kb <span class="op">=</span> <span class="fl">250</span>, </span>
 <span>                      plink2    <span class="op">=</span> <span class="fu"><a href="../reference/which_plink2.html">which_plink2</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>                      plink_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span>build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span><span class="op">)</span></span>
+<span>                      plink_ref <span class="op">=</span> <span class="fu"><a href="../reference/which_1000G_reference.html">which_1000G_reference</a></span><span class="op">(</span>build<span class="op">=</span><span class="st">"GRCh37"</span><span class="op">)</span>, </span>
+<span>                      parallel_cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># view result</span></span>
-<span><span class="va">clumped_gwas</span><span class="op">[</span><span class="op">]</span></span>
-<span><span class="co">#&gt; Key: &lt;rsid&gt;</span></span>
-<span><span class="co">#&gt;           rsid    chr        bp     ea     oa      eaf   beta    se     P     n</span></span>
-<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:  rs1048754     10 100004360      A      G 8.38e-01  0.045 0.134 0.961    NA</span></span>
-<span><span class="co">#&gt;  2: rs10786405     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781    NA</span></span>
-<span><span class="co">#&gt;  3: rs11816998     10 100007362      C      G 8.16e-05  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt;  4: rs12258651     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480    NA</span></span>
-<span><span class="co">#&gt;  5:  rs1359508     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  6:  rs2025625     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  7:  rs3750595     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781    NA</span></span>
-<span><span class="co">#&gt;  8:  rs3793692     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743    NA</span></span>
-<span><span class="co">#&gt;  9: rs61875309     10 100000645      C      A 1.21e-01  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt; 10:  rs7899632     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781    NA</span></span>
-<span><span class="co">#&gt;     ncase  trait     id        SNP  index  clump</span></span>
-<span><span class="co">#&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;     &lt;char&gt; &lt;lgcl&gt; &lt;fctr&gt;</span></span>
-<span><span class="co">#&gt;  1:    NA  trait     id  rs1048754  FALSE      2</span></span>
-<span><span class="co">#&gt;  2:    NA  trait     id rs10786405  FALSE      1</span></span>
-<span><span class="co">#&gt;  3:    NA  trait     id rs11816998  FALSE      2</span></span>
-<span><span class="co">#&gt;  4:    NA  trait     id rs12258651   TRUE      1</span></span>
-<span><span class="co">#&gt;  5:    NA  trait     id  rs1359508   TRUE      2</span></span>
-<span><span class="co">#&gt;  6:    NA  trait     id  rs2025625  FALSE      2</span></span>
-<span><span class="co">#&gt;  7:    NA  trait     id  rs3750595  FALSE      1</span></span>
-<span><span class="co">#&gt;  8:    NA  trait     id  rs3793692  FALSE      2</span></span>
-<span><span class="co">#&gt;  9:    NA  trait     id rs61875309  FALSE      2</span></span>
-<span><span class="co">#&gt; 10:    NA  trait     id  rs7899632  FALSE      1</span></span></code></pre></div>
+<span><span class="va">clumped_gwas</span><span class="op">[</span><span class="op">]</span></span></code></pre></div>
 </div>
   </div>
 

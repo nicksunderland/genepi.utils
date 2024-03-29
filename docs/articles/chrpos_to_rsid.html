@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
       </span>
     </div>
 
@@ -106,14 +106,7 @@
 <span></span>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    chromosome base_pair_location effect_allele other_allele</span></span>
-<span><span class="co">#&gt;         &lt;int&gt;              &lt;int&gt;        &lt;char&gt;       &lt;char&gt;</span></span>
-<span><span class="co">#&gt; 1:         10          100000625             G            A</span></span>
-<span><span class="co">#&gt; 2:         10          100000645             C            A</span></span>
-<span><span class="co">#&gt; 3:         10          100002841            CT            C</span></span>
-<span><span class="co">#&gt; 4:         10          100003785             C            T</span></span>
-<span><span class="co">#&gt; 5:         10          100004360             A            G</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gwas_with_rsids</span> <span class="op">&lt;-</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">gwas</span>,</span>
 <span>                                                chr_col <span class="op">=</span> <span class="st">"chromosome"</span>,</span>
@@ -137,26 +130,16 @@
 <p>Currently we have the latest dbSNP build 156 available for hg37 and
 hg38.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/which_dbsnp_builds.html">which_dbsnp_builds</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                                              b37_dbsnp156 </span></span>
-<span><span class="co">#&gt; "/Users/xx20081/Documents/local_data/genome_reference/dbsnp/b37_dbsnp156" </span></span>
-<span><span class="co">#&gt;                                                              b38_dbsnp156 </span></span>
-<span><span class="co">#&gt; "/Users/xx20081/Documents/local_data/genome_reference/dbsnp/b38_dbsnp156"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/which_dbsnp_builds.html">which_dbsnp_builds</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="monitoring-progress">Monitoring progress<a class="anchor" aria-label="anchor" href="#monitoring-progress"></a>
 </h2>
 <p>The mapping can take some time, depending on the number of cores on
-your machine. To monitor progress we have to use the form below. First
-we set up the parallel processing plan with the number of workers - this
-should be &lt;= the number of cores on your machine, which can be
-queried with <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code>. Then to monitor
-progress in the console we need to wrap the function in
-<code>progressr::with_progress({  })</code>.</p>
+your machine. To monitor progress we have to use the form below. We need
+to wrap the function in <code>progressr::with_progress({  })</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="va">gwas_with_rsids</span> <span class="op">&lt;-</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">gwas</span>,</span>
 <span>                                                  chr_col <span class="op">=</span> <span class="st">"chromosome"</span>,</span>
@@ -191,29 +174,8 @@ the structure of the output to a named <code><a href="https://rdrr.io/r/base/lis
 <span>                                                nea_col <span class="op">=</span> <span class="st">"other_allele"</span>,</span>
 <span>                                                build   <span class="op">=</span> <span class="st">"b37_dbsnp156"</span>, </span>
 <span>                                                alt_rsids<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (5/5), of which 0% (0/5) where found flipping alleles</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
-<span><span class="co">#&gt; List of 2</span></span>
-<span><span class="co">#&gt;  $ data     :Classes 'data.table' and 'data.frame':  5 obs. of  5 variables:</span></span>
-<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
-<span><span class="co">#&gt;   ..$ chromosome        : int [1:5] 10 10 10 10 10</span></span>
-<span><span class="co">#&gt;   ..$ base_pair_location: int [1:5] 100000625 100000645 100002841 100003785 100004360</span></span>
-<span><span class="co">#&gt;   ..$ effect_allele     : chr [1:5] "G" "C" "CT" "C" ...</span></span>
-<span><span class="co">#&gt;   ..$ other_allele      : chr [1:5] "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span>
-<span><span class="co">#&gt;  $ alt_rsids:Classes 'data.table' and 'data.frame':  0 obs. of  6 variables:</span></span>
-<span><span class="co">#&gt;   ..$ RSID    : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ CHR     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ BP      : int(0) </span></span>
-<span><span class="co">#&gt;   ..$ REF     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ ALT     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ baseRSID: chr(0) </span></span>
-<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="allele-specification-matching">Allele specification / matching<a class="anchor" aria-label="anchor" href="#allele-specification-matching"></a>
@@ -227,21 +189,8 @@ them to <code>NULL</code>.</p>
 <span>                                                chr_col <span class="op">=</span> <span class="st">"chromosome"</span>,</span>
 <span>                                                pos_col <span class="op">=</span> <span class="st">"base_pair_location"</span>,</span>
 <span>                                                build   <span class="op">=</span> <span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (5/5), of which 0% (0/5) where found flipping alleles</span></span>
-<span><span class="co">#&gt; Warning in `[.data.table`(out_data, , `:=`("rsid_flip_match", NULL)): Column</span></span>
-<span><span class="co">#&gt; 'rsid_flip_match' does not exist to remove</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   5 obs. of  5 variables:</span></span>
-<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
-<span><span class="co">#&gt;  $ chromosome        : int  10 10 10 10 10</span></span>
-<span><span class="co">#&gt;  $ base_pair_location: int  100000625 100000645 100002841 100003785 100004360</span></span>
-<span><span class="co">#&gt;  $ effect_allele     : chr  "G" "C" "CT" "C" ...</span></span>
-<span><span class="co">#&gt;  $ other_allele      : chr  "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;  - attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span></code></pre></div>
 <p>Alleles are not always aligned to the reference and so we allow
 allele flipping by default with the parameter <code>flip="allow"</code>.
 If you would like to flag which variants have been assigned an rsID
@@ -257,20 +206,8 @@ orientation use <code>flip="no_flip"</code>.</p>
 <span>                                                nea_col <span class="op">=</span> <span class="st">"other_allele"</span>,</span>
 <span>                                                flip    <span class="op">=</span> <span class="st">"report"</span>,</span>
 <span>                                                build   <span class="op">=</span> <span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (5/5), of which 0% (0/5) where found flipping alleles</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Classes 'data.table' and 'data.frame':   5 obs. of  6 variables:</span></span>
-<span><span class="co">#&gt;  $ RSID              : chr  "rs7899632" "rs61875309" "rs146107628" "rs1359508" ...</span></span>
-<span><span class="co">#&gt;  $ chromosome        : int  10 10 10 10 10</span></span>
-<span><span class="co">#&gt;  $ base_pair_location: int  100000625 100000645 100002841 100003785 100004360</span></span>
-<span><span class="co">#&gt;  $ effect_allele     : chr  "G" "C" "CT" "C" ...</span></span>
-<span><span class="co">#&gt;  $ other_allele      : chr  "A" "A" "C" "T" ...</span></span>
-<span><span class="co">#&gt;  $ rsid_flip_match   : logi  FALSE FALSE FALSE FALSE FALSE</span></span>
-<span><span class="co">#&gt;  - attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;  - attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span></code></pre></div>
 <p>Coding of indels as D/I is allowed, however please check the
 alternate rsID output as mutliple rsIDs (indels) may be present for D/I
 coding at any particular base position.</p>
@@ -285,29 +222,8 @@ coding at any particular base position.</p>
 <span>                                                flip    <span class="op">=</span> <span class="st">"allow"</span>,</span>
 <span>                                                build   <span class="op">=</span> <span class="st">"b37_dbsnp156"</span>, </span>
 <span>                                                alt_rsids<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (5/5), of which 20% (1/5) where found flipping alleles</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span>
-<span><span class="co">#&gt; List of 2</span></span>
-<span><span class="co">#&gt;  $ data     :Classes 'data.table' and 'data.frame':  5 obs. of  5 variables:</span></span>
-<span><span class="co">#&gt;   ..$ RSID              : chr [1:5] "rs7899632" "rs61875309" "rs2135792004" "rs1359508" ...</span></span>
-<span><span class="co">#&gt;   ..$ chromosome        : int [1:5] 10 10 10 10 10</span></span>
-<span><span class="co">#&gt;   ..$ base_pair_location: int [1:5] 100000625 100000645 100002841 100003785 100004360</span></span>
-<span><span class="co">#&gt;   ..$ effect_allele     : chr [1:5] "G" "C" "I" "C" ...</span></span>
-<span><span class="co">#&gt;   ..$ other_allele      : chr [1:5] "A" "A" "D" "T" ...</span></span>
-<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span>
-<span><span class="co">#&gt;  $ alt_rsids:Classes 'data.table' and 'data.frame':  0 obs. of  6 variables:</span></span>
-<span><span class="co">#&gt;   ..$ RSID    : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ CHR     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ BP      : int(0) </span></span>
-<span><span class="co">#&gt;   ..$ REF     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ ALT     : chr(0) </span></span>
-<span><span class="co">#&gt;   ..$ baseRSID: chr(0) </span></span>
-<span><span class="co">#&gt;   ..- attr(*, ".internal.selfref")=&lt;externalptr&gt; </span></span>
-<span><span class="co">#&gt;   ..- attr(*, "orig_type")= chr "data.table"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">gwas_with_rsids</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -319,12 +235,6 @@ only the desired rows / columns are ever read into memory, the more data
 that is requested the slower the computation. That said, it is still
 much faster / feasible than trying to read in the entire dbSNP database
 (over 1 billion rsIDs).</p>
-<div class="figure" style="text-align: center">
-<img src="figures/microbenchmark_chrpos_to_rsid.png" alt="Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried against ~1 billion dbSNP156 RSIDs" width="100%"><p class="caption">
-Computation speed: Apple M2 Max 96GB 10 cores; 4.3 million SNPs queried
-against ~1 billion dbSNP156 RSIDs
-</p>
-</div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/joshuaulrich/microbenchmark/" class="external-link">microbenchmark</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -334,7 +244,6 @@ against ~1 billion dbSNP156 RSIDs
 <span></span>
 <span><span class="co"># benchmarking</span></span>
 <span><span class="va">mbm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span><span class="st">"chrpos_to_rsid: no alleles, no alt rsids"</span> <span class="op">=</span> <span class="op">{</span></span>
-<span>                              <span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>                              <span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>                                <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">dt</span>,</span>
 <span>                                                             chr_col<span class="op">=</span><span class="st">"CHR"</span>,</span>
@@ -347,7 +256,6 @@ against ~1 billion dbSNP156 RSIDs
 <span>                              <span class="op">}</span><span class="op">)</span></span>
 <span>                        <span class="op">}</span>,</span>
 <span>                      <span class="st">"chrpos_to_rsid: no alleles, with alt rsids"</span> <span class="op">=</span> <span class="op">{</span></span>
-<span>                        <span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>                        <span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>                          <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">dt</span>,</span>
 <span>                                                       chr_col<span class="op">=</span><span class="st">"CHR"</span>,</span>
@@ -360,7 +268,6 @@ against ~1 billion dbSNP156 RSIDs
 <span>                        <span class="op">}</span><span class="op">)</span></span>
 <span>                      <span class="op">}</span>,</span>
 <span>                      <span class="st">"chrpos_to_rsid: with alleles, no alt rsids"</span> <span class="op">=</span> <span class="op">{</span></span>
-<span>                        <span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>                        <span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>                          <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">dt</span>,</span>
 <span>                                                       chr_col<span class="op">=</span><span class="st">"CHR"</span>,</span>
@@ -373,7 +280,6 @@ against ~1 billion dbSNP156 RSIDs
 <span>                        <span class="op">}</span><span class="op">)</span></span>
 <span>                      <span class="op">}</span>,</span>
 <span>                      <span class="st">"chrpos_to_rsid: with alleles, with alt rsids"</span> <span class="op">=</span> <span class="op">{</span></span>
-<span>                        <span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>                        <span class="fu">progressr</span><span class="fu">::</span><span class="fu"><a href="https://progressr.futureverse.org/reference/with_progress.html" class="external-link">with_progress</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>                          <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/chrpos_to_rsid.html">chrpos_to_rsid</a></span><span class="op">(</span><span class="va">dt</span>,</span>
 <span>                                                       chr_col<span class="op">=</span><span class="st">"CHR"</span>,</span>
