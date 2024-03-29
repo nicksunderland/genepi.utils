@@ -166,9 +166,6 @@ knitr::include_graphics("figures/collider_stability.png")
 
 Once the parameters have been set and `b` estimate of the correction calculated we next need to apply the correction to the (biased) progression GWAS data. As the correction uses the incidence data we can only apply this to variants that appear in both incidence and progression datasets (the harmonised dataset).
 
-$$
-\beta_{GP} = \beta_{GP}^{'} - b_{1}\beta_{GI}
-$$
 ```{r get_incidence, include=F, eval=F}
 # read in the incidence GWAS - hidden from HTML output
 gwas_incidence <- data.table::fread("/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz")
