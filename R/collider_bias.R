@@ -6,13 +6,13 @@
 #' @param kb an integer, kb used for clumping - set all clumping params to NA to turn off
 #' @param plink2 a path, the plink2 binary
 #' @param plink_ref a path, the reference genome pfile
-#' @param ip a numeric 0-1, threshold for removing incidence variants;  see `xp_thresh` [SlopeHunter::hunt()]
-#' @param pi0 a numeric 0-1, proportion of SNPs in the incidence only cluster; see `init_pi` [SlopeHunter::hunt()]
-#' @param sxy1 a numeric, the covariance between incidence and progression Gip SNPs; see `init_sigmaIP` [SlopeHunter::hunt()]
-#' @param bootstraps an integer, number of bootstraps to estimate SE; see `M` [SlopeHunter::hunt()]
-#' @param weighted see `weighted` [indexevent::indexevent()]
-#' @param method see `method` [indexevent::indexevent()]
-#' @param B see `B` [indexevent::indexevent()]
+#' @param ip a numeric 0-1, threshold for removing incidence variants;  see `xp_thresh` SlopeHunter::hunt()
+#' @param pi0 a numeric 0-1, proportion of SNPs in the incidence only cluster; see `init_pi` SlopeHunter::hunt()
+#' @param sxy1 a numeric, the covariance between incidence and progression Gip SNPs; see `init_sigmaIP` SlopeHunter::hunt()
+#' @param bootstraps an integer, number of bootstraps to estimate SE; see `M` SlopeHunter::hunt()
+#' @param weighted see `weighted` indexevent::indexevent()
+#' @param method see `method` indexevent::indexevent()
+#' @param B see `B` indexevent::indexevent()
 #' @param seed seed, for reproducibility
 #' @export
 collider_bias <- new_generic("collider_bias", "x", function(x,
@@ -117,12 +117,12 @@ method(collider_bias, MR) <- function(x,
 
 #' @title Dudbridge collider bias method
 #' @param x an object of class MR
-#' @param weighted see [indexevent::indexevent()]
-#' @param prune see [indexevent::indexevent()]
-#' @param method see [indexevent::indexevent()]
-#' @param B see [indexevent::indexevent()]
-#' @param lambda see [indexevent::indexevent()]
-#' @param seed see [indexevent::indexevent()]
+#' @param weighted see indexevent::indexevent()
+#' @param prune see indexevent::indexevent()
+#' @param method see indexevent::indexevent()
+#' @param B see indexevent::indexevent()
+#' @param lambda see indexevent::indexevent()
+#' @param seed see indexevent::indexevent()
 #' @param ... parameter sink, additional ignored parameters
 #' @return an object of class MRResult
 #' @export
@@ -170,11 +170,11 @@ method(dudbridge, MR) <- function(x,
 
 #' @title Slope-Hunter collider bias method
 #' @param x an object of class MR
-#' @param ip see `xp_thresh` [SlopeHunter::hunt()]
-#' @param pi0 see `init_pi` [SlopeHunter::hunt()]
-#' @param sxy1 see `init_sigmaIP` [SlopeHunter::hunt()]
-#' @param bootstraps see `M` [SlopeHunter::hunt()]
-#' @param seed  see `seed` [SlopeHunter::hunt()]
+#' @param ip see `xp_thresh` SlopeHunter::hunt()
+#' @param pi0 see `init_pi` SlopeHunter::hunt()
+#' @param sxy1 see `init_sigmaIP` SlopeHunter::hunt()
+#' @param bootstraps see `M` SlopeHunter::hunt()
+#' @param seed  see `seed` SlopeHunter::hunt()
 #' @param ... parameter sink, additional ignored parameters
 #' @return an object of class MRResult
 #' @export
