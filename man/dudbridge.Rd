@@ -18,17 +18,17 @@ dudbridge(
 \arguments{
 \item{x}{an object of class MR}
 
-\item{weighted}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{weighted}{see indexevent::indexevent()}
 
-\item{prune}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{prune}{see indexevent::indexevent()}
 
-\item{method}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{method}{see indexevent::indexevent()}
 
-\item{B}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{B}{see indexevent::indexevent()}
 
-\item{lambda}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{lambda}{see indexevent::indexevent()}
 
-\item{seed}{see \code{\link[indexevent:indexevent]{indexevent::indexevent()}}}
+\item{seed}{see indexevent::indexevent()}
 
 \item{...}{parameter sink, additional ignored parameters}
 }
