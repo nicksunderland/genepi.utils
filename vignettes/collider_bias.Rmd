@@ -35,53 +35,12 @@ gwas_progression       <- data.table::fread(progression_path)
 
 ### Background
 
-Run the SlopeHunter expectation-maximization method to estimate the bias adjustment factor. The algorithm uses model-based clustering and 
-proposes that the distributions of the incidence(GI) and progression (GP) BETAs can be written like so:  
-
-$$
-  \binom{\beta_{GI}}{\beta'_{GP}}
-  \sim
-  \color{#F8766D}{
-  \pi_{1}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} \\
-  b_1\sigma_{I}^{2} & b_{1}^{2}\sigma_{I}^{2} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-  +
-  \color{#619CFF}{
-  \pi_{2}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} + \sigma_{IP} \\
-  b_1\sigma_{I}^{2} + \sigma_{IP} & b_{1}^{2}\sigma_{I}^{2} + \sigma_{P}^{2} + 2b_{1}\sigma_{IP} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-  \color{gray}{
-  +
-  \pi_{3}
-  \begin{pmatrix}
-  \eta_{0} \\
-  N(0, \sigma_{P}^{2})
-  \end{pmatrix}
-  +
-  \pi_{4}
-  \begin{pmatrix}
-  \eta_{0} \\
-  \eta_{0}
-  \end{pmatrix}}
-$$
-  
+Run the SlopeHunter expectation-maximization method to estimate the bias adjustment factor. The algorithm uses model-based clustering and proposes that the distributions of the incidence(GI) and progression (GP) BETAs.  
   
 * Cluster 1: SNPs that cause incidence but not progression (red)  
 * Cluster 2: SNPs that cause incidence and progression (blue)  
 * Cluster 3: SNPs that cause progression but not incidence (gray)  
 * Cluster 4: SNPs that cause neither incidence or progression (gray)    
-
-The values: $${\pi_{1}, \pi_{2}, \pi_{3}, \pi_{4}}$$ ... are the probabilities that a SNP belongs to the respective clusters.  
 
 The first thing to note is that we can filter out SNPs from cluster 3 and 4 by only including SNPs with a significant association (P-value) with incidence - this is the `ip` parameter. The problem is then reduced to finding two clusters that best fit distributions 1 and 2 of the equation above. The SlopeHunter EM algorithm iteratively determines which SNPs belong to each distribution and once complete the adjustment factor (slope gradient) can be determined from group 1, i.e. only those SNPs thought to solely cause incidence.  
 
@@ -134,19 +93,7 @@ knitr::include_graphics("figures/slopehunter.gif")
 ```
 
 ## The b-slope
-In the expectation (E) part of the Slope-hunter algorithm we initially set the covariance matrix of the first component:
-$$
-\color{#F8766D}{
-  \pi_{1}N
-  \begin{pmatrix}
-  \underline{0},
-  \begin{bmatrix}
-  \sigma_{I}^{2} & b_{1}\sigma_{I}^{2} \\
-  b_1\sigma_{I}^{2} & b_{1}^{2}\sigma_{I}^{2} \\
-  \end{bmatrix}
-  \end{pmatrix}}
-$$
-The off-diagonal components are set to `sxy0 = sx0*sy0*dir0*0.95` where `sx0` and `sy0` are the standard deviations of the incidence and progression betas, respectively, and the `dir0` term is the `sign()` of the covariance - which is positive in this case:
+In the expectation (E) part of the Slope-hunter algorithm we initially set the covariance matrix of the first component. The off-diagonal components are set to `sxy0 = sx0*sy0*dir0*0.95` where `sx0` and `sy0` are the standard deviations of the incidence and progression betas, respectively, and the `dir0` term is the `sign()` of the covariance - which is positive in this case:
 
 ```{r show_cov, echo=FALSE, out.width="90%", fig.align='center', eval=TRUE, fig.cap="Cov(incidence, progression)"}
 knitr::include_graphics("figures/slopehunter_cov_x_y.png")
