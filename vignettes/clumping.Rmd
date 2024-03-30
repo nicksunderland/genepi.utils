@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 Clumping GWAS results aims to retain only independent variants, accounting for linkage disequilibrium (highly correlated signals).  The `clump()` function uses PLINK2 in the background and requires a genome reference dataset with linkage disequilibrium information. This reference must contain the same variant IDs as your GWAS results. It is recommended to first annotate your GWAS with rsIDs - this can be achieved with the `chrpos_to_rsid()` function if your data is not already annotated. The data is also expected in genepi.utils standard form, so run `standardise_gwas()` if needed. The standardisation and rsID annotation can also be performed in one step with the `standardise_gwas()` function, by passing an appropriate `populate_rsid` argument.
 
-A common reference dataset is the 1000 genomes phase 3 which can be downloaded from the PLINK [website](https://www.cog-genomics.org/plink/2.0/resources#phase3_1kg). **Important**: if you use a different dataset ensure that the IDs match those in your dataset). 
+A common reference dataset is the 1000 genomes phase 3 which can be downloaded from the PLINK (https://www.cog-genomics.org/plink/2.0/resources#phase3_1kg). **Important**: if you use a different dataset ensure that the IDs match those in your dataset). 
 
 To ready the PLINK2 pfiles for use with clumping you can run the following, as there appear to be some duplicate rsIDs in this dataset that PLINK2 does not like.
 

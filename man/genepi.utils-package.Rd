@@ -6,7 +6,7 @@
 \alias{genepi.utils-package}
 \title{genepi.utils: GenEpi Utility Functions}
 \description{
-The `genepi.utils` package is a collection of utility functions for working with genetic epidemiology data.
+The genepi.utils package is a collection of utility functions for working with genetic epidemiology data.
 }
 \author{
 \strong{Maintainer}: Nicholas Sunderland \email{nicholas.sunderland@bristol.ac.uk} (\href{https://orcid.org/0000-0003-3625-630X}{ORCID})

@@ -200,13 +200,24 @@ MR <- new_class(
     h[, SNP := sub("(.*)_(?:[AaCcTtGg]+|[DdIi])_(?:[AaCcTtGg]+|[DdIi])$", "\\1", SNP)]
     h[, SNP := paste0(SNP, "_", other_allele.outcome, "_", effect_allele.outcome)]
 
-    # exposure matrices
-    exp_beta  <- data.table::dcast(h, SNP + chr.exposure + pos.exposure + effect_allele.exposure + other_allele.exposure ~ id.exposure, value.var = "beta.exposure")
-    exp_pval  <- data.table::dcast(h, SNP ~ id.exposure, value.var='pval.exposure')
-    exp_se    <- data.table::dcast(h, SNP ~ id.exposure, value.var='se.exposure')
-    exp_eaf   <- data.table::dcast(h, SNP ~ id.exposure, value.var='eaf.exposure')
-    exp_n     <- data.table::dcast(h, SNP ~ id.exposure, value.var='samplesize.exposure')
-    exp_ncase <- data.table::dcast(h, SNP ~ id.exposure, value.var='ncase.exposure')
+    # exposure matrices - wide format
+    wide_matrices  <- data.table::dcast(h, SNP + chr.exposure + pos.exposure + effect_allele.exposure + other_allele.exposure + beta.outcome + pval.outcome + se.outcome + eaf.outcome + samplesize.outcome + ncase.outcome ~ id.exposure,
+                                        value.var = c("beta.exposure", "pval.exposure", "se.exposure", "eaf.exposure", "samplesize.exposure", "ncase.exposure"),
+                                        sep = "_")
+
+    # the current column names and wanted matrix column names
+    exp_beta  <- as.matrix(wide_matrices[, mget(grep("^beta.exposure_", names(wide_matrices), value = TRUE))])
+    exp_p     <- as.matrix(wide_matrices[, mget(grep("^pval.exposure_", names(wide_matrices), value = TRUE))])
+    exp_se    <- as.matrix(wide_matrices[, mget(grep("^se.exposure_",   names(wide_matrices), value = TRUE))])
+    exp_eaf   <- as.matrix(wide_matrices[, mget(grep("^eaf.exposure_",  names(wide_matrices), value = TRUE))])
+    exp_n     <- as.matrix(wide_matrices[, mget(grep("^samplesize.exposure_", names(wide_matrices), value = TRUE))])
+    exp_ncase <- as.matrix(wide_matrices[, mget(grep("^ncase.exposure_", names(wide_matrices), value = TRUE))])
+    colnames(exp_beta)  <- sub("^beta.exposure_", "", colnames(exp_beta))
+    colnames(exp_p)     <- sub("^pval.exposure_", "", colnames(exp_p))
+    colnames(exp_se)    <- sub("^se.exposure_", "",   colnames(exp_se))
+    colnames(exp_eaf)   <- sub("^eaf.exposure_", "",  colnames(exp_eaf))
+    colnames(exp_n)     <- sub("^samplesize.exposure_", "", colnames(exp_n))
+    colnames(exp_ncase) <- sub("^ncase.exposure_", "", colnames(exp_ncase))
 
     # ?find proxies
     if (with_proxies && "proxy_snp.outcome" %in% names(h)) {
@@ -224,34 +235,34 @@ MR <- new_class(
       # }
     } else {
       corr_mat <- matrix()
-      ld_info  <- rep(FALSE, length(exp_beta$SNP))
+      ld_info  <- rep(FALSE, length(wide_matrices$SNP))
     }
 
     # assign to the class object
     object <- new_object(S7::S7_object(),
-                         snps        = exp_beta$SNP,
-                         chr         = exp_beta$chr.exposure,
-                         bp          = as.integer(exp_beta$pos.exposure),
-                         ea          = exp_beta$effect_allele.exposure,
-                         oa          = exp_beta$other_allele.exposure,
-                         eafx        = as.matrix(exp_eaf[,-1]),
-                         nx          = as.matrix(exp_n[,-1]),
-                         ncasex      = as.matrix(exp_ncase[,-1]),
-                         bx          = as.matrix(exp_beta[,-c(1:5)]),
-                         bxse        = as.matrix(exp_se[,-1]),
-                         px          = as.matrix(exp_pval[,-1]),
-                         eafy        = h[id.exposure==id.exposure[[1]], eaf.outcome],
-                         ny          = as.integer(h[id.exposure==id.exposure[[1]], samplesize.outcome]),
-                         ncasey      = as.integer(h[id.exposure==id.exposure[[1]], ncase.outcome]),
-                         by          = h[id.exposure==id.exposure[[1]], beta.outcome],
-                         byse        = h[id.exposure==id.exposure[[1]], se.outcome],
-                         py          = h[id.exposure==id.exposure[[1]], pval.outcome],
-                         exposure_id = h[, unique(id.exposure), by=id.exposure]$V1,
-                         exposure    = h[, unique(exposure), by=id.exposure]$V1,
+                         snps        = wide_matrices$SNP,
+                         chr         = wide_matrices$chr.exposure,
+                         bp          = as.integer(wide_matrices$pos.exposure),
+                         ea          = wide_matrices$effect_allele.exposure,
+                         oa          = wide_matrices$other_allele.exposure,
+                         eafx        = exp_eaf,
+                         nx          = exp_n,
+                         ncasex      = exp_ncase,
+                         bx          = exp_beta,
+                         bxse        = exp_se,
+                         px          = exp_p,
+                         eafy        = wide_matrices$eaf.outcome,
+                         ny          = as.integer(wide_matrices$samplesize.outcome),
+                         ncasey      = as.integer(wide_matrices$ncase.outcome),
+                         by          = wide_matrices$beta.outcome,
+                         byse        = wide_matrices$se.outcome,
+                         py          = wide_matrices$pval.outcome,
+                         exposure_id = colnames(exp_eaf),
+                         exposure    = h[, unique(exposure), by = "id.exposure"]$V1[match(h[, unique(exposure), by = "id.exposure"]$id.exposure, colnames(exp_beta))],
                          outcome_id  = h$id.outcome[[1]],
                          outcome     = h$outcome[[1]],
                          group       = integer(),
-                         index_snp   = rep(TRUE, length(exp_beta$SNP)),
+                         index_snp   = rep(TRUE, nrow(wide_matrices)),
                          proxy_snp   = proxy_snps,
                          ld_info     = ld_info,
                          correlation = corr_mat)
