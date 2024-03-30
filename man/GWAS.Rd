@@ -73,18 +73,18 @@ Reference harmonisation \tab TODO: harmonising against a reference panel is an i
 for this class constructor (under active development). \cr
 Filters \tab Custom filters can be added to the \code{filters} argument. This should be a list of named string that can be evaluated as R
 expressions and when applied to the standard column names result in a logical vector mask of the rows to \emph{keep}. The defaults are:
-\itemize{
-\item{beta_invalid} = {"!is.infinite(beta) & abs(beta) < 20"}
-\item{eaf_invalid} = {"eaf > 0 & eaf < 1"}
-\item{p_invalid} = {"!is.infinite(p)"}
-\item{se_invalid} = {"!is.infinite(se)"}
-\item{chr_missing} = {"!is.na(chr)"}
-\item{bp_missing} = {"!is.na(bp)"}
-\item{beta_missing} = {"!is.na(beta)"}
-\item{se_missing} = {"!is.na(se)"}
-\item{p_missing} = {"!is.na(p)"}
-\item{eaf_missing} = {"!is.na(eaf)"}
 }
+\itemize{
+\item{beta_invalid}{\code{"!is.infinite(beta) & abs(beta) < 20"}}
+\item{eaf_invalid}{\code{"eaf > 0 & eaf < 1"}}
+\item{p_invalid}{\code{"!is.infinite(p)"}}
+\item{se_invalid}{\code{"!is.infinite(se)"}}
+\item{chr_missing}{\code{"!is.na(chr)"}}
+\item{bp_missing}{\code{"!is.na(bp)"}}
+\item{beta_missing}{\code{"!is.na(beta)"}}
+\item{se_missing}{\code{"!is.na(se)"}}
+\item{p_missing}{\code{"!is.na(p)"}}
+\item{eaf_missing}{\code{"!is.na(eaf)"}}
 }
 }
 \section{Slots}{
