@@ -23,19 +23,20 @@ globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr"
 #'   for this class constructor (under active development). \cr
 #'   Filters \tab Custom filters can be added to the `filters` argument. This should be a list of named string that can be evaluated as R
 #'   expressions and when applied to the standard column names result in a logical vector mask of the rows to \emph{keep}. The defaults are:
-#'   \itemize{
-#'      \item{beta_invalid} = {"!is.infinite(beta) & abs(beta) < 20"}
-#'      \item{eaf_invalid} = {"eaf > 0 & eaf < 1"}
-#'      \item{p_invalid} = {"!is.infinite(p)"}
-#'      \item{se_invalid} = {"!is.infinite(se)"}
-#'      \item{chr_missing} = {"!is.na(chr)"}
-#'      \item{bp_missing} = {"!is.na(bp)"}
-#'      \item{beta_missing} = {"!is.na(beta)"}
-#'      \item{se_missing} = {"!is.na(se)"}
-#'      \item{p_missing} = {"!is.na(p)"}
-#'      \item{eaf_missing} = {"!is.na(eaf)"}
 #'   }
-#' }
+#'   \itemize{
+#'      \item{beta_invalid}{\code{"!is.infinite(beta) & abs(beta) < 20"}}
+#'      \item{eaf_invalid}{\code{"eaf > 0 & eaf < 1"}}
+#'      \item{p_invalid}{\code{"!is.infinite(p)"}}
+#'      \item{se_invalid}{\code{"!is.infinite(se)"}}
+#'      \item{chr_missing}{\code{"!is.na(chr)"}}
+#'      \item{bp_missing}{\code{"!is.na(bp)"}}
+#'      \item{beta_missing}{\code{"!is.na(beta)"}}
+#'      \item{se_missing}{\code{"!is.na(se)"}}
+#'      \item{p_missing}{\code{"!is.na(p)"}}
+#'      \item{eaf_missing}{\code{"!is.na(eaf)"}}
+#'   }
+#'
 #' @param dat a valid string file path to be read by `data.table::fread` or a `data.table::data.table` object; the GWAS data source
 #' @param map a valid input to the `ColumnMap` class constructor (a predefined map string id, a named list or character vector, or a ColumMap object)
 #' @param drop a logical, whether to drop data source columns not in the column `map`
