@@ -32,7 +32,7 @@ Imports:
     rtracklayer,
     S7
 Remotes:
-    MRCIEU/TwoSampleMR,
+    mrcieu/TwoSampleMR,
     Osmahmoud/SlopeHunter,
     DudbridgeLab/indexevent
 Suggests: 
