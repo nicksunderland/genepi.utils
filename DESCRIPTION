@@ -31,10 +31,6 @@ Imports:
     IRanges,
     rtracklayer,
     S7
-Remotes:
-    github::MRCIEU/TwoSampleMR,
-    github::Osmahmoud/SlopeHunter,
-    github::DudbridgeLab/indexevent
 Suggests: 
     knitr,
     rmarkdown,
