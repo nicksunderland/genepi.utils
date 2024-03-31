@@ -31,6 +31,10 @@ Imports:
     IRanges,
     rtracklayer,
     S7
+Remotes:
+    MRCIEU/TwoSampleMR,
+    Osmahmoud/SlopeHunter,
+    DudbridgeLab/indexevent
 Suggests: 
     knitr,
     rmarkdown,
