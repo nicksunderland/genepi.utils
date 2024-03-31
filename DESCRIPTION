@@ -28,6 +28,7 @@ Imports:
     viridis,
     tibble,
     SparseM,
+    MatrixModels,
     GenomicRanges,
     IRanges,
     rtracklayer,
