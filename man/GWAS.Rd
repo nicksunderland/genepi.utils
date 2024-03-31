@@ -55,36 +55,32 @@ an S7 class genepi.utils::GWAS object
 }
 \description{
 A GWAS object is a container for vectors of GWAS data, a correlation matrix, and
-meta-data regarding quality control procedures applied at the point of object creation / data import. \cr\cr
-\strong{Quality control steps:}
-\tabular{rr}{
-\strong{Step} \tab \strong{Description} \cr
-Column mapping \tab Column name mapping using the \code{ColumnMap} and \code{Column} classes which define standard column names and a list
-of aliases. The set of core data fields are: \code{rsid}, \code{chr}, \code{bp}, \code{ea}, \code{oa}, \code{eaf}, \code{beta}, \code{se}, \code{p}, and \code{n}. \cr
-Column typing \tab Column types are enforced using the \code{ColumnMap} and \code{Column} classes which define standard column types (see
-return value table below). \cr
-Standardise columns \tab Core data fields are checked, if absent, they are calculated from the available data if possible. The
-current conversions include: \emph{chr} and \emph{bp} extration from \emph{rsid} column containing \emph{chr:pos +/- allele} id coding;
-conversion of odds ratio \emph{or} and odds ratio standard error / upper and lower bounds \emph{or_se/or_ub/or_lb} to \emph{beta} and
-\emph{se}; and conversion of \emph{z} scores to \emph{p} values. \cr
-Standardise allele coding \tab Alleles are standardised to upper case \emph{ACTGDI} or combination of these letters. \code{NA} values
-are allowed in one of the \emph{ea} or \emph{oa} fields, but not both, where it is taken to represent a deletion. \cr
-Reference harmonisation \tab TODO: harmonising against a reference panel is an important step, however has not yet been implemented
-for this class constructor (under active development). \cr
-Filters \tab Custom filters can be added to the \code{filters} argument. This should be a list of named string that can be evaluated as R
-expressions and when applied to the standard column names result in a logical vector mask of the rows to \emph{keep}. The defaults are:
+meta-data regarding quality control procedures applied at the point of object creation / data import.
+Column mapping: column name mapping using the \code{ColumnMap} and \code{Column} classes which define standard column names and a list
+of aliases. The set of core data fields are: \code{rsid}, \code{chr}, \code{bp}, \code{ea}, \code{oa}, \code{eaf}, \code{beta}, \code{se}, \code{p}, and \code{n}.
+Column typing: column types are enforced using the \code{ColumnMap} and \code{Column} classes which define standard column types (see
+return value table below).
+Standardise columns: core data fields are checked, if absent, they are calculated from the available data if possible. The
+current conversions include: chr and bp extration from rsid column containing chr:pos +/- allele id coding;
+conversion of odds ratio and odds ratio standard error / upper and lower bounds to beta and
+se; and conversion of z scores to p values.
+Standardise allele coding: alleles are standardised to upper case ACTGDI or combination of these letters. \code{NA} values
+are allowed in one of the ea or oa fields, but not both, where it is taken to represent a deletion.
+Reference harmonisation (TODO): harmonising against a reference panel is an important step, however has not yet been implemented
+for this class constructor yet.
+Filters: custom filters can be added to the \code{filters} argument. This should be a list of named string that can be evaluated as R
+expressions and when applied to the standard column names result in a logical vector mask of the rows to exclude The defaults are:
 \itemize{
-\item{beta_invalid} = {"!is.infinite(beta) & abs(beta) < 20"}
-\item{eaf_invalid} = {"eaf > 0 & eaf < 1"}
-\item{p_invalid} = {"!is.infinite(p)"}
-\item{se_invalid} = {"!is.infinite(se)"}
-\item{chr_missing} = {"!is.na(chr)"}
-\item{bp_missing} = {"!is.na(bp)"}
-\item{beta_missing} = {"!is.na(beta)"}
-\item{se_missing} = {"!is.na(se)"}
-\item{p_missing} = {"!is.na(p)"}
-\item{eaf_missing} = {"!is.na(eaf)"}
-}
+\item beta_invalid = "!is.infinite(beta) & abs(beta) < 20"
+\item eaf_invalid = "eaf > 0 & eaf < 1"
+\item p_invalid = "!is.infinite(p)"
+\item se_invalid = "!is.infinite(se)"
+\item chr_missing = "!is.na(chr)"
+\item bp_missing = "!is.na(bp)"
+\item beta_missing = "!is.na(beta)"
+\item se_missing = "!is.na(se)"
+\item p_missing = "!is.na(p)"
+\item eaf_missing = "!is.na(eaf)"
 }
 }
 \section{Slots}{
