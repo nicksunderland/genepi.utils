@@ -245,8 +245,8 @@ method(cwls, MR) <- function(x, ...) {
   # CWLS
   cwls_correction <- MendelianRandomization::mr_ivw(dat)
 
-  print(dat)
-  print(cwls_correction)
+  # print(dat)
+  # print(cwls_correction)
 
   # weighting
   weights   <- 1 / dat@betaYse ^ 2

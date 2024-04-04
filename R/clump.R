@@ -96,18 +96,18 @@ clump <- function(gwas,
     # clean e.g. rs1763611(G) --> rs1763611
     clumped_long[, clump_member := sub("(rs[0-9]+).*", "\\1", clump_member)]
 
-    # set the key
-    data.table::setkey(clumped_long, ID)
+    # set key to the clump member rsID to join the clump members
     data.table::setkey(gwas, rsid)
-
-    # flag the index SNPs with TRUE and the clump number
-    gwas[clumped_long, c("index","clump") := list(TRUE, clump)]
-
-    # set key to the clump member rsID to join again
     data.table::setkey(clumped_long, clump_member)
 
     # flag the clump members as not the index SNP and with the clump number
     gwas[clumped_long, c("index", "clump") := list(FALSE, i.clump)]
+
+    # set the key to join the next SNPs, do this after so singleton clumps arent overwritten
+    data.table::setkey(clumped_long, ID)
+
+    # flag the index SNPs with TRUE and the clump number
+    gwas[clumped_long, c("index","clump") := list(TRUE, i.clump)]
 
     # code clump as a factor
     gwas[, clump := factor(clump, levels=sort(unique(gwas$clump)))]
