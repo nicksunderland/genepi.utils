@@ -114,7 +114,7 @@ clump <- function(gwas,
 
   } else {
 
-    warning("No clumps were found witht he provided parameters, or plink failed")
+    warning("No clumps were found with the provided parameters, or plink failed")
     gwas[, c("index", "clump") := list(FALSE, NA_integer_)]
 
   }
