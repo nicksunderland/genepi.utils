@@ -108,6 +108,18 @@ expressions and when applied to the standard column names result in a logical ve
 
 \item{\code{ncase}}{integer, number of cases}
 
+\item{\code{strand}}{character, the strand + or -}
+
+\item{\code{imputed}}{logical, whether imputed}
+
+\item{\code{info}}{numeric, the info score}
+
+\item{\code{q}}{numeric, the Q statistic for meta analysis results}
+
+\item{\code{q_p}}{numeric, the Q statistic P-value}
+
+\item{\code{i2}}{numeric, the I2 statistic}
+
 \item{\code{trait}}{character, the GWAS trait}
 
 \item{\code{id}}{character, the GWAS identifier}

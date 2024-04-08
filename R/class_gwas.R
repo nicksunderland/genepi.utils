@@ -1,5 +1,5 @@
 # Silence R CMD check
-globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation", "strand", "imputed", "info"),
+globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation", "strand", "imputed", "info", "q", "q_p", "i2"),
                 package = "genepi.utils")
 
 #' @title GWAS object
@@ -57,6 +57,12 @@ globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr"
 #' @slot p numeric, p-value
 #' @slot n integer, total number of samples
 #' @slot ncase integer, number of cases
+#' @slot strand character, the strand + or -
+#' @slot imputed logical, whether imputed
+#' @slot info numeric, the info score
+#' @slot q numeric, the Q statistic for meta analysis results
+#' @slot q_p numeric, the Q statistic P-value
+#' @slot i2 numeric, the I2 statistic
 #' @slot trait character, the GWAS trait
 #' @slot id character, the GWAS identifier
 #' @slot source character, data source; either the file path, or "data.table" if loaded directly
@@ -105,6 +111,9 @@ GWAS <- new_class(
     strand  = class_character,
     imputed = class_logical,
     info    = class_numeric,
+    q       = class_numeric,
+    q_p     = class_numeric,
+    i2      = class_numeric,
     #----------------------------
     # correlation matrix
     #----------------------------
@@ -189,6 +198,9 @@ GWAS <- new_class(
     if(!"strand" %in% names(props))                                   { props$strand  <- NA_character_       }
     if(!"imputed"%in% names(props))                                   { props$imputed <- NA                  }
     if(!"info"   %in% names(props))                                   { props$info    <- NA_real_            }
+    if(!"q"      %in% names(props))                                   { props$q       <- NA_real_            }
+    if(!"q_p"    %in% names(props))                                   { props$q_p     <- NA_real_            }
+    if(!"i2"     %in% names(props))                                   { props$i2      <- NA_real_            }
     if("n"       %in% names(props) && length(unique(props$n))==1    ) { props$n       <- unique(props$n)     }
     if("ncase"   %in% names(props) && length(unique(props$ncase))==1) { props$ncase   <- unique(props$ncase) }
     if("strand"  %in% names(props) && length(unique(props$strand))==1){ props$strand  <- unique(props$strand)}
@@ -228,6 +240,9 @@ GWAS <- new_class(
                strand      = props$strand,
                imputed     = props$imputed,
                info        = props$info,
+               q           = props$p,
+               q_p         = props$q_p,
+               i2          = props$i2,
                trait       = props$trait,
                id          = props$id,
                source      = props$source,
@@ -595,7 +610,7 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
 as.data.table <- new_generic('as.data.table', 'object')
 method(as.data.table, GWAS) <- function(object, ...) {
 
-  data.table::data.table(
+  d <- data.table::data.table(
     rsid  = object@rsid,
     chr   = object@chr,
     bp    = object@bp,
@@ -605,15 +620,37 @@ method(as.data.table, GWAS) <- function(object, ...) {
     beta  = object@beta,
     se    = object@se,
     p     = object@p,
-    strand  = if(length(object@strand)==0)  { rep(NA_character_, length(object@rsid)) } else if(length(object@strand)==1)  { rep(object@strand, length(object@rsid)) }  else { object@strand },
-    imputed = if(length(object@imputed)==0) { rep(NA, length(object@rsid)) }            else if(length(object@imputed)==1) { rep(object@imputed, length(object@rsid)) } else { object@imputed },
-    info    = if(length(object@info)==0)    { rep(NA_real_, length(object@rsid)) }      else if(length(object@info)==1)    { rep(object@info, length(object@rsid)) }    else { object@info },
     n       = if(length(object@n)==0)       { rep(NA_integer_, length(object@rsid)) }   else if(length(object@n)==1)       { rep(object@n, length(object@rsid)) }       else { object@n },
     ncase   = if(length(object@ncase)==0)   { rep(NA_integer_, length(object@rsid)) }   else if(length(object@ncase)==1)   { rep(object@ncase, length(object@rsid)) }   else { object@ncase },
     trait   = if(length(object@trait)==0)   { rep(NA_character_, length(object@rsid)) } else if(length(object@trait)==1)   { rep(object@trait, length(object@rsid)) }   else { object@trait },
     id      = if(length(object@id)==0)      { rep(NA_character_, length(object@rsid)) } else if(length(object@id)==1)      { rep(object@id, length(object@rsid)) }      else { object@id }
   )
 
+  if (all(is.na(object@strand)) || length(object@strand) > 0) {
+    d[, strand := object@strand]
+  }
+
+  if (all(is.na(object@imputed)) || length(object@imputed) > 0) {
+    d[, imputed := object@imputed]
+  }
+
+  if (all(is.na(object@info)) || length(object@info) > 0) {
+    d[, info := object@info]
+  }
+
+  if (all(is.na(object@q)) || length(object@q) > 0) {
+    d[, q := object@q]
+  }
+
+  if (all(is.na(object@q_p)) || length(object@q_p) > 0) {
+    d[, q_p := object@q_p]
+  }
+
+  if (all(is.na(object@i2)) || length(object@i2) > 0) {
+    d[, i2 := object@i2]
+  }
+
+  return(d)
 }
 
 

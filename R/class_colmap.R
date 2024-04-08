@@ -20,7 +20,7 @@ Column <- new_class(
   ),
   validator = function(self) {
     std_cols <- c('rsid','chr','bp','ea','oa','eaf','p','beta','se','or','ncase', 'info','or_se','or_lb','or_ub',
-                  'beta_lb','beta_ub','z','q_stat', 'strand', 'imputed', 'i2','nstudies','n','effects')
+                  'beta_lb','beta_ub','z','q_stat', 'q_p', 'strand', 'imputed', 'i2','nstudies','n','effects')
     if (!self@name %in% std_cols) {
       msg <- paste0("standard column name not recognised `", self@name, "` \nOptions: ", paste0(std_cols, collapse = ", "))
       stop(msg)
@@ -84,6 +84,7 @@ ColumnMap <- new_class(
         or_lb   = Column(name='or_lb',   type='numeric',   alias=c('or_lb','OR_LB')),
         or_ub   = Column(name='or_ub',   type='numeric',   alias=c('or_ub','OR_UB')),
         q_stat  = Column(name='q_stat',  type='numeric',   alias=c('q_stat','q_statistic')),
+        q_p     = Column(name='q_p',     type='numeric',   alias=c('q_p','q_p-value')),
         i2      = Column(name='i2',      type='numeric',   alias=c('i2')),
         info    = Column(name='info',    type='numeric',   alias=c('info','INFO')),
         imputed = Column(name='imputed', type='logical',   alias=c('imputed','Imputed')),
@@ -98,7 +99,7 @@ ColumnMap <- new_class(
         ieu_ukb  = c('SNP','ALLELE1','ALLELE0','A1FREQ','P_BOLT_LMM_INF','BETA','SE'),
         ieugwasr = c('rsid','chr','position','ea','nea','eaf','p','beta','se','n'),
         ns_map   = c('MARKER','CHR','POS','A1','A2','EAF','P','BETA','SE'),
-        gwama    = c('rs_number','chromosome','position','reference_allele','other_allele','eaf','p-value','beta','se','BETA_95L','beta_95U','z','q_statistic','i2','n_studies','n_samples','effects'),
+        gwama    = c('rs_number','chromosome','position','reference_allele','other_allele','eaf','p-value','beta','se','BETA_95L','beta_95U','z','q_statistic','q_p-value','i2','n_studies','n_samples','effects'),
         giant    = c('SNP','CHR','POS','Tested_Allele','Other_Allele','Freq_Tested_Allele','P','BETA','SE','N','INFO')
       )
 
