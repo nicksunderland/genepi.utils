@@ -6,10 +6,10 @@ globalVariables(c("RSID", "rsid_allele", "i.rsid_allele", "LD_rsid_allele"),
 #' @description
 #' Based on the ieugwasr function (see reference)
 #' @references [ieugwasr::ld_matrix_local()](https://github.com/MRCIEU/ieugwasr/blob/33e4629f4dacd635c68e690bb5648de529c333cc/R/ld_matrix.R#L92C1-L92C16)
-#' @param dat data.frame like object, or file path, with at least column `RSID`; if columns `EA`,`OA`,`BETA`,`EAF` are provided then the variants
+#' @param dat data.frame like object, or file path, with at least column `rsid`; if columns `ea`,`oa`,`beta`,`eaf` are provided then the variants
 #' will be return harmonised to the reference panel (effect allele, data = major allele, reference)
 #' @param method a string, either `r` or `r2`
-#' @param colmap a list, mapping to columns list(RSID=?,EA=?,OA=?,BETA=?,EAF=?) where ? can be a character vector in the case of harmonised datasets.
+#' @param colmap a list, mapping to columns list(rsid=?,ea=?,oa=?,beta=?,eaf=?) where ? can be a character vector in the case of harmonised datasets.
 #' Warning - it is assumed that harmonised datasets are indeed harmonised, if not, any unharmonised variants will be
 #' inappropriately removed.
 #' @inheritParams clump

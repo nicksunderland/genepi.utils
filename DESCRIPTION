@@ -1,6 +1,6 @@
 Package: genepi.utils
 Title: GenEpi Utility Functions
-Version: 0.0.14
+Version: 0.0.15
 Authors@R: c(person("Nicholas", "Sunderland", , "nicholas.sunderland@bristol.ac.uk", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-3625-630X")))
 Description: The genepi.utils package is a collection of utility functions for working with genetic epidemiology data.
 License: MIT + file LICENSE
@@ -57,6 +57,7 @@ Collate:
     'ld_matrix.R'
     'lift.R'
     'manhattan.R'
+    'plink.R'
     'pz_plot.R'
     'qq_plot.R'
     'standardise_gwas.R'

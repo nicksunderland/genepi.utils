@@ -14,10 +14,10 @@ ld_matrix(
 )
 }
 \arguments{
-\item{dat}{data.frame like object, or file path, with at least column \code{RSID}; if columns \code{EA},\code{OA},\code{BETA},\code{EAF} are provided then the variants
+\item{dat}{data.frame like object, or file path, with at least column \code{rsid}; if columns \code{ea},\code{oa},\code{beta},\code{eaf} are provided then the variants
 will be return harmonised to the reference panel (effect allele, data = major allele, reference)}
 
-\item{colmap}{a list, mapping to columns list(RSID=?,EA=?,OA=?,BETA=?,EAF=?) where ? can be a character vector in the case of harmonised datasets.
+\item{colmap}{a list, mapping to columns list(rsid=?,ea=?,oa=?,beta=?,eaf=?) where ? can be a character vector in the case of harmonised datasets.
 Warning - it is assumed that harmonised datasets are indeed harmonised, if not, any unharmonised variants will be
 inappropriately removed.}
 
