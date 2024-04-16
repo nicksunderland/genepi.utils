@@ -165,7 +165,9 @@ MR <- new_class(
 
       # harmonise exposures against first exposure (ref) dataset
       e <- TwoSampleMR::harmonise_data(ref, e, action = harmonise_strictness)
-      e <- subset(e, mr_keep)
+      # chr check needed for sanity, as TwoSampleMR doesn't check and some datasets have incorrect chromosome
+      # specification for the rsid (e.g. GIANT BMI gwas rs1850170 chr == 2, but it is on 7...)
+      e <- subset(e, mr_keep & chr.outcome == chr.exposure)
 
       # only keep harmonised SNPs common to all exposures
       tab <- table(e$SNP)
@@ -743,10 +745,14 @@ method(clump_mr, MR) <- function(x,
     d <- as.data.table(x, exposure=1)
 
   } else {
+
     warning('Experimental, multi-exposure clumping')
-    warning('Need to make sure finding min P doesnt mess order up')
-    d <- lapply(1:ncol(x@bx), function(exp_idx) as.data.table(x, exposure=exp_idx)) |> rbindlist()
-    d <- d[ , .SD[which.min(px)], by='rsid']
+    d <- lapply(1:ncol(x@bx), function(exp_idx) as.data.table(x, exposure = exp_idx)) |> data.table::rbindlist()
+
+    # get the minimum p-value for each SNP and clump with these
+    d_min <- d[, .(px_min = min(px)), by = rsid]
+    d <- d[d_min, on = c("rsid", "px" = "px_min")]
+    rm(d_min)
 
   }
 
@@ -837,10 +843,10 @@ method(as.data.table, MR) <- function(object, exposure = 1) {
     by        = object@by,
     byse      = object@byse,
     py        = object@py,
-    proxy_snp = if(length(object@proxy_snp)==0) { rep(NA_character_, length(object@snps)) } else { object@proxy_snp },
-    index_snp = if(length(object@index_snp)==0) { rep(TRUE,          length(object@snps)) } else { object@index_snp },
-    group     = if(length(object@group)==0)     { rep(NA_integer_,   length(object@snps)) } else { object@group },
-    ld_info   = if(length(object@ld_info)==0)   { rep(NA_integer_,   length(object@snps)) } else { object@ld_info },
+    proxy_snp = if(length(object@proxy_snp) == length(object@snps)) { object@proxy_snp } else { rep(NA_character_, length(object@snps)) },
+    index_snp = if(length(object@index_snp) == length(object@snps)) { object@index_snp } else { rep(TRUE,          length(object@snps)) },
+    group     = if(length(object@group)     == length(object@snps)) { object@group }     else { rep(NA_integer_,   length(object@snps)) },
+    ld_info   = if(length(object@ld_info)   == length(object@snps)) { object@ld_info }   else { rep(NA_integer_,   length(object@snps)) },
     exposure  = if(length(object@exposure)==0)  { rep(NA_character_, length(object@snps)) } else if(length(object@exposure)==length(object@snps)) { object@exposure } else { rep(object@exposure[exposure], length(object@snps)) },
     outcome   = if(length(object@outcome)==0)   { rep(NA_character_, length(object@snps)) } else if(length(object@outcome)==1)  { rep(object@outcome,  length(object@snps)) } else { object@outcome }
   )
