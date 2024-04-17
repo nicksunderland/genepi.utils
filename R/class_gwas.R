@@ -330,7 +330,7 @@ method(standardise_columns, new_S3_class('data.table')) <- function(gwas, verbos
     valid_pattern <- grepl("(?i)(\\d+|X|Y)[:_]\\d+", gwas$rsid)
     if(all(valid_pattern)) {
       gwas[, chr := sub("(?i)(\\d+|X|Y)[:_]\\d+(?:.*)", "\\1", rsid)]
-      gwas[, bp  := sub("(?i)(?:\\d+|X|Y)[:_](\\d+)(?:.*)", "\\1", rsid)]
+      gwas[, bp  := as.integer(sub("(?i)(?:\\d+|X|Y)[:_](\\d+)(?:.*)", "\\1", rsid))]
     } else {
       example_failure <- gwas[[which(!valid_pattern)[[1]], "rsid"]]
       stop(paste0("problem standardising `chr` and `bp` columns. Cannot parse rsid` column with regex \\d[:_]\\d for enteries such as: ", example_failure))
