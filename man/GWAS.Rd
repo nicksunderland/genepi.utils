@@ -12,6 +12,7 @@ GWAS(
   fill_rsid = FALSE,
   missing_rsid = "fill_CHR:BP",
   parallel_cores = parallel::detectCores(),
+  dbsnp_dir = genepi.utils::which_dbsnp_directory(),
   filters = list(beta_invalid = "!is.infinite(beta) & abs(beta) < 20", eaf_invalid =
     "eaf > 0 & eaf < 1", p_invalid = "!is.infinite(p)", se_invalid = "!is.infinite(se)",
     alleles_invalid = "!is.na(ea) & !is.na(oa)", chr_missing = "!is.na(chr)", bp_missing
@@ -38,6 +39,8 @@ GWAS(
 "overwrite_CHR:BP:OA:EA", "none", or "leave"}
 
 \item{parallel_cores}{an integer, number of cores to used for RSID mapping, default is maximum machine cores}
+
+\item{dbsnp_dir}{path to the dbsnp directory of fst files see chrpos_to_rsid \code{dbsnp_dir} argument}
 
 \item{filters}{a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)}
 

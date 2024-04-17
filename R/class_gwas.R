@@ -38,6 +38,7 @@ globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr"
 #' @param fill_rsid either FALSE or a valid argument for the chrpos_to_rsid `build` argument, e.g. "b37_dbsnp156"
 #' @param missing_rsid a string, how to handle missing rsids: one of "fill_CHR:BP", "fill_CHR:BP_OA_EA", "overwrite_CHR:BP",
 #' "overwrite_CHR:BP:OA:EA", "none", or "leave"
+#' @param dbsnp_dir path to the dbsnp directory of fst files see chrpos_to_rsid `dbsnp_dir` argument
 #' @param parallel_cores an integer, number of cores to used for RSID mapping, default is maximum machine cores
 #' @param filters a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)
 #' @param reference a valid string file path to be read by `data.table::fread` or a `data.table::data.table` object; the reference data
@@ -136,6 +137,7 @@ GWAS <- new_class(
                          fill_rsid      = FALSE,
                          missing_rsid   = "fill_CHR:BP",
                          parallel_cores = parallel::detectCores(),
+                         dbsnp_dir      = genepi.utils::which_dbsnp_directory(),
                          filters = list(
                            beta_invalid    = "!is.infinite(beta) & abs(beta) < 20",
                            eaf_invalid     = "eaf > 0 & eaf < 1",
@@ -179,7 +181,7 @@ GWAS <- new_class(
     qc   <- g$qc
 
     # add or reformat id/rsid
-    gwas <- populate_rsid(gwas, fill_rsid=fill_rsid, missing_rsid=missing_rsid, parallel_cores=parallel_cores, verbose=verbose)
+    gwas <- populate_rsid(gwas, fill_rsid=fill_rsid, missing_rsid=missing_rsid, parallel_cores=parallel_cores, dbsnp_dir=dbsnp_dir, verbose=verbose)
 
     # harmonise to reference
     g <- harmonise_reference(gwas, reference=reference, ref_map=ref_map, qc=qc, verbose=verbose)
@@ -537,8 +539,8 @@ method(harmonise_reference, new_S3_class('data.table')) <- function(gwas, refere
 }
 
 
-populate_rsid <- new_generic('populate_rsid', 'gwas', function(gwas, fill_rsid, missing_rsid, parallel_cores, verbose=TRUE) { S7_dispatch() })
-method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, missing_rsid, parallel_cores, verbose=TRUE) {
+populate_rsid <- new_generic('populate_rsid', 'gwas', function(gwas, fill_rsid, missing_rsid, parallel_cores, dbsnp_dir, verbose=TRUE) { S7_dispatch() })
+method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, missing_rsid, parallel_cores, dbsnp_dir, verbose=TRUE) {
 
   if(verbose) message("[i] checking rsid coding")
 
@@ -569,6 +571,7 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
                                ea_col    = "ea",
                                nea_col   = "oa",
                                build     = fill_rsid,
+                               dbsnp_dir = dbsnp_dir,
                                flip      = "allow",
                                alt_rsids = FALSE,
                                verbose   = verbose,

@@ -1,7 +1,8 @@
 # Silence R CMD check
 globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.outcome", "effect_allele.outcome", "proxy_snp.outcome", "chr.exposure",
                   "pos.exposure", "effect_allele.exposure", "other_allele.exposure", "eaf.outcome", "samplesize.outcome",
-                  "ncase.outcome", "beta.outcome", "se.outcome", "pval.outcome", "V1"),
+                  "ncase.outcome", "beta.outcome", "se.outcome", "pval.outcome", "V1", "chr.outcome", "chr.exposure",
+                  "pos.outcome", "pos.exposure"),
                 package = "genepi.utils")
 
 #' @title MR object
@@ -166,8 +167,9 @@ MR <- new_class(
       # harmonise exposures against first exposure (ref) dataset
       e <- TwoSampleMR::harmonise_data(ref, e, action = harmonise_strictness)
       # chr check needed for sanity, as TwoSampleMR doesn't check and some datasets have incorrect chromosome
-      # specification for the rsid (e.g. GIANT BMI gwas rs1850170 chr == 2, but it is on 7...)
-      e <- subset(e, mr_keep & chr.outcome == chr.exposure)
+      # specification for the rsid (e.g. GIANT BMI gwas rs1850170 chr == 2, but it is on 7...); and some have
+      # incorrect position (e.g. GIANT BMI gwas rs10048690 pos = 120781700, but it's 215384864, same build 37)
+      e <- subset(e, mr_keep & chr.outcome == chr.exposure & pos.outcome == pos.exposure)
 
       # only keep harmonised SNPs common to all exposures
       tab <- table(e$SNP)
@@ -339,7 +341,7 @@ to_MRInput <- new_generic("to_MRInput", "x", function(x, corr = FALSE) { S7_disp
 method(to_MRInput, MR) <- function(x, corr = FALSE) {
 
   # check LD matrix exists
-  if(corr && length(mr_obj@ld_info) == 0) warning("Correlation MR requested but no LD info / matrix found")
+  if(corr && length(x@ld_info) == 0) warning("Correlation MR requested but no LD info / matrix found")
 
   mr_input <- MendelianRandomization::mr_input(
     bx          = x@bx[which(x@index_snp == TRUE), 1],
@@ -408,7 +410,7 @@ method(mr_ivw, MR) <- function(x, corr = FALSE, ...) {
   tryCatch({
     if(is_multivariable(x)) {
       method <- "mr_mvivw"
-      args   <- list(object = to_MRMVInput(x, corr), nx = apply(x@nx,2,max,na.rm=TRUE), ...)
+      args   <- list(object = to_MRMVInput(x, corr), nx = apply(x@nx, 2, max, na.rm=TRUE), ...)
       args   <- args[names(args) %in% c("object", "model", "robust", "correl", "correl.x ", "nx", "distribution", "alpha")]
       res    <- do.call(getFromNamespace("mr_mvivw", "MendelianRandomization"), args)
     } else {
@@ -742,7 +744,7 @@ method(clump_mr, MR) <- function(x,
   # extract data to work with - might be multiple exposures with multivariable MR
   if(ncol(x@bx)==1) {
 
-    d <- as.data.table(x, exposure=1)
+    d_clump <- as.data.table(x, exposure=1)
 
   } else {
 
@@ -750,14 +752,15 @@ method(clump_mr, MR) <- function(x,
     d <- lapply(1:ncol(x@bx), function(exp_idx) as.data.table(x, exposure = exp_idx)) |> data.table::rbindlist()
 
     # get the minimum p-value for each SNP and clump with these
-    d_min <- d[, .(px_min = min(px)), by = rsid]
-    d <- d[d_min, on = c("rsid", "px" = "px_min")]
-    rm(d_min)
+    d_clump <- d[, .(px_min = min(px)), by = rsid]
+    d_clump <- d[d_clump, on = c("rsid", "px" = "px_min")]
 
   }
 
   # use object's LD data if available
   if (!all(is.na(x@correlation))) {
+
+    stop("need to reimplement this")
 
     # subset with LD data, maintain index, then order by exposure p-value
     d[, i := 1:.N] # i is now the index of `d`, into the LD matrix
@@ -809,18 +812,21 @@ method(clump_mr, MR) <- function(x,
   } else {
 
     # remove allele info from rsids
-    d[grepl("rs[0-9]+", rsid), rsid := sub(".*?(rs[0-9]+).*", "\\1", rsid)]
+    d_clump[grepl("rs[0-9]+", rsid), rsid := sub(".*?(rs[0-9]+).*", "\\1", rsid)]
 
     # rename p for clump function
-    data.table::setnames(d, "px", "p")
+    data.table::setnames(d_clump, "px", "p")
 
     # run clumping and rejoin result
-    clumps <- clump(d, p1 = p1, p2 = p2, r2 = r2, kb = kb, plink2 = plink2, plink_ref = plink_ref)
-    d[clumps, c("index_snp", "group") := list(i.index, i.group), on = "rsid"]
+    d_clump <- clump(d_clump, p1 = p1, p2 = p2, r2 = r2, kb = kb, plink2 = plink2, plink_ref = plink_ref)
+    dat_rsid <- data.table::data.table(rsid = x@snps)
+    dat_rsid[grepl("rs[0-9]+", rsid), rsid := sub(".*?(rs[0-9]+).*", "\\1", rsid)]
+    dat_rsid[d_clump, c("index_snp", "group") := list(i.index, as.integer(i.clump)), on = "rsid"]
+    dat_rsid[is.na(index_snp), index_snp := FALSE]
 
     # add back to object
-    x@index_snp <- d$index
-    x@group <- d$group
+    x@index_snp <- dat_rsid$index_snp
+    x@group <- dat_rsid$group
   }
 
   # return
