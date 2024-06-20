@@ -76,6 +76,37 @@ hf_mapping <- ColumnMap(lapply(hf_map, function(x) do.call(genepi.utils::Column,
 
 
 # ------------- #
+#      HR       #
+# ------------- #
+hr_path <- "/Users/xx20081/Desktop/ZhuZ_30940143_ukbb.bolt_460K_selfRepWhite.rhrmean.assoc.gz"
+foo <- data.table::fread(hr_path)
+hr_map <- list(
+  "rsid"=    list("name"= "rsid",    "alias"= "SNP",  "type"= "character"),
+  "chr"=     list("name"= "chr",     "alias"= "CHR",   "type"= "character"),
+  "bp"=      list("name"= "bp",      "alias"= "BP",    "type"= "integer"),
+  "se"=      list("name"= "se",      "alias"= "SE",    "type"= "numeric"),
+  "p"=       list("name"= "p",       "alias"= "P",     "type"= "numeric"),
+  "ea"=      list("name"= "ea",      "alias"= "A1",    "type"= "character"),
+  "oa"=      list("name"= "oa",      "alias"= "A0",    "type"= "character"),
+  "beta"=    list("name"= "beta",    "alias"= "BETA",  "type"= "numeric"),
+  "eaf"=     list("name"= "eaf",     "alias"= "MAF",   "type"= "numeric")
+)
+hr_mapping <- ColumnMap(lapply(hr_map, function(x) do.call(genepi.utils::Column, x)))
+gwas_hr  <- GWAS(dat = hr_path,
+                  map = hr_mapping,
+                  fill = TRUE,
+                  drop = TRUE,
+                  fill_rsid = "b37_dbsnp156",
+                  missing_rsid = "fill_CHR:BP",
+                  parallel_cores = 12,
+                  id = "hr",
+                  trait = "hr",
+                  n = 458969)
+
+
+
+
+# ------------- #
 #     GWASs     #
 # ------------- #
 gwas_bmi <- GWAS(bmi_path, bmi_mapping, fill_rsid = F, missing_rsid = "fill_CHR:BP", id = "bmi", trait = "bmi")

@@ -6,31 +6,6 @@ globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr"
 #' @description
 #' A GWAS object is a container for vectors of GWAS data, a correlation matrix, and
 #' meta-data regarding quality control procedures applied at the point of object creation / data import.
-#' Column mapping: column name mapping using the `ColumnMap` and `Column` classes which define standard column names and a list
-#' of aliases. The set of core data fields are: `rsid`, `chr`, `bp`, `ea`, `oa`, `eaf`, `beta`, `se`, `p`, and `n`.
-#' Column typing: column types are enforced using the `ColumnMap` and `Column` classes which define standard column types (see
-#' return value table below).
-#' Standardise columns: core data fields are checked, if absent, they are calculated from the available data if possible. The
-#' current conversions include: chr and bp extration from rsid column containing chr:pos +/- allele id coding;
-#' conversion of odds ratio and odds ratio standard error / upper and lower bounds to beta and
-#' se; and conversion of z scores to p values.
-#' Standardise allele coding: alleles are standardised to upper case ACTGDI or combination of these letters. `NA` values
-#' are allowed in one of the ea or oa fields, but not both, where it is taken to represent a deletion.
-#' Reference harmonisation (TODO): harmonising against a reference panel is an important step, however has not yet been implemented
-#' for this class constructor yet.
-#' Filters: custom filters can be added to the `filters` argument. This should be a list of named string that can be evaluated as R
-#' expressions and when applied to the standard column names result in a logical vector mask of the rows to exclude The defaults are:
-#' * beta_invalid = "!is.infinite(beta) & abs(beta) < 20"
-#' * eaf_invalid = "eaf > 0 & eaf < 1"
-#' * p_invalid = "!is.infinite(p)"
-#' * se_invalid = "!is.infinite(se)"
-#' * chr_missing = "!is.na(chr)"
-#' * bp_missing = "!is.na(bp)"
-#' * beta_missing = "!is.na(beta)"
-#' * se_missing = "!is.na(se)"
-#' * p_missing = "!is.na(p)"
-#' * eaf_missing = "!is.na(eaf)"
-#'
 #' @param dat a valid string file path to be read by `data.table::fread` or a `data.table::data.table` object; the GWAS data source
 #' @param map a valid input to the `ColumnMap` class constructor (a predefined map string id, a named list or character vector, or a ColumMap object)
 #' @param drop a logical, whether to drop data source columns not in the column `map`
