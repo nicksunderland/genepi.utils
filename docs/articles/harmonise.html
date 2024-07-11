@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harmonising datasets • genepi.utils</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.18</span>
       </span>
     </div>
 
@@ -109,17 +109,6 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <code>c("RSID"="RSID")</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Warning:</span></span>
-<span><span class="co">#&gt; You are running an old version of the ieugwasr package.</span></span>
-<span><span class="co">#&gt; This version:   0.1.8</span></span>
-<span><span class="co">#&gt; Latest version: 0.2.2-9000</span></span>
-<span><span class="co">#&gt; Please consider updating using remotes::install_github('MRCIEU/ieugwasr')</span></span>
-<span><span class="co">#&gt; OpenGWAS updates:</span></span>
-<span><span class="co">#&gt;   Date: 2024-03-07</span></span>
-<span><span class="co">#&gt;   [&gt;] There is exceptional load on the OpenGWAS servers.</span></span>
-<span><span class="co">#&gt;   [&gt;] Urgent infrastructure development being performed.</span></span>
-<span><span class="co">#&gt;   [&gt;] See local options for analysis: https://mrcieu.github.io/gwasvcf/.</span></span>
 <span></span>
 <span><span class="co"># the gwas data</span></span>
 <span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
@@ -163,18 +152,18 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span><span class="co">#&gt;  8: 10:100005282     10 100005282    ACC      A 9.30e-04 -0.147 0.134 0.781</span></span>
 <span><span class="co">#&gt;  9: 10:100007362     10 100007362      C      G 8.16e-05  0.045 0.173 0.961</span></span>
 <span><span class="co">#&gt; 10: 10:100008436     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743</span></span>
-<span><span class="co">#&gt;     strand imputed  info     n ncase  trait     id</span></span>
-<span><span class="co">#&gt;     &lt;char&gt;  &lt;lgcl&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  2:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  3:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  4:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  5:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  6:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  7:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  8:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt;  9:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
-<span><span class="co">#&gt; 10:   &lt;NA&gt;      NA    NA    NA    NA  trait     id</span></span>
+<span><span class="co">#&gt;         n ncase  trait     id strand imputed  info     q   q_p    i2</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;  &lt;lgcl&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
+<span><span class="co">#&gt;  2:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
+<span><span class="co">#&gt;  3:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.480    NA    NA</span></span>
+<span><span class="co">#&gt;  4:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
+<span><span class="co">#&gt;  5:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
+<span><span class="co">#&gt;  6:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
+<span><span class="co">#&gt;  7:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
+<span><span class="co">#&gt;  8:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
+<span><span class="co">#&gt;  9:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
+<span><span class="co">#&gt; 10:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
 <span></span>
 <span><span class="co"># harmonise</span></span>
 <span><span class="va">harmonised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span>, merge<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chr"</span><span class="op">=</span><span class="st">"chr"</span>,<span class="st">"bp"</span><span class="op">=</span><span class="st">"bp"</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
@@ -218,66 +207,78 @@ either <code>c("CHR"="CHR","BP"="BP")</code> or
 <span><span class="co">#&gt;  8:      9.30e-04        9.30e-04         -0.147           -0.147       0.781</span></span>
 <span><span class="co">#&gt;  9:      8.16e-05        8.16e-05          0.045            0.045       0.961</span></span>
 <span><span class="co">#&gt; 10:      9.46e-04        9.46e-04         -0.008           -0.008       0.743</span></span>
-<span><span class="co">#&gt;     p_progression palindromic   keep se_incidence strand_incidence</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;      &lt;lgcl&gt; &lt;lgcl&gt;        &lt;num&gt;           &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:         0.781       FALSE   TRUE        0.137             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  2:         0.961       FALSE   TRUE        0.173             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  3:         0.480       FALSE   TRUE        0.134             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  4:         0.743       FALSE   TRUE        0.137             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  5:         0.961        TRUE   TRUE        0.134             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  6:         0.781       FALSE  FALSE        0.173             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  7:         0.743       FALSE   TRUE        0.137             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  8:         0.781       FALSE   TRUE        0.134             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  9:         0.961        TRUE   TRUE        0.173             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10:         0.743       FALSE   TRUE        0.208             &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;     imputed_incidence info_incidence n_incidence ncase_incidence</span></span>
-<span><span class="co">#&gt;                &lt;lgcl&gt;          &lt;num&gt;       &lt;int&gt;           &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  2:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  3:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  4:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  5:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  6:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  7:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  8:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;  9:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt; 10:                NA             NA          NA              NA</span></span>
-<span><span class="co">#&gt;     trait_incidence id_incidence se_progression strand_progression</span></span>
-<span><span class="co">#&gt;              &lt;char&gt;       &lt;char&gt;          &lt;num&gt;             &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:           trait           id          0.137               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  2:           trait           id          0.173               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  3:           trait           id          0.134               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  4:           trait           id          0.137               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  5:           trait           id          0.134               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  6:           trait           id          0.173               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  7:           trait           id          0.137               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  8:           trait           id          0.134               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;  9:           trait           id          0.173               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10:           trait           id          0.208               &lt;NA&gt;</span></span>
-<span><span class="co">#&gt;     imputed_progression info_progression n_progression ncase_progression</span></span>
-<span><span class="co">#&gt;                  &lt;lgcl&gt;            &lt;num&gt;         &lt;int&gt;             &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  2:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  3:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  4:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  5:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  6:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  7:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  8:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;  9:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt; 10:                  NA               NA            NA                NA</span></span>
-<span><span class="co">#&gt;     trait_progression id_progression</span></span>
-<span><span class="co">#&gt;                &lt;char&gt;         &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:             trait             id</span></span>
-<span><span class="co">#&gt;  2:             trait             id</span></span>
-<span><span class="co">#&gt;  3:             trait             id</span></span>
-<span><span class="co">#&gt;  4:             trait             id</span></span>
-<span><span class="co">#&gt;  5:             trait             id</span></span>
-<span><span class="co">#&gt;  6:             trait             id</span></span>
-<span><span class="co">#&gt;  7:             trait             id</span></span>
-<span><span class="co">#&gt;  8:             trait             id</span></span>
-<span><span class="co">#&gt;  9:             trait             id</span></span>
-<span><span class="co">#&gt; 10:             trait             id</span></span></code></pre></div>
+<span><span class="co">#&gt;     p_progression palindromic   keep se_incidence n_incidence ncase_incidence</span></span>
+<span><span class="co">#&gt;             &lt;num&gt;      &lt;lgcl&gt; &lt;lgcl&gt;        &lt;num&gt;       &lt;int&gt;           &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1:         0.781       FALSE   TRUE        0.137          NA              NA</span></span>
+<span><span class="co">#&gt;  2:         0.961       FALSE   TRUE        0.173          NA              NA</span></span>
+<span><span class="co">#&gt;  3:         0.480       FALSE   TRUE        0.134          NA              NA</span></span>
+<span><span class="co">#&gt;  4:         0.743       FALSE   TRUE        0.137          NA              NA</span></span>
+<span><span class="co">#&gt;  5:         0.961        TRUE   TRUE        0.134          NA              NA</span></span>
+<span><span class="co">#&gt;  6:         0.781       FALSE  FALSE        0.173          NA              NA</span></span>
+<span><span class="co">#&gt;  7:         0.743       FALSE   TRUE        0.137          NA              NA</span></span>
+<span><span class="co">#&gt;  8:         0.781       FALSE   TRUE        0.134          NA              NA</span></span>
+<span><span class="co">#&gt;  9:         0.961        TRUE   TRUE        0.173          NA              NA</span></span>
+<span><span class="co">#&gt; 10:         0.743       FALSE   TRUE        0.208          NA              NA</span></span>
+<span><span class="co">#&gt;     trait_incidence id_incidence strand_incidence imputed_incidence</span></span>
+<span><span class="co">#&gt;              &lt;char&gt;       &lt;char&gt;           &lt;char&gt;            &lt;lgcl&gt;</span></span>
+<span><span class="co">#&gt;  1:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  2:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  3:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  4:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  5:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  6:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  7:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  8:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;  9:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt; 10:           trait           id             &lt;NA&gt;                NA</span></span>
+<span><span class="co">#&gt;     info_incidence q_incidence q_p_incidence i2_incidence se_progression</span></span>
+<span><span class="co">#&gt;              &lt;num&gt;       &lt;num&gt;         &lt;num&gt;        &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:             NA       0.781            NA           NA          0.137</span></span>
+<span><span class="co">#&gt;  2:             NA       0.961            NA           NA          0.173</span></span>
+<span><span class="co">#&gt;  3:             NA       0.480            NA           NA          0.134</span></span>
+<span><span class="co">#&gt;  4:             NA       0.743            NA           NA          0.137</span></span>
+<span><span class="co">#&gt;  5:             NA       0.961            NA           NA          0.134</span></span>
+<span><span class="co">#&gt;  6:             NA       0.781            NA           NA          0.173</span></span>
+<span><span class="co">#&gt;  7:             NA       0.743            NA           NA          0.137</span></span>
+<span><span class="co">#&gt;  8:             NA       0.781            NA           NA          0.134</span></span>
+<span><span class="co">#&gt;  9:             NA       0.961            NA           NA          0.173</span></span>
+<span><span class="co">#&gt; 10:             NA       0.743            NA           NA          0.208</span></span>
+<span><span class="co">#&gt;     n_progression ncase_progression trait_progression id_progression</span></span>
+<span><span class="co">#&gt;             &lt;int&gt;             &lt;int&gt;            &lt;char&gt;         &lt;char&gt;</span></span>
+<span><span class="co">#&gt;  1:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  2:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  3:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  4:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  5:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  6:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  7:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  8:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;  9:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt; 10:            NA                NA             trait             id</span></span>
+<span><span class="co">#&gt;     strand_progression imputed_progression info_progression q_progression</span></span>
+<span><span class="co">#&gt;                 &lt;char&gt;              &lt;lgcl&gt;            &lt;num&gt;         &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:               &lt;NA&gt;                  NA               NA         0.781</span></span>
+<span><span class="co">#&gt;  2:               &lt;NA&gt;                  NA               NA         0.961</span></span>
+<span><span class="co">#&gt;  3:               &lt;NA&gt;                  NA               NA         0.480</span></span>
+<span><span class="co">#&gt;  4:               &lt;NA&gt;                  NA               NA         0.743</span></span>
+<span><span class="co">#&gt;  5:               &lt;NA&gt;                  NA               NA         0.961</span></span>
+<span><span class="co">#&gt;  6:               &lt;NA&gt;                  NA               NA         0.781</span></span>
+<span><span class="co">#&gt;  7:               &lt;NA&gt;                  NA               NA         0.743</span></span>
+<span><span class="co">#&gt;  8:               &lt;NA&gt;                  NA               NA         0.781</span></span>
+<span><span class="co">#&gt;  9:               &lt;NA&gt;                  NA               NA         0.961</span></span>
+<span><span class="co">#&gt; 10:               &lt;NA&gt;                  NA               NA         0.743</span></span>
+<span><span class="co">#&gt;     q_p_progression i2_progression</span></span>
+<span><span class="co">#&gt;               &lt;num&gt;          &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:              NA             NA</span></span>
+<span><span class="co">#&gt;  2:              NA             NA</span></span>
+<span><span class="co">#&gt;  3:              NA             NA</span></span>
+<span><span class="co">#&gt;  4:              NA             NA</span></span>
+<span><span class="co">#&gt;  5:              NA             NA</span></span>
+<span><span class="co">#&gt;  6:              NA             NA</span></span>
+<span><span class="co">#&gt;  7:              NA             NA</span></span>
+<span><span class="co">#&gt;  8:              NA             NA</span></span>
+<span><span class="co">#&gt;  9:              NA             NA</span></span>
+<span><span class="co">#&gt; 10:              NA             NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="evaluation-speed">Evaluation speed<a class="anchor" aria-label="anchor" href="#evaluation-speed"></a>
@@ -340,7 +341,7 @@ Analysis with downsampled GWAS of 100,000 variants
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>

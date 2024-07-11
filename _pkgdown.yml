@@ -23,6 +23,8 @@ reference:
   - clump
   - harmonise
   - ld_matrix
+  - get_pfile_variants
+  - get_proxies
   # - download_ukbb_ld
 
 - title: "Mendelian Randomization"
