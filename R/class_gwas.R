@@ -245,6 +245,15 @@ GWAS <- new_class(
 )
 
 
+method(print, GWAS) <- function(x) {
+
+  cat("genepi.utils::GWAS object\n")
+  cat("- trait:", x@trait, "\n")
+  cat("- id:", x@id, "\n")
+  print(as.data.table(x))
+
+}
+
 
 load_gwas <- new_generic('load_gwas', c('dat','map'), function(dat, map, drop=FALSE, fill=FALSE, verbose=TRUE) { S7_dispatch() })
 method(load_gwas, list(class_character, ColumnMap)) <- function(dat, map, drop=FALSE, fill=FALSE, verbose=TRUE) {

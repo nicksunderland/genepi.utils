@@ -37,6 +37,9 @@
     <loc>/articles/plotting.html</loc>
   </url>
   <url>
+    <loc>/articles/rationale.html</loc>
+  </url>
+  <url>
     <loc>/articles/standardise_gwas.html</loc>
   </url>
   <url>
@@ -197,6 +200,9 @@
   </url>
   <url>
     <loc>/reference/plot_drug_proxy_instrument.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_mr.html</loc>
   </url>
   <url>
     <loc>/reference/plot_p_threshold.html</loc>

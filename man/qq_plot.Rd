@@ -6,8 +6,8 @@
 \usage{
 qq_plot(
   gwas,
-  pval_col = "P",
-  colours = list(raw = "#2166AC", corrected = "#B2182B"),
+  pval_col = "p",
+  colours = list(raw = "#2166AC"),
   title = NULL,
   subtitle = NULL,
   plot_corrected = FALSE,

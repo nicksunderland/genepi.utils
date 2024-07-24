@@ -75,6 +75,10 @@ mbm <- microbenchmark("genepi.utils::harmonise()" = { genepi.utils::harmonise(gw
                       "TwoSampleMR::harmonise()" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },
                       times = 10L)
 
+# 2SMR issue fixed in recent commit
+# mbm <- microbenchmark("TwoSampleMR::harmonise() - updated" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },
+#                       times = 10L)
+
 autoplot(mbm)
 
 # save

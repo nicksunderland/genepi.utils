@@ -15,8 +15,8 @@
 #' @importFrom stats qchisq median as.formula
 #'
 qq_plot <- function(gwas,
-                    pval_col = "P",
-                    colours = list(raw="#2166AC", corrected="#B2182B"),
+                    pval_col = "p",
+                    colours = list(raw="#2166AC"), #, corrected="#B2182B"),
                     title = NULL,
                     subtitle = NULL,
                     plot_corrected = FALSE,
@@ -24,6 +24,11 @@ qq_plot <- function(gwas,
                     facet_grid_col_col = NULL,
                     facet_nrow = NULL,
                     facet_ncol = NULL) {
+
+  # conversion from GWAS object
+  if (inherits(gwas, "genepi.utils::GWAS")) {
+    gwas <- genepi.utils::as.data.table(gwas)
+  }
 
   # silence R CMD check warnings
   P <- adj_P <- adj_chisq <- adj_observed <- chisq <- clower <- corrected <- cupper <- expected <- label <- lambda <- observed <- NULL

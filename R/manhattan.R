@@ -21,7 +21,7 @@ globalVariables(c("beta", "bp", "chr", "p", "se", "snp", "chr_len", "tot", "x", 
 #' @param subtitle (optional) a string subtitle
 #' @param hit_table (optional) a logical, whether to display a table of top hits (lowest P values)
 #' @param max_table_hits (optional) an integer, how many top hits to show in the table
-#' @param downsample (optional) a numeric between 0 and 1, tghe proportion by which to downsample by, e.g. 0.5 will remove 50% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)
+#' @param downsample (optional) a numeric between 0 and 1, the proportion by which to downsample by, e.g. 0.6 will remove 60% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)
 #' @param base_text_size an integer, `base_size` for the ggplot2 theme
 #' @param downsample_pval (optional) a numeric between 0 and 1, the p-values affected by downsampling, default >0.1
 #' @return a ggplot
@@ -48,14 +48,19 @@ manhattan <- function(gwas,
                       base_text_size = 14,
                       hit_table = FALSE,
                       max_table_hits = 10,
-                      downsample = 0.1,
-                      downsample_pval = 0.1) {
+                      downsample = 0.90,
+                      downsample_pval = 0.7) {
+
+  # conversion from GWAS object
+  if (inherits(gwas, "genepi.utils::GWAS")) {
+    gwas <- genepi.utils::as.data.table(gwas)
+  }
 
   # checks
   stopifnot("gwas input must be a data.frame like object" = inherits(gwas, "data.frame"))
-  stopifnot("Input data must contain at least columns: snp, chr, bp, and p" = all(c("snp","chr","bp","p") %in% colnames(gwas)))
-  stopifnot("highlight_snps should be a character vector, a subset of the 'snp' column" = is.null(highlight_snps) | is.character(highlight_snps))
-  stopifnot("Annotate should be a character vector, a subset of the 'snp' column" = is.null(annotate_snps) | is.character(annotate_snps))
+  stopifnot("Input data must contain at least columns: rsid, chr, bp, and p" = all(c("rsid","chr","bp","p") %in% colnames(gwas)))
+  stopifnot("highlight_snps should be a character vector, a subset of the 'rsid' column" = is.null(highlight_snps) | is.character(highlight_snps))
+  stopifnot("Annotate should be a character vector, a subset of the 'rsid' column" = is.null(annotate_snps) | is.character(annotate_snps))
   stopifnot("highlight_win must be numeric (kb either side of each hit to highlight; default=0)" = is.numeric(highlight_win))
   stopifnot("downsample percentage must be numeric between 0 and 1" = is.numeric(downsample))
   stopifnot("downsample_pval must be numeric between 0 and 1" = is.numeric(downsample_pval))
@@ -120,9 +125,9 @@ manhattan <- function(gwas,
 
   # add highlighted variants within requested kb BP window
   if(!is.null(highlight_snps) & length(highlight_snps)>0) {
-    gwas[snp %in% highlight_snps, highlight := TRUE]
+    gwas[rsid %in% highlight_snps, highlight := TRUE]
     if(highlight_win > 0) {
-      highlight_data <- gwas[snp %in% highlight_snps, ]
+      highlight_data <- gwas[rsid %in% highlight_snps, ]
       for(i in 1:nrow(highlight_data)) {
         bp_  <- highlight_data[[i, "bp"]]
         chr_ <- highlight_data[[i, "chr"]]
@@ -144,10 +149,10 @@ manhattan <- function(gwas,
 
   # add SNP label annotations
   if(!is.null(annotate_snps) & length(annotate_snps)>0) {
-    gwas[snp %in% annotate_snps, annotate := TRUE]
+    gwas[rsid %in% annotate_snps, annotate := TRUE]
     label_x_nudge <- max(gwas[["x"]], na.rm=TRUE) / 22
     plot <- plot +
-      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=snp), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
+      ggrepel::geom_label_repel(data=gwas[annotate==TRUE, ], ggplot2::aes(label=rsid), colour="black", label.size = 0.1, nudge_x=label_x_nudge )
   }
 
   # add titles and labels
@@ -173,10 +178,10 @@ manhattan <- function(gwas,
 #'
 hit_table <- function(gwas, n) {
   # base columns and BETA and SE if provided
-  cols <- c(c("snp","p"), names(gwas)[names(gwas) %in% c("beta","se")])
+  cols <- c(c("rsid","p"), names(gwas)[names(gwas) %in% c("beta","se")])
   table_data <- utils::head(gwas[order(p), cols, with=FALSE], n=n)
-  table_data <- table_data[, lapply(.SD, signif, digits=2), by=snp]
-  table_data[, snp := strtrim(snp, 23)]
+  table_data <- table_data[, lapply(.SD, signif, digits=2), by=rsid]
+  table_data[, rsid := strtrim(rsid, 23)]
   table <- gridExtra::tableGrob(table_data, rows=NULL)
   return(table)
 }

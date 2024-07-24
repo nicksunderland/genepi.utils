@@ -41,6 +41,7 @@ reference:
   - mr_weighted_median
   - mr_weighted_mode
   - run_mr
+  - plot_mr
   - set_ld_mat
   - to_MRInput
   - to_MRMVInput

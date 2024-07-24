@@ -21,8 +21,8 @@ manhattan(
   base_text_size = 14,
   hit_table = FALSE,
   max_table_hits = 10,
-  downsample = 0.1,
-  downsample_pval = 0.1
+  downsample = 0.9,
+  downsample_pval = 0.7
 )
 }
 \arguments{
@@ -58,7 +58,7 @@ manhattan(
 
 \item{max_table_hits}{(optional) an integer, how many top hits to show in the table}
 
-\item{downsample}{(optional) a numeric between 0 and 1, tghe proportion by which to downsample by, e.g. 0.5 will remove 50\% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)}
+\item{downsample}{(optional) a numeric between 0 and 1, the proportion by which to downsample by, e.g. 0.6 will remove 60\% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)}
 
 \item{downsample_pval}{(optional) a numeric between 0 and 1, the p-values affected by downsampling, default >0.1}
 }

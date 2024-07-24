@@ -860,8 +860,47 @@ method(as.data.table, MR) <- function(object, exposure = 1) {
 }
 
 
+#' @title Plot MR results
+#' @param mr an object of class MR
+#' @param res a data.table output from run_mr or other MR methods
+#' @export
+plot_mr <- new_generic("plot_mr", c("mr","res"), function(mr, res) { S7_dispatch() })
+#' @name plot_mr
+method(plot_mr, list(MR, new_S3_class("data.table"))) <- function(mr, res) {
 
-#'
+  # the point data
+  d <- lapply(seq_len(ncol(mr@bx)), function(i) {
+    genepi.utils::as.data.table(mr, exposure = i)[
+      index_snp==TRUE
+    ][
+      bx < 0, c('bx','by') := list(bx * -1, by * -1)
+    ]
+  }) |> data.table::rbindlist()
+
+  # the line data
+  method_fcts <- expand.grid(m = unique(res$method), e = unique(res$exposure))
+  method_fcts <- paste(method_fcts$m, method_fcts$e)
+  res[, method_fct := factor(paste(method, exposure), levels = method_fcts)]
+
+  y_limits <- range(c(0, d$by - d$byse, d$by + d$byse), na.rm = TRUE)
+
+  plot <- ggplot2::ggplot(d, ggplot2::aes(x = bx, y = by)) +
+    ggplot2::geom_errorbar(mapping  = ggplot2::aes(ymin = by - byse, ymax = by + byse), width=0, color="grey") +
+    ggplot2::geom_errorbarh(mapping = ggplot2::aes(xmin = bx - bxse, xmax = bx + bxse), height=0, color="grey") +
+    ggplot2::geom_point(ggplot2::aes(fill = as.factor(exposure)), shape = 21) +
+    ggplot2::geom_abline(data = res, ggplot2::aes(intercept = intercept, slope = b, color = method_fct)) +
+    ggplot2::theme_linedraw() +
+    ggplot2::expand_limits(x = 0, y = 0) +
+    ggplot2::labs(title = "Mendelian randomisation estimate",
+                  x     = paste("SNP effect on", paste(unique(res$exposure), collapse = "|")),
+                  y     = paste("SNP effect on", unique(res$outcome)),
+                  fill  = "Exposure",
+                  color = "MR method") +
+    ggplot2::theme(plot.title = ggplot2::element_text(face = "bold"))
+
+  return(plot)
+}
+
 #' #' @title Plot clumps
 #' #' @export
 #' setGeneric("plot_clumps", function(object, gene_start=NULL, gene_end=NULL, gene_flanks=NULL, with_corr=FALSE) standardGeneric("plot_clumps"))
@@ -1167,4 +1206,10 @@ method(as.data.table, MR) <- function(object, exposure = 1) {
 #'   }
 #'   return(points_df)
 #' })
+#'
+#'
+#'
+
+
+
 

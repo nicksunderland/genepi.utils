@@ -71,6 +71,9 @@
       <a href="../articles/plotting.html">Plotting</a>
     </li>
     <li>
+      <a href="../articles/rationale.html">Rationale and key points</a>
+    </li>
+    <li>
       <a href="../articles/standardise_gwas.html">Standardise GWAS</a>
     </li>
   </ul>
@@ -314,6 +317,10 @@ Analysis with downsampled GWAS of 100,000 variants
 <span>                      <span class="st">"Slopehunter::harmonise_effects()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">SlopeHunter</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SlopeHunter/man/harmonise_effects.html" class="external-link">harmonise_effects</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span><span class="op">)</span> <span class="op">}</span>,</span>
 <span>                      <span class="st">"TwoSampleMR::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/harmonise_data.html" class="external-link">harmonise_data</a></span><span class="op">(</span><span class="va">gwas1_2smr</span>, <span class="va">gwas2_2smr</span><span class="op">)</span> <span class="op">}</span>,</span>
 <span>                      times <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 2SMR issue fixed in recent commit</span></span>
+<span><span class="co"># mbm &lt;- microbenchmark("TwoSampleMR::harmonise() - updated" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },</span></span>
+<span><span class="co">#                       times = 10L)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">mbm</span><span class="op">)</span></span>
 <span></span>

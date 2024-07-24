@@ -6,7 +6,7 @@ Description: The genepi.utils package is a collection of utility functions for w
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 biocViews:
 Imports: 
     data.table,

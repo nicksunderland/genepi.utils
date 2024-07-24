@@ -53,6 +53,9 @@
       <a href="../articles/plotting.html">Plotting</a>
     </li>
     <li>
+      <a href="../articles/rationale.html">Rationale and key points</a>
+    </li>
+    <li>
       <a href="../articles/standardise_gwas.html">Standardise GWAS</a>
     </li>
   </ul></li>
@@ -92,8 +95,8 @@
 <span>  base_text_size <span class="op">=</span> <span class="fl">14</span>,</span>
 <span>  hit_table <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  max_table_hits <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  downsample <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>  downsample_pval <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  downsample <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  downsample_pval <span class="op">=</span> <span class="fl">0.7</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -164,7 +167,7 @@
 
 
 <dt>downsample</dt>
-<dd><p>(optional) a numeric between 0 and 1, tghe proportion by which to downsample by, e.g. 0.5 will remove 50% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)</p></dd>
+<dd><p>(optional) a numeric between 0 and 1, the proportion by which to downsample by, e.g. 0.6 will remove 60% of points above the downsample_pval threshold (can help increase plotting speed with minimal impact on plot appearance)</p></dd>
 
 
 <dt>downsample_pval</dt>
