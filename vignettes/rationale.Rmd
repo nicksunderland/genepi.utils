@@ -33,12 +33,14 @@ The primary motivation for creating this package was to increase my understandin
 
 **Phase 2** was aimed at common GWAS routines:  
 4. Clumping  
-5. Generating LD matrices  
-6. Finding proxies variants  
+5. Annotating RSIDs  
+6. Generating LD matrices  
+7. Finding proxies variants  
 <br>
 
 **Phase 3** was aimed at more specific routines:  
-7. Index-event bias
+8. Calling UVMR & MVMR routines from `TwoSampleMR` and `Mendelian Randomization`  
+9. Index-event bias - calling `IndexEvent` and MR routines    
 <br>
 
 
@@ -560,10 +562,43 @@ knitr::include_graphics("figures/collider_stability.png")
 ```
 <br>
 
+
+## Other packages 
+
+### MungeSumstats
+`MungeSumstats` is quite a comprehensive GWAS formatting package with many control options. It uses the `SNPlocs.Hsapiens` Bioconductor packages for RSID mapping. Unfortunately the `SNPlocs` packages are routinely updated with the latest dbSNP releases and do no include all of the indels present in dbSNP which can be limiting if you are interested in indels. The microbenchmarking below is slightly unfair as `MungeSumstats` does more checks. 
+
+```{r munge, eval = FALSE}
+library(MungeSumstats)
+library(microbenchmark)
+library(ggplot2)
+
+hf_gwas_file <- "/Users/xx20081/Documents/local_data/hermes_incidence/raw/Pheno1_EUR/FORMAT-METAL_Pheno1_EUR.tsv.gz"
+hf_gwas_map  <- c(rsid = "rsID", chr = "chr", bp = "pos_b37", ea = "A1", oa = "A2", beta = "A1_beta", eaf = "A1_freq", se = "se", p = "pval", ncase = "N_case", n = "N_total")
+
+tm <- microbenchmark("MungeSumstats" = {MungeSumstats::format_sumstats(path = hf_gwas_file,
+                                                                       ref_genome = "GRCh37", 
+                                                                       return_data = TRUE, 
+                                                                       nThread = 12)},
+                     "genepi.utils" = {genepi.utils::GWAS(dat       = hf_gwas_file, 
+                                                          map       = hf_gwas_map, 
+                                                          fill_rsid = "b37_dbsnp156",
+                                                          trait     = "heart failure", 
+                                                          id        = "hf_gwas")}, 
+                     times = 2)
+
+autoplot(tm)
+```
+```{r show_munge_speed, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("figures/mungesumstats_speed.png")
+```
+
+
 ## Future directions
 
 * Focus on actually delivering my PhD proposal  
-* Thought about using `.fst` files to persist data behind a GWAS object, so that all of the data doesn't need to sit in memory and you just store index information into the file. 
+* Thought about using `.fst` files to persist data behind a GWAS object, so that all of the data doesn't need to sit in memory and you just store index information into the file.  
+* Reading of a GWAS looks in cache for previous cleaned file and loads that, add a `reload_raw = TRUE/FALSE` option.
 
 
 
@@ -572,3 +607,7 @@ knitr::include_graphics("figures/collider_stability.png")
 * Is a unified approach to handling GWAS data in R needed?  
 * If so, who should attempt it?  
 * If so, how should it be done? (levels of abstraction)
+
+
+
+

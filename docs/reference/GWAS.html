@@ -4,7 +4,7 @@ meta-data regarding quality control procedures applied at the point of object cr
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,7 +29,7 @@ meta-data regarding quality control procedures applied at the point of object cr
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -64,13 +64,13 @@ meta-data regarding quality control procedures applied at the point of object cr
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>GWAS object</h1>
-    
+
     <div class="hidden name"><code>GWAS.Rd</code></div>
     </div>
 
@@ -103,69 +103,69 @@ meta-data regarding quality control procedures applied at the point of object cr
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>dat</dt>
+
+
+<dl><dt id="arg-dat">dat<a class="anchor" aria-label="anchor" href="#arg-dat"></a></dt>
 <dd><p>a valid string file path to be read by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread</a></code> or a <code><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table::data.table</a></code> object; the GWAS data source</p></dd>
 
 
-<dt>map</dt>
+<dt id="arg-map">map<a class="anchor" aria-label="anchor" href="#arg-map"></a></dt>
 <dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map string id, a named list or character vector, or a ColumMap object)</p></dd>
 
 
-<dt>drop</dt>
+<dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
 <dd><p>a logical, whether to drop data source columns not in the column <code>map</code></p></dd>
 
 
-<dt>fill</dt>
+<dt id="arg-fill">fill<a class="anchor" aria-label="anchor" href="#arg-fill"></a></dt>
 <dd><p>a logical, whether to add (NAs) missing columns present in the column <code>map</code> but not present in the data source</p></dd>
 
 
-<dt>fill_rsid</dt>
+<dt id="arg-fill-rsid">fill_rsid<a class="anchor" aria-label="anchor" href="#arg-fill-rsid"></a></dt>
 <dd><p>either FALSE or a valid argument for the chrpos_to_rsid <code>build</code> argument, e.g. "b37_dbsnp156"</p></dd>
 
 
-<dt>missing_rsid</dt>
+<dt id="arg-missing-rsid">missing_rsid<a class="anchor" aria-label="anchor" href="#arg-missing-rsid"></a></dt>
 <dd><p>a string, how to handle missing rsids: one of "fill_CHR:BP", "fill_CHR:BP_OA_EA", "overwrite_CHR:BP",
 "overwrite_CHR:BP:OA:EA", "none", or "leave"</p></dd>
 
 
-<dt>parallel_cores</dt>
+<dt id="arg-parallel-cores">parallel_cores<a class="anchor" aria-label="anchor" href="#arg-parallel-cores"></a></dt>
 <dd><p>an integer, number of cores to used for RSID mapping, default is maximum machine cores</p></dd>
 
 
-<dt>dbsnp_dir</dt>
+<dt id="arg-dbsnp-dir">dbsnp_dir<a class="anchor" aria-label="anchor" href="#arg-dbsnp-dir"></a></dt>
 <dd><p>path to the dbsnp directory of fst files see chrpos_to_rsid <code>dbsnp_dir</code> argument</p></dd>
 
 
-<dt>filters</dt>
+<dt id="arg-filters">filters<a class="anchor" aria-label="anchor" href="#arg-filters"></a></dt>
 <dd><p>a list of named strings, each to be evaluated as an expression to filter the data during the quality control steps (above)</p></dd>
 
 
-<dt>reference</dt>
+<dt id="arg-reference">reference<a class="anchor" aria-label="anchor" href="#arg-reference"></a></dt>
 <dd><p>a valid string file path to be read by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread</a></code> or a <code><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table::data.table</a></code> object; the reference data</p></dd>
 
 
-<dt>ref_map</dt>
+<dt id="arg-ref-map">ref_map<a class="anchor" aria-label="anchor" href="#arg-ref-map"></a></dt>
 <dd><p>a valid input to the <code>ColumnMap</code> class constructor (a predefined map id (a string), a named list or character vector, or a
 ColumMap object) defining at least columns <code>rsid</code> (or <code>chr</code>, <code>bp</code>), <code>ea</code>, <code>oa</code> and <code>eaf</code>.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>a logical, whether to print details</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>variable capture to be passed to the constructor, e.g. individual vectors for the slots, rather that <code>dat</code></p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>an S7 class genepi.utils::GWAS object</p>
+    <p>an S7 class genepi.utils::GWAS object</p>
     </div>
     <div id="slots">
     <h2>Slots</h2>
-    
+
 
 <dl><dt><code>rsid</code></dt>
 <dd><p>character, variant ID - usually in rs12345 format, however this can be changed with the <code>missing_rsid</code> argument</p></dd>
@@ -273,15 +273,15 @@ ColumMap object) defining at least columns <code>rsid</code> (or <code>chr</code
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
