@@ -217,7 +217,7 @@ GWAS <- new_class(
                strand      = props$strand,
                imputed     = props$imputed,
                info        = props$info,
-               q           = props$p,
+               q           = props$q,
                q_p         = props$q_p,
                i2          = props$i2,
                trait       = props$trait,
