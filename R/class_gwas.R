@@ -642,11 +642,11 @@ method(as.data.table, GWAS) <- function(object, ...) {
 
 
 as.twosample.mr <- new_generic('as.twosample.mr', 'x')
-method(as.twosample.mr, GWAS) <- function(x, type) { return( as.twosample.mr(list(x), type) ) }
-method(as.twosample.mr, class_list) <- function(x, type) {
+method(as.twosample.mr, GWAS) <- function(x, type, verbose=TRUE) { return( as.twosample.mr(list(x), type) ) }
+method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
 
   # checks
-  type <- match.arg(type, choices=c("exposure","outcome"))
+  type        <- match.arg(type, choices=c("exposure","outcome"))
   stopifnot("Exposure input list must all be of GWAS class" = all(sapply(x, function(x0) inherits(x0, "genepi.utils::GWAS"))))
 
   # ensure phenotype/trait col will be unique - (the hack here to avoid de-duplication of multiple exposures is
@@ -657,7 +657,33 @@ method(as.twosample.mr, class_list) <- function(x, type) {
   }
 
   # exposures to large dt with unique `id`s
-  dat <- lapply(x, function(x0) as.data.table(x0)) |> data.table::rbindlist()
+  # if only common SNPs then trim down by chr:pos common to all datasets first
+  if(verbose) message("[i] retaining only common SNPs to all datasets")
+  found_cptid <- c()
+  dat <- lapply(x, function(x0) {
+
+    # extract
+    d0 <- as.data.table(x0)
+
+    # label cptid
+    d0[, cptid := paste0(d0$chr, ":", d0$bp)]
+
+    if (length(found_cptid)==0) {
+      found_cptid <<- d0$cptid
+    } else {
+      d0 <- d0[cptid %in% found_cptid]
+      found_cptid <<- d0$cptid
+    }
+    d0[, cptid := NULL]
+
+    # report
+    if(verbose) message("[i] ", x0@trait, " - common remaining SNPs: ", length(found_cptid))
+
+    # return
+    return(d0)
+
+  }) |> data.table::rbindlist()
+
 
   # recode as sorted alleles (to allow matching of unharmonised mutliallelic)
   dat[, rsid := ifelse(oa < ea, paste0(rsid, "_", oa, "_", ea), paste0(rsid, "_", ea, "_", oa))]

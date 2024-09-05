@@ -145,7 +145,6 @@ MR <- new_class(
     # proxy_eaf=0.01
 
 
-
     # checks
     if (!is.list(exposure)) exposure <- list(exposure)
     stopifnot("Exposure input list must all be of GWAS class" = all(sapply(exposure, function(x) inherits(x, "genepi.utils::GWAS"))))
@@ -153,7 +152,7 @@ MR <- new_class(
 
     # format exposure
     if(verbose) message("[i] processing exposure(s)")
-    e <- as.twosample.mr(exposure, "exposure")
+    e <- as.twosample.mr(exposure, "exposure", verbose)
 
     # pre-harmonise exposures if >1 exposure
     if(length(exposure) > 1) {
