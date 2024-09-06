@@ -7,7 +7,9 @@
 plot_mr(mr, res)
 }
 \arguments{
-\item{x}{an object of class MR description}
+\item{mr}{an object of class MR}
+
+\item{res}{a data.table output from run_mr or other MR methods}
 }
 \description{
 Plot MR results

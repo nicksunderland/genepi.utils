@@ -597,44 +597,51 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
 as.data.table <- new_generic('as.data.table', 'object')
 method(as.data.table, GWAS) <- function(object, ...) {
 
+  if (length(object@qc$fail) > 0) {
+    pct_fail <- sprintf("%.3f", 100 * (length(object@qc$fail) / length(object@rsid)))
+    message("GWAS object [", object@trait, "] contains ", length(object@qc$fail), " rows (", pct_fail, "%) failing QC filters - these will be removed")
+  }
+
+  rowidxs <- setdiff(1:length(object@rsid), object@qc$fail)
+
   d <- data.table::data.table(
-    rsid  = object@rsid,
-    chr   = object@chr,
-    bp    = object@bp,
-    ea    = object@ea,
-    oa    = object@oa,
-    eaf   = object@eaf,
-    beta  = object@beta,
-    se    = object@se,
-    p     = object@p,
-    n       = if(length(object@n)==0)       { rep(NA_integer_, length(object@rsid)) }   else if(length(object@n)==1)       { rep(object@n, length(object@rsid)) }       else { object@n },
-    ncase   = if(length(object@ncase)==0)   { rep(NA_integer_, length(object@rsid)) }   else if(length(object@ncase)==1)   { rep(object@ncase, length(object@rsid)) }   else { object@ncase },
-    trait   = if(length(object@trait)==0)   { rep(NA_character_, length(object@rsid)) } else if(length(object@trait)==1)   { rep(object@trait, length(object@rsid)) }   else { object@trait },
-    id      = if(length(object@id)==0)      { rep(NA_character_, length(object@rsid)) } else if(length(object@id)==1)      { rep(object@id, length(object@rsid)) }      else { object@id }
+    rsid  = object@rsid[rowidxs],
+    chr   = object@chr[rowidxs],
+    bp    = object@bp[rowidxs],
+    ea    = object@ea[rowidxs],
+    oa    = object@oa[rowidxs],
+    eaf   = object@eaf[rowidxs],
+    beta  = object@beta[rowidxs],
+    se    = object@se[rowidxs],
+    p     = object@p[rowidxs],
+    n     = if(length(object@n)==0)       { rep(NA_integer_,   length(object@rsid)-length(object@qc$fail)) } else if(length(object@n)==1)       { rep(object@n,     length(object@rsid)-length(object@qc$fail)) }   else { object@n[rowidxs] },
+    ncase = if(length(object@ncase)==0)   { rep(NA_integer_,   length(object@rsid)-length(object@qc$fail)) } else if(length(object@ncase)==1)   { rep(object@ncase, length(object@rsid)-length(object@qc$fail)) }   else { object@ncase[rowidxs] },
+    trait = if(length(object@trait)==0)   { rep(NA_character_, length(object@rsid)-length(object@qc$fail)) } else if(length(object@trait)==1)   { rep(object@trait, length(object@rsid)-length(object@qc$fail)) }   else { object@trait[rowidxs] },
+    id    = if(length(object@id)==0)      { rep(NA_character_, length(object@rsid)-length(object@qc$fail)) } else if(length(object@id)==1)      { rep(object@id,    length(object@rsid)-length(object@qc$fail)) }   else { object@id[rowidxs] }
   )
 
   if (all(is.na(object@strand)) || length(object@strand) > 0) {
-    d[, strand := object@strand]
+    d[, strand := object@strand[rowidxs]]
   }
 
   if (all(is.na(object@imputed)) || length(object@imputed) > 0) {
-    d[, imputed := object@imputed]
+    d[, imputed := object@imputed[rowidxs]]
   }
 
   if (all(is.na(object@info)) || length(object@info) > 0) {
-    d[, info := object@info]
+    d[, info := object@info[rowidxs]]
   }
 
   if (all(is.na(object@q)) || length(object@q) > 0) {
-    d[, q := object@q]
+    d[, q := object@q[rowidxs]]
   }
 
   if (all(is.na(object@q_p)) || length(object@q_p) > 0) {
-    d[, q_p := object@q_p]
+    d[, q_p := object@q_p[rowidxs]]
   }
 
   if (all(is.na(object@i2)) || length(object@i2) > 0) {
-    d[, i2 := object@i2]
+    d[, i2 := object@i2[rowidxs]]
   }
 
   return(d)
@@ -642,8 +649,8 @@ method(as.data.table, GWAS) <- function(object, ...) {
 
 
 as.twosample.mr <- new_generic('as.twosample.mr', 'x')
-method(as.twosample.mr, GWAS) <- function(x, type, verbose=TRUE) { return( as.twosample.mr(list(x), type) ) }
-method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
+method(as.twosample.mr, GWAS) <- function(x, type, p_val=1.001, verbose=TRUE) { return( as.twosample.mr(list(x), type, p_val, verbose) ) }
+method(as.twosample.mr, class_list) <- function(x, type, p_val=1.001, verbose=TRUE) {
 
   # checks
   type        <- match.arg(type, choices=c("exposure","outcome"))
@@ -657,36 +664,18 @@ method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
   }
 
   # exposures to large dt with unique `id`s
-  # if only common SNPs then trim down by chr:pos common to all datasets first
-  if(verbose) message("[i] retaining only common SNPs to all datasets")
-  found_cptid <- c()
-  dat <- lapply(x, function(x0) {
-
-    # extract
-    d0 <- as.data.table(x0)
-
-    # label cptid
-    d0[, cptid := paste0(d0$chr, ":", d0$bp)]
-
-    if (length(found_cptid)==0) {
-      found_cptid <<- d0$cptid
-    } else {
-      d0 <- d0[cptid %in% found_cptid]
-      found_cptid <<- d0$cptid
-    }
-    d0[, cptid := NULL]
-
-    # report
-    if(verbose) message("[i] ", x0@trait, " - common remaining SNPs: ", length(found_cptid))
-
-    # return
-    return(d0)
-
-  }) |> data.table::rbindlist()
-
+  dat <- lapply(x, function(x0) as.data.table(x0)) |> data.table::rbindlist()
 
   # recode as sorted alleles (to allow matching of unharmonised mutliallelic)
   dat[, rsid := ifelse(oa < ea, paste0(rsid, "_", oa, "_", ea), paste0(rsid, "_", ea, "_", oa))]
+
+  # only common SNPs if multiple GWASs
+  if (length(x) > 1) {
+    if(verbose) message("[i] retaining only common SNPs to all datasets")
+    data.table::setkey(dat, rsid)
+    keep <- dat[p < p_val, list(rsid)]
+    dat  <- dat[keep, nomatch=NULL]
+  }
 
   # 2SMR format
   formatted <- TwoSampleMR::format_data(
@@ -714,3 +703,39 @@ method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
 
 }
 
+
+#
+# sub_set_gwas <- new_generic('sub_set_gwas', 'x')
+# method(sub_set_gwas, GWAS) <- function(x, p=NULL) {
+#
+#   # checks
+#   stopifnot("p value must be NULL or numeric 0-1" = is.null(p) | (is.numeric(p) & p>0 & p<=1))
+#
+#   # which variants to keep
+#   keep <- rep(TRUE, length(x@rsid))
+#   if (!is.null(p)) keep <- keep & (x@p < p)
+#
+#   # apply the mask
+#   valid_eventually(x, function(object) {
+#
+#     object@rsid <- object@rsid[keep]
+#     object@chr  <- object@chr[keep]
+#     object@bp   <- object@bp[keep]
+#     object@ea   <- object@ea[keep]
+#     object@oa   <- object@oa[keep]
+#     object@eaf  <- object@eaf[keep]
+#     object@beta <- object@beta[keep]
+#     object@se   <- object@se[keep]
+#     object@p    <- object@p[keep]
+#     if(length(object@n)>1)              object@n           <- object@n[keep]
+#     if(length(object@ncase)>1)          object@ncase       <- object@ncase[keep]
+#     if(length(object@strand)>1)         object@strand      <- object@strand[keep]
+#     if(length(object@imputed)>1)        object@imputed     <- object@imputed[keep]
+#     if(length(object@q)>1)              object@q           <- object@q[keep]
+#     if(length(object@q_p)>1)            object@q_p         <- object@q_p[keep]
+#     if(length(object@i2)>1)             object@i2          <- object@i2[keep]
+#     if(!all(is.na(object@correlation))) object@correlation <- object@correlation[keep, keep]
+#
+#     object
+#   })
+# }

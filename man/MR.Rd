@@ -7,6 +7,7 @@
 MR(
   exposure,
   outcome,
+  exp_p_val = NULL,
   harmonise_strictness = 2,
   with_proxies = FALSE,
   proxy_r2 = 0.8,
@@ -21,6 +22,8 @@ MR(
 \item{exposure}{a \code{GWAS} object or list of \code{GWAS} objects}
 
 \item{outcome}{a \code{GWAS} object}
+
+\item{exp_p_val}{the p value to filter exposure GWAS(s) on first, default NULL (no filtering)}
 
 \item{harmonise_strictness}{an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.}
 

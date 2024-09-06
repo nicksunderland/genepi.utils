@@ -11,6 +11,7 @@ globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.o
 #'
 #' @param exposure a `GWAS` object or list of `GWAS` objects
 #' @param outcome a `GWAS` object
+#' @param exp_p_val the p value to filter exposure GWAS(s) on first, default NULL (no filtering)
 #' @param harmonise_strictness an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.
 #' @param with_proxies a logical, whether to search for outcome proxy SNPs if the original variant is not present in the data.
 #' @param proxy_r2 a numeric (0-1), the minimum r2 threshold used to define a suitable proxy variant.
@@ -102,6 +103,7 @@ MR <- new_class(
   #==============================
   constructor = function(exposure,
                          outcome,
+                         exp_p_val            = NULL,
                          harmonise_strictness = 2,
                          with_proxies         = FALSE,
                          proxy_r2             = 0.8,
@@ -152,7 +154,7 @@ MR <- new_class(
 
     # format exposure
     if(verbose) message("[i] processing exposure(s)")
-    e <- as.twosample.mr(exposure, "exposure", verbose)
+    e <- as.twosample.mr(exposure, "exposure", exp_p_val, verbose)
 
     # pre-harmonise exposures if >1 exposure
     if(length(exposure) > 1) {
