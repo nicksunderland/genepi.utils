@@ -673,7 +673,7 @@ method(as.twosample.mr, class_list) <- function(x, type, p_val=1.001, verbose=TR
   if (length(x) > 1) {
     if(verbose) message("[i] retaining only common SNPs to all datasets")
     data.table::setkey(dat, rsid)
-    keep <- dat[p < p_val, list(rsid)]
+    keep <- unique(dat[p < p_val, list(rsid)])
     dat  <- dat[keep, nomatch=NULL]
   }
 
