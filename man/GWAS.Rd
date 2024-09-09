@@ -97,6 +97,20 @@ meta-data regarding quality control procedures applied at the point of object cr
 
 \item{\code{i2}}{numeric, the I2 statistic}
 
+\item{\code{proxy_rsid}}{character, proxy variant ID}
+
+\item{\code{proxy_chr}}{character, proxy chromosome identifier}
+
+\item{\code{proxy_bp}}{integer, proxy base position}
+
+\item{\code{proxy_ea}}{character, proxy effect allele}
+
+\item{\code{proxy_oa}}{character, proxy other allele}
+
+\item{\code{proxy_eaf}}{numeric, proxy effect allele frequency}
+
+\item{\code{proxy_r2}}{numeric, proxy r2 with rsid}
+
 \item{\code{trait}}{character, the GWAS trait}
 
 \item{\code{id}}{character, the GWAS identifier}

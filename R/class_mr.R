@@ -2,7 +2,7 @@
 globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.outcome", "effect_allele.outcome", "proxy_snp.outcome", "chr.exposure",
                   "pos.exposure", "effect_allele.exposure", "other_allele.exposure", "eaf.outcome", "samplesize.outcome",
                   "ncase.outcome", "beta.outcome", "se.outcome", "pval.outcome", "V1", "chr.outcome", "chr.exposure",
-                  "pos.outcome", "pos.exposure"),
+                  "pos.outcome", "pos.exposure", "fail", "i.N", "nsnps_end", "nsnps_exp_harm", "nsnps_start", "type"),
                 package = "genepi.utils")
 
 #' @title MR object
@@ -11,13 +11,9 @@ globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.o
 #'
 #' @param exposure a `GWAS` object or list of `GWAS` objects
 #' @param outcome a `GWAS` object
-#' @param exp_p_val the p value to filter exposure GWAS(s) on first, default NULL (no filtering)
 #' @param harmonise_strictness an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.
-#' @param with_proxies a logical, whether to search for outcome proxy SNPs if the original variant is not present in the data.
-#' @param proxy_r2 a numeric (0-1), the minimum r2 threshold used to define a suitable proxy variant.
-#' @param proxy_kb an integer, the maximum distance in kb that a proxy variant can be from the index variant.
-#' @param proxy_window an integer, the maximum number of variants to search either side of the index variant.
-#' @param proxy_eaf a numeric, the minimum minor allele frequency required to define a suitable proxy.
+#' @param plink2 character / path, the plink2 executable
+#' @param pfile character / path, the plink pfile set
 #' @param correlation a matrix, correlation matrix of signed R values between variants
 #' @param verbose a logical, print more information
 #'
@@ -46,6 +42,7 @@ globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.o
 #' @slot index_snp logical, whether the variant is an index variant (via clumping)
 #' @slot proxy_snp character, the id of the proxy snp
 #' @slot ld_info logical, whether there is LD information
+#' @slot info data.frame, information about the loaded GWAS objects
 #' @slot correlation matrix, a correlation matrix of signed R values between variants
 #'
 #' @return an S7 class genepi.utils::MR object
@@ -92,6 +89,7 @@ MR <- new_class(
     index_snp   = class_logical,
     proxy_snp   = class_character,
     ld_info     = class_logical,
+    info        = class_data.frame,
     #----------------------------
     # correlation matrix
     #----------------------------
@@ -103,13 +101,9 @@ MR <- new_class(
   #==============================
   constructor = function(exposure,
                          outcome,
-                         exp_p_val            = NULL,
                          harmonise_strictness = 2,
-                         with_proxies         = FALSE,
-                         proxy_r2             = 0.8,
-                         proxy_kb             = 250,
-                         proxy_window         = 15,
-                         proxy_eaf            = 0.01,
+                         plink2               = genepi.utils::which_plink2(),
+                         pfile                = genepi.utils::which_1000G_reference(build="GRCh37"),
                          correlation          = NULL,
                          verbose              = TRUE) {
 
@@ -152,9 +146,19 @@ MR <- new_class(
     stopifnot("Exposure input list must all be of GWAS class" = all(sapply(exposure, function(x) inherits(x, "genepi.utils::GWAS"))))
     stopifnot("Outcome must be of GWAS class" = inherits(outcome, "genepi.utils::GWAS"))
 
+    # extract information about the raw input
+    info <- data.table::data.table(type      = c(rep("exposure", length(exposure)), "outcome"),
+                                   id        = c(sapply(exposure, function(x) x@id), outcome@id),
+                                   trait     = c(sapply(exposure, function(x) x@trait), outcome@trait),
+                                   nsnps_raw = c(sapply(exposure, function(x) length(x@rsid)), length(outcome@rsid)),
+                                   nsnps_fail= c(sapply(exposure, function(x) length(x@qc$fail)), length(outcome@qc$fail)))
+
     # format exposure
     if(verbose) message("[i] processing exposure(s)")
-    e <- as.twosample.mr(exposure, "exposure", exp_p_val, verbose)
+    e <- as.twosample.mr(exposure, type="exposure", verbose=verbose)
+
+    # add information about pre-harmonised SNPs
+    info[e[, .N, by=id.exposure], nsnps_start := i.N, on=c("id"="id.exposure")]
 
     # pre-harmonise exposures if >1 exposure
     if(length(exposure) > 1) {
@@ -177,6 +181,7 @@ MR <- new_class(
       keepsnps <- names(tab)[tab == length(unique(e$id.outcome))]
       e <- e[e$SNP %in% keepsnps, ]
 
+
       # drop dummy `exposure` columns and rename outcome to exposure
       e <- e[, !grepl("exposure|action|mr_keep|SNP_index", names(e))]
       names(e) <- gsub("outcome","exposure", names(e))
@@ -185,16 +190,21 @@ MR <- new_class(
       e <- data.table::as.data.table(e)
     }
 
+    # check
+    if (nrow(e)==0) {
+      stop("After harmonising exposures 0 SNPs remain, ensure that at least some SNPs are represented in all exposures")
+    }
+
+    # add information about post-(exposure)-harmonised SNPs
+    info[e[, .N, by=id.exposure], nsnps_exp_harm := i.N, on=c("id"="id.exposure")]
+    info[type=="exposure" & is.na(nsnps_exp_harm), nsnps_exp_harm := 0]
+
     # now get the real outcome data
     if(verbose) message("[i] processing outcome")
-    o <- as.twosample.mr(outcome, "outcome")
+    o <- as.twosample.mr(outcome, type="outcome", verbose=verbose)
 
-    # ?get proxies
-    if(with_proxies) {
-      warning("`with_proxies` not implemented yet")
-      # stopifnot("LD matrix must be supplied for proxy search" = !is.null(correlation))
-      # o <- get_proxies(e, o, correlation, proxy_r2, proxy_kb, proxy_window, proxy_eaf)
-    }
+    # add information about post-(outcome)-harmonised SNPs
+    info[type=="outcome", nsnps_start := nrow(o)]
 
     # harmonise the (pre-harmonised) exposure data with the outcome data
     if(verbose) message("[i] harmonising GWASs")
@@ -204,6 +214,9 @@ MR <- new_class(
     # rename SNPs now harmonised
     h[, SNP := sub("(.*)_(?:[AaCcTtGg]+|[DdIi])_(?:[AaCcTtGg]+|[DdIi])$", "\\1", SNP)]
     h[, SNP := paste0(SNP, "_", other_allele.outcome, "_", effect_allele.outcome)]
+
+    # add information about post-harmonised SNPs
+    info[, nsnps_end := nrow(h[id.exposure==id.exposure[1]])]
 
     # exposure matrices - wide format
     wide_matrices  <- data.table::dcast(h, SNP + chr.exposure + pos.exposure + effect_allele.exposure + other_allele.exposure + beta.outcome + pval.outcome + se.outcome + eaf.outcome + samplesize.outcome + ncase.outcome ~ id.exposure,
@@ -223,14 +236,6 @@ MR <- new_class(
     colnames(exp_eaf)   <- sub("^eaf.exposure_", "",  colnames(exp_eaf))
     colnames(exp_n)     <- sub("^samplesize.exposure_", "", colnames(exp_n))
     colnames(exp_ncase) <- sub("^ncase.exposure_", "", colnames(exp_ncase))
-
-    # ?find proxies
-    if (with_proxies && "proxy_snp.outcome" %in% names(h)) {
-      warning("`with_proxies` not implemented yet")
-      proxy_snps <- h[id.exposure==id.exposure[[1]], proxy_snp.outcome]
-    } else {
-      proxy_snps <- character()
-    }
 
     # process correlation matrix
     if (!is.null(correlation)) {
@@ -268,8 +273,8 @@ MR <- new_class(
                          outcome     = h$outcome[[1]],
                          group       = integer(),
                          index_snp   = rep(TRUE, nrow(wide_matrices)),
-                         proxy_snp   = proxy_snps,
                          ld_info     = ld_info,
+                         info        = info,
                          correlation = corr_mat)
 
     # return the object
@@ -303,6 +308,15 @@ MR <- new_class(
   #   message("LD matrix - all values found to be +ve, please check matrix is `r` not `r2` values")
   # }
 )
+
+
+method(print, MR) <- function(x) {
+
+  cat("genepi.utils::MR object\n")
+  print(tibble::as_tibble(x@info))
+
+  return(NULL)
+}
 
 
 #' @title Test if MR object is multivariable

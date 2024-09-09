@@ -7,13 +7,9 @@
 MR(
   exposure,
   outcome,
-  exp_p_val = NULL,
   harmonise_strictness = 2,
-  with_proxies = FALSE,
-  proxy_r2 = 0.8,
-  proxy_kb = 250,
-  proxy_window = 15,
-  proxy_eaf = 0.01,
+  plink2 = genepi.utils::which_plink2(),
+  pfile = genepi.utils::which_1000G_reference(build = "GRCh37"),
   correlation = NULL,
   verbose = TRUE
 )
@@ -23,19 +19,11 @@ MR(
 
 \item{outcome}{a \code{GWAS} object}
 
-\item{exp_p_val}{the p value to filter exposure GWAS(s) on first, default NULL (no filtering)}
-
 \item{harmonise_strictness}{an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.}
 
-\item{with_proxies}{a logical, whether to search for outcome proxy SNPs if the original variant is not present in the data.}
+\item{plink2}{character / path, the plink2 executable}
 
-\item{proxy_r2}{a numeric (0-1), the minimum r2 threshold used to define a suitable proxy variant.}
-
-\item{proxy_kb}{an integer, the maximum distance in kb that a proxy variant can be from the index variant.}
-
-\item{proxy_window}{an integer, the maximum number of variants to search either side of the index variant.}
-
-\item{proxy_eaf}{a numeric, the minimum minor allele frequency required to define a suitable proxy.}
+\item{pfile}{character / path, the plink pfile set}
 
 \item{correlation}{a matrix, correlation matrix of signed R values between variants}
 
@@ -99,6 +87,8 @@ An MR object is a container for vectors and matrices of 2 or more GWAS data. \cr
 \item{\code{proxy_snp}}{character, the id of the proxy snp}
 
 \item{\code{ld_info}}{logical, whether there is LD information}
+
+\item{\code{info}}{data.frame, information about the loaded GWAS objects}
 
 \item{\code{correlation}}{matrix, a correlation matrix of signed R values between variants}
 }}

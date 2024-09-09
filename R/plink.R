@@ -112,29 +112,36 @@ method(get_pfile_variants, list(class_missing,
 
 
 #' @title Get proxies for variants from plink binary
-#' @param snps character vector, rsids
+#' @param x a character vector of rsids or a GWAS object
 #' @param stat character, the R stat to calculate, one of "r2-unphased", "r2-phased", "r-unphased", "r-phased"
 #' @param win_kb numeric, the window to look in around the variants
 #' @param win_r2 numeric, the lower r2 limit to include in output, (for --r-phased and --r-unphased, this means |r|≥sqrt(0.2))
 #' @param win_ninter numeric, controls the maximum number of other variants allowed between variant-pairs in the report. Inf = off.
+#' @param proxy_eaf numeric, the minimal effect allele frequency for proxy variants. NULL = eaf filtering off.
 #' @param plink2 character / path, the plink2 executable
 #' @param pfile character / path, the plink pfile set
-#'
-#' @return a data.table
+#' @param ... other arguments (see below)
+#' @return a data.table of variants and their proxies (if `x` is a `character` vector) or a `GWAS` object if
+#' `x` is a `GWAS` object.
 #' @export
 #'
-get_proxies <- new_generic('get_proxies', c('snps'), function(snps,
-                                                              stat       = "r2-unphased",
-                                                              win_kb     = 1000,
-                                                              win_r2     = 0.2,
-                                                              win_ninter = Inf,
-                                                              plink2     = genepi.utils::which_plink2(),
-                                                              pfile      = genepi.utils::which_1000G_reference(build="GRCh37")) { S7_dispatch() })
-method(get_proxies, class_character) <- function(snps,
+get_proxies <- new_generic('get_proxies', "x", function(x,
+                                                        stat       = "r2-unphased",
+                                                        win_kb     = 125,
+                                                        win_r2     = 0.8,
+                                                        win_ninter = Inf,
+                                                        proxy_eaf  = NULL,
+                                                        plink2     = genepi.utils::which_plink2(),
+                                                        pfile      = genepi.utils::which_1000G_reference(build="GRCh37"),
+                                                        ...) { S7_dispatch() })
+
+#' @name get_proxies
+method(get_proxies, class_character) <- function(x,
                                                  stat       = "r2-unphased",
-                                                 win_kb     = 1000,
-                                                 win_r2     = 0.2,
+                                                 win_kb     = 125,
+                                                 win_r2     = 0.8,
                                                  win_ninter = Inf,
+                                                 proxy_eaf  = NULL,
                                                  plink2     = genepi.utils::which_plink2(),
                                                  pfile      = genepi.utils::which_1000G_reference(build="GRCh37")) {
 
@@ -151,17 +158,47 @@ method(get_proxies, class_character) <- function(snps,
     compressed_plink = FALSE
   }
 
+  # first see which variants exist in the pfile (as the next bit fails if absent)
+  snp_file <- tempfile()
+  exists_file <- tempfile()
+
+  # write the snps
+  data.table::fwrite(as.list(x), snp_file, sep="\t", col.names=FALSE)
+
+  # build command line command and run
+  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
+               "--pfile", ifelse(compressed_plink, paste(pfile, "vzs"), pfile),
+               "--extract", snp_file,
+               "--make-just-pvar",
+               "--out", exists_file)
+  system(cmd)
+
+  # exit if no SNPs in reference
+  if (!file.exists(paste0(exists_file,".pvar"))) {
+    stop("No variants found in the reference file")
+  }
+
+  # read the found SNPs
+  snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
+
+  # report
+  message(paste0("[i] ", nrow(snps_exist), "/", length(snps), " (", sprintf("%.1f", 100*(nrow(snps_exist)/length(snps))), "%) input SNPs found in plink reference file"))
+
+  # rewrite the found snps
+  snps_found <- tempfile()
+  data.table::fwrite(snps_exist, snps_found, sep="\t", col.names = FALSE)
+
   # output file
   proxy_file <- tempfile()
 
   # build command line command and run
   cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
                "--pfile", ifelse(compressed_plink, paste(pfile, "vzs"), pfile),
-               paste0("--", stat), "cols=+maj,+nonmaj",
-               "--ld-snps", paste0(snps, collapse = ", "),
+               paste0("--", stat), "cols=+maj,+nonmaj,+freq",
+               "--ld-snp-list", snps_found,
                "--ld-window-kb", win_kb,
                "--ld-window-r2", win_r2,
-               ifelse(is.finite(win_ninter), paste0("--ld-window", win_ninter), ""),
+               ifelse(is.finite(win_ninter), paste("--ld-window", win_ninter), ""),
                "--out", proxy_file)
   system(cmd)
 
@@ -171,21 +208,33 @@ method(get_proxies, class_character) <- function(snps,
   }
 
   # read in the extracted variants file
-  cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", names(which(stats == stat)))
+  cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
   proxies <- data.table::fread(paste0(proxy_file,".vcor"), skip = paste(cols, collapse = "\t"), select = cols)
-  proxies <- proxies[, list(rsid = ID_A,
-                            chr  = `#CHROM_A`,
-                            bp   = POS_A,
-                            ref  = MAJ_A,
-                            alt  = NONMAJ_A,
-                            proxy_rsid = ID_B,
-                            proxy_chr  = CHROM_B,
-                            proxy_bp   = POS_B,
-                            proxy_ref  = MAJ_B,
-                            proxy_alt  = NONMAJ_B,
-                            rstat      = get(names(which(stats == stat))))]
+  proxies <- proxies[, list(rsid           = as.character(ID_A),
+                            chr            = as.character(`#CHROM_A`),
+                            bp             = as.integer(POS_A),
+                            ref            = as.character(MAJ_A),
+                            alt            = as.character(NONMAJ_A),
+                            freq_alt       = as.numeric(NONMAJ_FREQ_A),
+                            proxy_rsid     = as.character(ID_B),
+                            proxy_chr      = as.character(CHROM_B),
+                            proxy_bp       = as.integer(POS_B),
+                            proxy_ref      = as.character(MAJ_B),
+                            proxy_alt      = as.character(NONMAJ_B),
+                            proxy_freq_alt = as.numeric(NONMAJ_FREQ_B),
+                            rstat          = as.numeric(get(names(which(stats == stat)))))]
+
+  # filter on eaf
+  if (!is.null(proxy_eaf)) {
+    nproxies <- nrow(proxies)
+    proxies <- proxies[proxy_freq_alt>proxy_eaf]
+    if (nrow(proxies)==0){
+      warning(paste0("No variants found at `proxy_eaf<", proxy_eaf, "` (", nproxies, " removed due to frequency filtering)"))
+    }
+  }
 
   # clean up
+  unlink(paste0(exists_file,".pvar"))
   unlink(paste0(proxy_file,".vcor"))
 
   return(proxies)

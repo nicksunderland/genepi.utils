@@ -25,6 +25,7 @@ reference:
   - ld_matrix
   - get_pfile_variants
   - get_proxies
+  - subset_gwas
   # - download_ukbb_ld
 
 - title: "Mendelian Randomization"

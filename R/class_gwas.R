@@ -1,5 +1,7 @@
 # Silence R CMD check
-globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation", "strand", "imputed", "info", "q", "q_p", "i2"),
+globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr", "bp", "ea", "oa", "eaf", "se", "correlation",
+                  "strand", "imputed", "info", "q", "q_p", "i2", "proxy_bp", "proxy_chr", "proxy_ea", "proxy_eaf", "proxy_oa",
+                  "proxy_r2", "proxy_rsid"),
                 package = "genepi.utils")
 
 #' @title GWAS object
@@ -39,6 +41,13 @@ globalVariables(c("p", "double.xmin", "n", "ncase", "trait", "id", "rsid", "chr"
 #' @slot q numeric, the Q statistic for meta analysis results
 #' @slot q_p numeric, the Q statistic P-value
 #' @slot i2 numeric, the I2 statistic
+#' @slot proxy_rsid character, proxy variant ID
+#' @slot proxy_chr character, proxy chromosome identifier
+#' @slot proxy_bp integer, proxy base position
+#' @slot proxy_ea character, proxy effect allele
+#' @slot proxy_oa character, proxy other allele
+#' @slot proxy_eaf numeric, proxy effect allele frequency
+#' @slot proxy_r2 numeric, proxy r2 with rsid
 #' @slot trait character, the GWAS trait
 #' @slot id character, the GWAS identifier
 #' @slot source character, data source; either the file path, or "data.table" if loaded directly
@@ -73,23 +82,33 @@ GWAS <- new_class(
     #----------------------------
     # column names / data vectors
     #----------------------------
-    rsid    = class_character,
-    chr     = class_character,
-    bp      = class_integer,
-    ea      = class_character,
-    oa      = class_character,
-    eaf     = class_numeric,
-    beta    = class_numeric,
-    se      = class_numeric,
-    p       = class_numeric,
-    n       = class_integer,
-    ncase   = class_integer,
-    strand  = class_character,
-    imputed = class_logical,
-    info    = class_numeric,
-    q       = class_numeric,
-    q_p     = class_numeric,
-    i2      = class_numeric,
+    rsid       = class_character,
+    chr        = class_character,
+    bp         = class_integer,
+    ea         = class_character,
+    oa         = class_character,
+    eaf        = class_numeric,
+    beta       = class_numeric,
+    se         = class_numeric,
+    p          = class_numeric,
+    n          = class_integer,
+    ncase      = class_integer,
+    strand     = class_character,
+    imputed    = class_logical,
+    info       = class_numeric,
+    q          = class_numeric,
+    q_p        = class_numeric,
+    i2         = class_numeric,
+    #----------------------------
+    # proxy variants
+    #----------------------------
+    proxy_rsid = class_character,
+    proxy_chr  = class_character,
+    proxy_bp   = class_integer,
+    proxy_ea   = class_character,
+    proxy_oa   = class_character,
+    proxy_eaf  = class_numeric,
+    proxy_r2   = class_numeric,
     #----------------------------
     # correlation matrix
     #----------------------------
@@ -178,6 +197,13 @@ GWAS <- new_class(
     if(!"q"      %in% names(props))                                   { props$q       <- NA_real_            }
     if(!"q_p"    %in% names(props))                                   { props$q_p     <- NA_real_            }
     if(!"i2"     %in% names(props))                                   { props$i2      <- NA_real_            }
+    if(!"proxy_rsid" %in% names(props))                               { props$proxy_rsid <- NA_character_    }
+    if(!"proxy_chr"  %in% names(props))                               { props$proxy_chr  <- NA_character_    }
+    if(!"proxy_bp"   %in% names(props))                               { props$proxy_bp   <- NA_integer_      }
+    if(!"proxy_ea"   %in% names(props))                               { props$proxy_ea   <- NA_character_    }
+    if(!"proxy_oa"   %in% names(props))                               { props$proxy_oa   <- NA_character_    }
+    if(!"proxy_eaf"  %in% names(props))                               { props$proxy_eaf  <- NA_real_         }
+    if(!"proxy_r2"   %in% names(props))                               { props$proxy_r2   <- NA_real_         }
     if("n"       %in% names(props) && length(unique(props$n))==1    ) { props$n       <- unique(props$n)     }
     if("ncase"   %in% names(props) && length(unique(props$ncase))==1) { props$ncase   <- unique(props$ncase) }
     if("strand"  %in% names(props) && length(unique(props$strand))==1){ props$strand  <- unique(props$strand)}
@@ -220,6 +246,13 @@ GWAS <- new_class(
                q           = props$q,
                q_p         = props$q_p,
                i2          = props$i2,
+               proxy_rsid  = props$proxy_rsid,
+               proxy_chr   = props$proxy_chr,
+               proxy_bp    = props$proxy_bp,
+               proxy_ea    = props$proxy_ea,
+               proxy_oa    = props$proxy_oa,
+               proxy_eaf   = props$proxy_eaf,
+               proxy_r2    = props$proxy_r2,
                trait       = props$trait,
                id          = props$id,
                source      = props$source,
@@ -233,12 +266,19 @@ GWAS <- new_class(
   # GWAS class validator func.
   #==============================
   validator = function(self) {
-    stopifnot("Unequal vector lengths" = sapply(lengths(list(self@rsid, self@chr, self@bp, self@ea, self@oa, self@eaf, self@beta, self@se, self@p)), function(x) x == length(self@rsid)))
-    stopifnot("Invalid sample size `n`"       = length(self@n)<=1 || length(self@n)==length(self@rsid))
-    stopifnot("Invalid sample size `ncase`"   = length(self@ncase)<=1 || length(self@ncase)==length(self@rsid))
-    stopifnot("Invalid sample size `strand`"  = length(self@strand)<=1 || length(self@strand)==length(self@rsid))
-    stopifnot("Invalid sample size `imputed`" = length(self@imputed)<=1 || length(self@imputed)==length(self@rsid))
-    stopifnot("Invalid sample size `info`"    = length(self@info)<=1 || length(self@info)==length(self@rsid))
+    stopifnot("Unequal vector lengths"        = sapply(lengths(list(self@rsid, self@chr, self@bp, self@ea, self@oa, self@eaf, self@beta, self@se, self@p)), function(x) x == length(self@rsid)))
+    stopifnot("Invalid size `n`"              = length(self@n)<=1 || length(self@n)==length(self@rsid))
+    stopifnot("Invalid size `ncase`"          = length(self@ncase)<=1 || length(self@ncase)==length(self@rsid))
+    stopifnot("Invalid size `strand`"         = length(self@strand)<=1 || length(self@strand)==length(self@rsid))
+    stopifnot("Invalid size `imputed`"        = length(self@imputed)<=1 || length(self@imputed)==length(self@rsid))
+    stopifnot("Invalid size `info`"           = length(self@info)<=1 || length(self@info)==length(self@rsid))
+    stopifnot("Invalid size `proxy_rsid`"     = length(self@proxy_rsid)<=1 || length(self@proxy_rsid)==length(self@rsid))
+    stopifnot("Invalid size `proxy_chr`"      = length(self@proxy_chr)<=1 || length(self@proxy_chr)==length(self@rsid))
+    stopifnot("Invalid size `proxy_bp`"       = length(self@proxy_bp)<=1 || length(self@proxy_bp)==length(self@rsid))
+    stopifnot("Invalid size `proxy_ea`"       = length(self@proxy_ea)<=1 || length(self@proxy_ea)==length(self@rsid))
+    stopifnot("Invalid size `proxy_oa`"       = length(self@proxy_oa)<=1 || length(self@proxy_oa)==length(self@rsid))
+    stopifnot("Invalid size `proxy_eaf`"      = length(self@proxy_eaf)<=1 || length(self@proxy_eaf)==length(self@rsid))
+    stopifnot("Invalid size `proxy_r2`"       = length(self@proxy_r2)<=1 || length(self@proxy_r2)==length(self@rsid))
     stopifnot("Invalid `trait` field length"  = length(self@trait)<=1)
     stopifnot("Invalid `id` field length"     = length(self@id)<=1)
   }
@@ -250,7 +290,7 @@ method(print, GWAS) <- function(x) {
   cat("genepi.utils::GWAS object\n")
   cat("- trait:", x@trait, "\n")
   cat("- id:", x@id, "\n")
-  print(as.data.table(x))
+  print(head(tibble::as_tibble(as.data.table(x))))
 
 }
 
@@ -589,21 +629,38 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
   return(gwas)
 }
 
-
 #' @title as.data.table
 #' @param object GWAS object to covert to data.table
 #' @param ... argument for data.table generic, ignored in this implementation
 #' @export
 as.data.table <- new_generic('as.data.table', 'object')
-method(as.data.table, GWAS) <- function(object, ...) {
+method(as.data.table, class_data.frame) <- function(object, ...) { data.table::as.data.table(object, ...) }
+method(as.data.table, GWAS) <- function(object, remove=FALSE) {
 
-  if (length(object@qc$fail) > 0) {
-    pct_fail <- sprintf("%.3f", 100 * (length(object@qc$fail) / length(object@rsid)))
-    message("GWAS object [", object@trait, "] contains ", length(object@qc$fail), " rows (", pct_fail, "%) failing QC filters - these will be removed")
+  # whether to remove rows failing QC
+  if (remove) {
+
+    if (length(object@qc$fail) > 0) {
+      message("GWAS object [", object@trait, "] contains ", length(object@qc$fail), " rows (", sprintf("%.3f", 100 * (length(object@qc$fail) / length(object@rsid))), "%) failing QC filters - these will be removed")
+    }
+    rowidxs <- setdiff(1:length(object@rsid), object@qc$fail)
+
+  } else {
+
+    if (length(object@qc$fail) > 0) {
+      message("GWAS object [", object@trait, "] contains ", length(object@qc$fail), " rows (", sprintf("%.3f", 100 * (length(object@qc$fail) / length(object@rsid))), "%) failing QC filters - these has NOT been removed, change this with `remove=TRUE`")
+    }
+    rowidxs <- 1:length(object@rsid)
   }
 
-  rowidxs <- setdiff(1:length(object@rsid), object@qc$fail)
+  # report the failures
+  for (i in seq_along(object@qc)) {
+    if (length(object@qc[[i]]) > 0 && names(object@qc)[i]!="fail") {
+      message("  - ", names(object@qc)[i], ": ", length(object@qc[[i]]), " rows (", sprintf("%.3f", 100 * (length(object@qc[[i]]) / length(object@rsid))), "%)")
+    }
+  }
 
+  # extract
   d <- data.table::data.table(
     rsid  = object@rsid[rowidxs],
     chr   = object@chr[rowidxs],
@@ -614,10 +671,10 @@ method(as.data.table, GWAS) <- function(object, ...) {
     beta  = object@beta[rowidxs],
     se    = object@se[rowidxs],
     p     = object@p[rowidxs],
-    n     = if(length(object@n)==0)       { rep(NA_integer_,   length(object@rsid)-length(object@qc$fail)) } else if(length(object@n)==1)       { rep(object@n,     length(object@rsid)-length(object@qc$fail)) }   else { object@n[rowidxs] },
-    ncase = if(length(object@ncase)==0)   { rep(NA_integer_,   length(object@rsid)-length(object@qc$fail)) } else if(length(object@ncase)==1)   { rep(object@ncase, length(object@rsid)-length(object@qc$fail)) }   else { object@ncase[rowidxs] },
-    trait = if(length(object@trait)==0)   { rep(NA_character_, length(object@rsid)-length(object@qc$fail)) } else if(length(object@trait)==1)   { rep(object@trait, length(object@rsid)-length(object@qc$fail)) }   else { object@trait[rowidxs] },
-    id    = if(length(object@id)==0)      { rep(NA_character_, length(object@rsid)-length(object@qc$fail)) } else if(length(object@id)==1)      { rep(object@id,    length(object@rsid)-length(object@qc$fail)) }   else { object@id[rowidxs] }
+    n     = if(length(object@n)==0)       { rep(NA_integer_,   length(rowidxs)) } else if(length(object@n)==1)       { rep(object@n,     length(rowidxs)) }   else { object@n[rowidxs] },
+    ncase = if(length(object@ncase)==0)   { rep(NA_integer_,   length(rowidxs)) } else if(length(object@ncase)==1)   { rep(object@ncase, length(rowidxs)) }   else { object@ncase[rowidxs] },
+    trait = if(length(object@trait)==0)   { rep(NA_character_, length(rowidxs)) } else if(length(object@trait)==1)   { rep(object@trait, length(rowidxs)) }   else { object@trait[rowidxs] },
+    id    = if(length(object@id)==0)      { rep(NA_character_, length(rowidxs)) } else if(length(object@id)==1)      { rep(object@id,    length(rowidxs)) }   else { object@id[rowidxs] }
   )
 
   if (all(is.na(object@strand)) || length(object@strand) > 0) {
@@ -644,17 +701,45 @@ method(as.data.table, GWAS) <- function(object, ...) {
     d[, i2 := object@i2[rowidxs]]
   }
 
+  if (all(is.na(object@proxy_rsid)) || length(object@proxy_rsid) > 0) {
+    d[, proxy_rsid := object@proxy_rsid[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_chr)) || length(object@proxy_chr) > 0) {
+    d[, proxy_chr := object@proxy_chr[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_bp)) || length(object@proxy_bp) > 0) {
+    d[, proxy_bp := object@proxy_bp[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_ea)) || length(object@proxy_ea) > 0) {
+    d[, proxy_ea := object@proxy_ea[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_oa)) || length(object@proxy_oa) > 0) {
+    d[, proxy_oa := object@proxy_oa[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_eaf)) || length(object@proxy_eaf) > 0) {
+    d[, proxy_eaf := object@proxy_eaf[rowidxs]]
+  }
+
+  if (all(is.na(object@proxy_r2)) || length(object@proxy_r2) > 0) {
+    d[, proxy_r2 := object@proxy_r2[rowidxs]]
+  }
+
   return(d)
 }
 
 
 as.twosample.mr <- new_generic('as.twosample.mr', 'x')
-method(as.twosample.mr, GWAS) <- function(x, type, p_val=1.001, verbose=TRUE) { return( as.twosample.mr(list(x), type, p_val, verbose) ) }
-method(as.twosample.mr, class_list) <- function(x, type, p_val=1.001, verbose=TRUE) {
+method(as.twosample.mr, GWAS) <- function(x, type, verbose=TRUE) { return( as.twosample.mr(list(x), type, verbose) ) }
+method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
 
   # checks
   type        <- match.arg(type, choices=c("exposure","outcome"))
-  stopifnot("Exposure input list must all be of GWAS class" = all(sapply(x, function(x0) inherits(x0, "genepi.utils::GWAS"))))
+  stopifnot("Input must all be of GWAS class" = all(sapply(x, function(x0) inherits(x0, "genepi.utils::GWAS"))))
 
   # ensure phenotype/trait col will be unique - (the hack here to avoid de-duplication of multiple exposures is
   # that format de-duplicates by phenotype_col)
@@ -664,18 +749,10 @@ method(as.twosample.mr, class_list) <- function(x, type, p_val=1.001, verbose=TR
   }
 
   # exposures to large dt with unique `id`s
-  dat <- lapply(x, function(x0) as.data.table(x0)) |> data.table::rbindlist()
+  dat <- lapply(x, function(x0) as.data.table(x0, remove=TRUE)) |> data.table::rbindlist()
 
   # recode as sorted alleles (to allow matching of unharmonised mutliallelic)
   dat[, rsid := ifelse(oa < ea, paste0(rsid, "_", oa, "_", ea), paste0(rsid, "_", ea, "_", oa))]
-
-  # only common SNPs if multiple GWASs
-  if (length(x) > 1) {
-    if(verbose) message("[i] retaining only common SNPs to all datasets")
-    data.table::setkey(dat, rsid)
-    keep <- unique(dat[p < p_val, list(rsid)])
-    dat  <- dat[keep, nomatch=NULL]
-  }
 
   # 2SMR format
   formatted <- TwoSampleMR::format_data(
@@ -704,38 +781,191 @@ method(as.twosample.mr, class_list) <- function(x, type, p_val=1.001, verbose=TR
 }
 
 
-#
-# sub_set_gwas <- new_generic('sub_set_gwas', 'x')
-# method(sub_set_gwas, GWAS) <- function(x, p=NULL) {
-#
-#   # checks
-#   stopifnot("p value must be NULL or numeric 0-1" = is.null(p) | (is.numeric(p) & p>0 & p<=1))
-#
-#   # which variants to keep
-#   keep <- rep(TRUE, length(x@rsid))
-#   if (!is.null(p)) keep <- keep & (x@p < p)
-#
-#   # apply the mask
-#   valid_eventually(x, function(object) {
-#
-#     object@rsid <- object@rsid[keep]
-#     object@chr  <- object@chr[keep]
-#     object@bp   <- object@bp[keep]
-#     object@ea   <- object@ea[keep]
-#     object@oa   <- object@oa[keep]
-#     object@eaf  <- object@eaf[keep]
-#     object@beta <- object@beta[keep]
-#     object@se   <- object@se[keep]
-#     object@p    <- object@p[keep]
-#     if(length(object@n)>1)              object@n           <- object@n[keep]
-#     if(length(object@ncase)>1)          object@ncase       <- object@ncase[keep]
-#     if(length(object@strand)>1)         object@strand      <- object@strand[keep]
-#     if(length(object@imputed)>1)        object@imputed     <- object@imputed[keep]
-#     if(length(object@q)>1)              object@q           <- object@q[keep]
-#     if(length(object@q_p)>1)            object@q_p         <- object@q_p[keep]
-#     if(length(object@i2)>1)             object@i2          <- object@i2[keep]
-#     if(!all(is.na(object@correlation))) object@correlation <- object@correlation[keep, keep]
-#
-#     object
-#   })
-# }
+#' @title subset_gwas
+#' @param x GWAS object
+#' @param snps a vector, either row indicies (integers) into the GWAS object (e.g. obtained
+#' with filters such as which(GWAS'at'p < 5e-8), or rsids (characters) to be found in the
+#' GWAS rsid slot.
+#' @return GWAS object subsetted by `snps`
+#' @export
+subset_gwas <- new_generic('subset_gwas', 'x', function(x, snps) { S7_dispatch() })
+method(subset_gwas, GWAS) <- function(x, snps) {
+
+  # checks
+  stopifnot("`snps` must be integer(indexes) or character (rsids)" = all(is.integer(snps)) | all(is.character(snps)))
+
+  # which variants to keep
+  if (all(is.integer(snps))) {
+    keep <- snps
+  } else if (all(is.character(snps))) {
+    keep <- which(x@rsid %in% snps)
+  }
+
+  # apply the mask
+  valid_eventually(x, function(object) {
+
+    # get the QC filters and adjust these
+    qc_filters <- data.table::data.table(rsid = object@rsid)
+    for (i in seq_along(object@qc)) {
+      qc_filters[object@qc[[i]], names(object@qc)[i] := TRUE]
+    }
+    qc_filters <- qc_filters[keep]
+    for (i in seq_along(object@qc)) {
+      object@qc[[i]] <- which(qc_filters[, get(names(object@qc)[i])])
+    }
+
+    object@rsid <- object@rsid[keep]
+    object@chr  <- object@chr[keep]
+    object@bp   <- object@bp[keep]
+    object@ea   <- object@ea[keep]
+    object@oa   <- object@oa[keep]
+    object@eaf  <- object@eaf[keep]
+    object@beta <- object@beta[keep]
+    object@se   <- object@se[keep]
+    object@p    <- object@p[keep]
+    if(length(object@n)>1)              object@n           <- object@n[keep]
+    if(length(object@ncase)>1)          object@ncase       <- object@ncase[keep]
+    if(length(object@strand)>1)         object@strand      <- object@strand[keep]
+    if(length(object@imputed)>1)        object@imputed     <- object@imputed[keep]
+    if(length(object@info)>1)           object@info        <- object@info[keep]
+    if(length(object@q)>1)              object@q           <- object@q[keep]
+    if(length(object@q_p)>1)            object@q_p         <- object@q_p[keep]
+    if(length(object@i2)>1)             object@i2          <- object@i2[keep]
+    if(length(object@proxy_rsid)>1)     object@proxy_rsid  <- object@proxy_rsid[keep]
+    if(length(object@proxy_chr)>1)      object@proxy_chr   <- object@proxy_chr[keep]
+    if(length(object@proxy_bp)>1)       object@proxy_bp    <- object@proxy_bp[keep]
+    if(length(object@proxy_ea)>1)       object@proxy_ea    <- object@proxy_ea[keep]
+    if(length(object@proxy_oa)>1)       object@proxy_oa    <- object@proxy_oa[keep]
+    if(length(object@proxy_eaf)>1)      object@proxy_eaf   <- object@proxy_eaf[keep]
+    if(length(object@proxy_r2)>1)       object@proxy_r2    <- object@proxy_r2[keep]
+    if(!all(is.na(object@correlation))) object@correlation <- object@correlation[keep, keep]
+
+    object
+  })
+}
+
+#' @name get_proxies
+#' @param snps a character vector (available if `x` is a `GWAS` object), a vector of rsids to ensure exist, or else try and find proxies for
+#' @param then a string (available if `x` is a `GWAS` object), either `add` (adds proxies to current GWAS) or `subset`
+#' (subsets GWAS to variants and potential proxies for variants in `x`)
+#' @include plink.R
+method(get_proxies, GWAS) <- function(x,
+                                      snps,
+                                      then       = "add",
+                                      stat       = "r2-unphased",
+                                      win_kb     = 125,
+                                      win_r2     = 0.8,
+                                      win_ninter = Inf,
+                                      proxy_eaf  = NULL,
+                                      plink2     = genepi.utils::which_plink2(),
+                                      pfile      = genepi.utils::which_1000G_reference(build="GRCh37")) {
+
+  # testing
+  if (FALSE) {
+    x <- GWAS("/Users/xx20081/Documents/local_data/giant_2018/bmi.giant-ukbb.meta-analysis.combined.23May2018.gz",
+              map = list(rsid="SNP", chr="CHR", bp="POS", ea="Tested_Allele", oa="Other_Allele", eaf="Freq_Tested_Allele", beta="BETA", se="SE", p="P", n="N", info="INFO"))
+    snps       = c("rs140052487", "rs558796213", "rs561234294", "rs2462492", "rs548455890", "rs3107975", "rs531766459", "rs372455836", "rs193242050", "rs143342222")
+    then       = "add"
+    stat       = "r2-unphased"
+    win_kb     = 125
+    win_r2     = 0.8
+    win_ninter = Inf
+    proxy_eaf  = NULL
+    plink2     = genepi.utils::which_plink2()
+    pfile      = genepi.utils::which_1000G_reference(build="GRCh37")
+  }
+  ######
+
+  # checks
+  then <- match.arg(then, choices = c("add", "subset"))
+
+  # which variants don't exist?
+  missing <- snps[!snps %in% x@rsid]
+
+  # if missing SNPs try to find proxies
+  if (length(missing) == 0) {
+    message("[i] all variants in `snps` present in GWAS")
+  } else {
+    message(paste0("[i] ", length(missing), "/", length(snps), " (", sprintf("%.2f", 100*(length(missing)/length(snps))), "%) missing variants"))
+
+    tryCatch({
+
+      # search for proxies for the missing SNPs
+      proxies <- get_proxies(missing,
+                             stat       = stat,
+                             win_kb     = win_kb,
+                             win_r2     = win_r2,
+                             win_ninter = win_ninter,
+                             proxy_eaf  = proxy_eaf,
+                             plink2     = plink2,
+                             pfile      = pfile)
+
+      # do any of the proxies exist in the GWAS object
+      nproxies <- length(unique(proxies$proxy_rsid))
+      proxies <- proxies[proxy_rsid %in% x@rsid][, .SD[which.max(rstat)], by=rsid]
+      if (nrow(proxies) == 0) stop(paste0(nproxies, " found however none present in the GWAS object"))
+
+      # find if the found effect allele matches the allele in the proxies, if not we need to flip the effect
+      idx_orig <- match(proxies$proxy_rsid, x@rsid)
+      orig_alleles <- data.table::data.table(rsid = x@rsid[idx_orig],
+                                             ea   = x@ea[idx_orig],
+                                             oa   = x@oa[idx_orig])
+      proxies[orig_alleles, flipped := FALSE, on=c("proxy_rsid"="rsid", "proxy_ref"="oa", "proxy_alt"="ea")]
+      proxies[orig_alleles, flipped := TRUE,  on=c("proxy_rsid"="rsid", "proxy_ref"="ea", "proxy_alt"="oa")]
+
+      # report
+      message(paste0("[i] ", nrow(proxies), "/", length(missing), " (", sprintf("%.2f", 100*(nrow(proxies)/length(missing))), "%) proxies found for missing variants"))
+
+      # if valid proxies found, add to the GWAS object
+      x <- valid_eventually(x, function(object) {
+
+        orig_len <- length(x@rsid)
+
+        # join the proxies to the GWAS vectors
+        object@rsid       <- c(object@rsid, proxies$rsid)
+        object@chr        <- c(object@chr,  proxies$chr)
+        object@bp         <- c(object@bp,   proxies$bp)
+        object@ea         <- c(object@ea,   proxies$alt)
+        object@oa         <- c(object@oa,   proxies$ref)
+        object@eaf        <- c(object@eaf,  proxies$freq_alt)
+        object@beta       <- c(object@beta, ifelse(proxies$flipped, -1*object@beta[idx_orig], object@beta[idx_orig])) # flip effect
+        object@se         <- c(object@se,   object@se[idx_orig])
+        object@p          <- c(object@p,    object@p[idx_orig])
+        object@proxy_rsid <- c(rep(NA_character_, orig_len), proxies$proxy_rsid)
+        object@proxy_chr  <- c(rep(NA_character_, orig_len), proxies$proxy_chr)
+        object@proxy_bp   <- c(rep(NA_integer_, orig_len),   proxies$proxy_bp)
+        object@proxy_ea   <- c(rep(NA_character_, orig_len), proxies$proxy_alt)
+        object@proxy_oa   <- c(rep(NA_character_, orig_len), proxies$proxy_ref)
+        object@proxy_eaf  <- c(rep(NA_real_, orig_len),      proxies$proxy_freq_alt)
+        object@proxy_r2   <- c(rep(NA_real_, orig_len),      proxies$rstat)
+        if(length(object@n)>1)              object@n           <- c(object@n,       object@n[idx_orig])
+        if(length(object@ncase)>1)          object@ncase       <- c(object@ncase,   object@ncase[idx_orig])
+        if(length(object@strand)>1)         object@strand      <- c(object@strand,  object@strand[idx_orig])
+        if(length(object@imputed)>1)        object@imputed     <- c(object@imputed, object@imputed[idx_orig])
+        if(length(object@info)>1)           object@info        <- c(object@info,    object@info[idx_orig])
+        if(length(object@q)>1)              object@q           <- c(object@q,       object@q[idx_orig])
+        if(length(object@q_p)>1)            object@q_p         <- c(object@q_p,     object@q_p[idx_orig])
+        if(length(object@i2)>1)             object@i2          <- c(object@i2,      object@i2[idx_orig])
+        if(!all(is.na(object@correlation))) object@correlation <- object@correlation[c(1:orig_len,idx_orig), c(1:orig_len,idx_orig)]
+
+        return(object)
+      })
+
+    },
+    error = function(e) {
+      warning("Getting proxies failed, returning original GWAS object")
+      return(x)
+    })
+
+  }
+
+  # what to return (subset or full object plus proxies)
+  if (then == "add") {
+    return(x)
+  } else if (then == "subset") {
+    return(subset_gwas(x, snps))
+  }
+
+  return(proxies)
+}
+
