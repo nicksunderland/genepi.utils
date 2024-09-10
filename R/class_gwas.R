@@ -770,7 +770,11 @@ method(as.twosample.mr, class_list) <- function(x, type, verbose=TRUE) {
     samplesize_col    = "n",
     ncase_col         = "ncase",
     id_col            = "id",
+    gene_col          = ifelse("proxy_rsid" %in% names(dat), "proxy_rsid", "gene"), # hack to carry the proxy id
     phenotype_col     = "trait") |> data.table::as.data.table()
+
+  # convert name
+  data.table::setnames(formatted, grep("^gene\\.", names(formatted), value=TRUE), "proxy_rsid")
 
   # 2SMR converts to all lower-case - put the alleles back
   formatted[, SNP := sub("^(rs[0-9]+|[0-9X]+:[0-9]+)(.*)","\\1\\U\\2", SNP, perl=TRUE)]
@@ -865,14 +869,14 @@ method(get_proxies, GWAS) <- function(x,
     x <- GWAS("/Users/xx20081/Documents/local_data/giant_2018/bmi.giant-ukbb.meta-analysis.combined.23May2018.gz",
               map = list(rsid="SNP", chr="CHR", bp="POS", ea="Tested_Allele", oa="Other_Allele", eaf="Freq_Tested_Allele", beta="BETA", se="SE", p="P", n="N", info="INFO"))
     snps       = c("rs140052487", "rs558796213", "rs561234294", "rs2462492", "rs548455890", "rs3107975", "rs531766459", "rs372455836", "rs193242050", "rs143342222")
-    then       = "add"
+    then       = "subset"
     stat       = "r2-unphased"
     win_kb     = 125
     win_r2     = 0.8
     win_ninter = Inf
-    proxy_eaf  = NULL
+    proxy_eaf  = 0.01
     plink2     = genepi.utils::which_plink2()
-    pfile      = genepi.utils::which_1000G_reference(build="GRCh37")
+    pfile      = "/Users/xx20081/Documents/local_data/genome_reference/ukb_reference_genome/uk10k"
   }
   ######
 
@@ -950,7 +954,6 @@ method(get_proxies, GWAS) <- function(x,
 
         return(object)
       })
-
     },
     error = function(e) {
       warning("Getting proxies failed, returning original GWAS object")
@@ -965,7 +968,5 @@ method(get_proxies, GWAS) <- function(x,
   } else if (then == "subset") {
     return(subset_gwas(x, snps))
   }
-
-  return(proxies)
 }
 

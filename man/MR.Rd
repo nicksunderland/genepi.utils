@@ -8,8 +8,6 @@ MR(
   exposure,
   outcome,
   harmonise_strictness = 2,
-  plink2 = genepi.utils::which_plink2(),
-  pfile = genepi.utils::which_1000G_reference(build = "GRCh37"),
   correlation = NULL,
   verbose = TRUE
 )
@@ -20,10 +18,6 @@ MR(
 \item{outcome}{a \code{GWAS} object}
 
 \item{harmonise_strictness}{an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.}
-
-\item{plink2}{character / path, the plink2 executable}
-
-\item{pfile}{character / path, the plink pfile set}
 
 \item{correlation}{a matrix, correlation matrix of signed R values between variants}
 

@@ -2,7 +2,9 @@
 globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.outcome", "effect_allele.outcome", "proxy_snp.outcome", "chr.exposure",
                   "pos.exposure", "effect_allele.exposure", "other_allele.exposure", "eaf.outcome", "samplesize.outcome",
                   "ncase.outcome", "beta.outcome", "se.outcome", "pval.outcome", "V1", "chr.outcome", "chr.exposure",
-                  "pos.outcome", "pos.exposure", "fail", "i.N", "nsnps_end", "nsnps_exp_harm", "nsnps_start", "type"),
+                  "pos.outcome", "pos.exposure", "fail", "i.N", "nsnps_end", "nsnps_exp_harm", "nsnps_start", "type",
+                  "exposure.proxy_rsid", "i.exposure.proxy_rsid", "i.nsnps_exp_harm", "i.nsnps_proxy", "i.outcome.proxy_rsid",
+                  "nsnps_proxy", "outcome.proxy_rsid"),
                 package = "genepi.utils")
 
 #' @title MR object
@@ -12,8 +14,6 @@ globalVariables(c("SNP", "id.exposure", "mr_keep", "id.outcome", "other_allele.o
 #' @param exposure a `GWAS` object or list of `GWAS` objects
 #' @param outcome a `GWAS` object
 #' @param harmonise_strictness an integer (1,2,3) corresponding to the TwoSampleMR harmonisation options of the same name.
-#' @param plink2 character / path, the plink2 executable
-#' @param pfile character / path, the plink pfile set
 #' @param correlation a matrix, correlation matrix of signed R values between variants
 #' @param verbose a logical, print more information
 #'
@@ -87,7 +87,8 @@ MR <- new_class(
     outcome     = class_character,
     group       = class_integer,
     index_snp   = class_logical,
-    proxy_snp   = class_character,
+    proxy_e_snp = new_S3_class('matrix'),
+    proxy_o_snp = class_character,
     ld_info     = class_logical,
     info        = class_data.frame,
     #----------------------------
@@ -102,8 +103,6 @@ MR <- new_class(
   constructor = function(exposure,
                          outcome,
                          harmonise_strictness = 2,
-                         plink2               = genepi.utils::which_plink2(),
-                         pfile                = genepi.utils::which_1000G_reference(build="GRCh37"),
                          correlation          = NULL,
                          verbose              = TRUE) {
 
@@ -157,6 +156,12 @@ MR <- new_class(
     if(verbose) message("[i] processing exposure(s)")
     e <- as.twosample.mr(exposure, type="exposure", verbose=verbose)
 
+    if (!"proxy_rsid" %in% names(e)) {
+      e[, exposure.proxy_rsid := NA_character_]
+    } else {
+      data.table::setnames(e, "proxy_rsid", "exposure.proxy_rsid")
+    }
+
     # add information about pre-harmonised SNPs
     info[e[, .N, by=id.exposure], nsnps_start := i.N, on=c("id"="id.exposure")]
 
@@ -165,6 +170,8 @@ MR <- new_class(
 
       # have the reference dataset as the first one in the table
       ref <- e[id.exposure==id.exposure[1], ]
+
+      ref[, exposure.proxy_rsid := NULL]
 
       # TwoSampleMR::harmonise_data flips the outcome data, so have the full data as `outcome` type initially
       names(e) <- gsub("exposure", "outcome", names(e))
@@ -181,7 +188,6 @@ MR <- new_class(
       keepsnps <- names(tab)[tab == length(unique(e$id.outcome))]
       e <- e[e$SNP %in% keepsnps, ]
 
-
       # drop dummy `exposure` columns and rename outcome to exposure
       e <- e[, !grepl("exposure|action|mr_keep|SNP_index", names(e))]
       names(e) <- gsub("outcome","exposure", names(e))
@@ -196,15 +202,22 @@ MR <- new_class(
     }
 
     # add information about post-(exposure)-harmonised SNPs
-    info[e[, .N, by=id.exposure], nsnps_exp_harm := i.N, on=c("id"="id.exposure")]
+    counts <- e[, list(nsnps_exp_harm = .N), by=id.exposure]
+    info[counts, `:=`(nsnps_exp_harm = i.nsnps_exp_harm), on=c("id"="id.exposure")]
     info[type=="exposure" & is.na(nsnps_exp_harm), nsnps_exp_harm := 0]
 
     # now get the real outcome data
     if(verbose) message("[i] processing outcome")
     o <- as.twosample.mr(outcome, type="outcome", verbose=verbose)
 
+    if (!"proxy_rsid" %in% names(o)) {
+      o[, outcome.proxy_rsid := NA_character_]
+    } else {
+      data.table::setnames(o, "proxy_rsid", "outcome.proxy_rsid")
+    }
+
     # add information about post-(outcome)-harmonised SNPs
-    info[type=="outcome", nsnps_start := nrow(o)]
+    info[type=="outcome", `:=`(nsnps_start = nrow(o))]
 
     # harmonise the (pre-harmonised) exposure data with the outcome data
     if(verbose) message("[i] harmonising GWASs")
@@ -217,11 +230,17 @@ MR <- new_class(
 
     # add information about post-harmonised SNPs
     info[, nsnps_end := nrow(h[id.exposure==id.exposure[1]])]
+    info[h[, list(nsnps_proxy = sum(!is.na(exposure.proxy_rsid))), by=id.exposure], nsnps_proxy := i.nsnps_proxy, on=c("id"="id.exposure")]
+    info[type=="outcome", nsnps_proxy := sum(!is.na(h[id.exposure==id.exposure[1], outcome.proxy_rsid]))]
 
     # exposure matrices - wide format
     wide_matrices  <- data.table::dcast(h, SNP + chr.exposure + pos.exposure + effect_allele.exposure + other_allele.exposure + beta.outcome + pval.outcome + se.outcome + eaf.outcome + samplesize.outcome + ncase.outcome ~ id.exposure,
                                         value.var = c("beta.exposure", "pval.exposure", "se.exposure", "eaf.exposure", "samplesize.exposure", "ncase.exposure"),
                                         sep = "_")
+    wide_matrices[h[id.exposure==id.exposure[1]], outcome.proxy_rsid := i.outcome.proxy_rsid, on="SNP"]
+    for (ex in unique(h$id.exposure)) {
+      wide_matrices[h[id.exposure==ex], paste0("exposure.proxy_rsid_", ex) := i.exposure.proxy_rsid, on="SNP"]
+    }
 
     # the current column names and wanted matrix column names
     exp_beta  <- as.matrix(wide_matrices[, mget(grep("^beta.exposure_", names(wide_matrices), value = TRUE))])
@@ -230,12 +249,14 @@ MR <- new_class(
     exp_eaf   <- as.matrix(wide_matrices[, mget(grep("^eaf.exposure_",  names(wide_matrices), value = TRUE))])
     exp_n     <- as.matrix(wide_matrices[, mget(grep("^samplesize.exposure_", names(wide_matrices), value = TRUE))])
     exp_ncase <- as.matrix(wide_matrices[, mget(grep("^ncase.exposure_", names(wide_matrices), value = TRUE))])
+    exp_proxy_rsid <- as.matrix(wide_matrices[, mget(grep("^exposure.proxy_rsid_", names(wide_matrices), value = TRUE))])
     colnames(exp_beta)  <- sub("^beta.exposure_", "", colnames(exp_beta))
     colnames(exp_p)     <- sub("^pval.exposure_", "", colnames(exp_p))
     colnames(exp_se)    <- sub("^se.exposure_", "",   colnames(exp_se))
     colnames(exp_eaf)   <- sub("^eaf.exposure_", "",  colnames(exp_eaf))
     colnames(exp_n)     <- sub("^samplesize.exposure_", "", colnames(exp_n))
     colnames(exp_ncase) <- sub("^ncase.exposure_", "", colnames(exp_ncase))
+    colnames(exp_proxy_rsid) <- sub("^exposure.proxy_rsid_", "", colnames(exp_proxy_rsid))
 
     # process correlation matrix
     if (!is.null(correlation)) {
@@ -273,6 +294,8 @@ MR <- new_class(
                          outcome     = h$outcome[[1]],
                          group       = integer(),
                          index_snp   = rep(TRUE, nrow(wide_matrices)),
+                         proxy_e_snp = exp_proxy_rsid,
+                         proxy_o_snp = wide_matrices$outcome.proxy_rsid,
                          ld_info     = ld_info,
                          info        = info,
                          correlation = corr_mat)
@@ -763,7 +786,7 @@ method(clump_mr, MR) <- function(x,
 
   } else {
 
-    warning('Experimental, multi-exposure clumping')
+    #warning('Experimental, multi-exposure clumping')
     d <- lapply(1:ncol(x@bx), function(exp_idx) as.data.table(x, exposure = exp_idx)) |> data.table::rbindlist()
 
     # get the minimum p-value for each SNP and clump with these
@@ -864,7 +887,8 @@ method(as.data.table, MR) <- function(object, exposure = 1) {
     by        = object@by,
     byse      = object@byse,
     py        = object@py,
-    proxy_snp = if(length(object@proxy_snp) == length(object@snps)) { object@proxy_snp } else { rep(NA_character_, length(object@snps)) },
+    proxy_e_snp = if(nrow(object@proxy_e_snp) == length(object@snps)) { object@proxy_e_snp[, exposure] } else { rep(NA_character_, length(object@snps)) },
+    proxy_o_snp = if(length(object@proxy_o_snp) == length(object@snps)) { object@proxy_o_snp } else { rep(NA_character_, length(object@snps)) },
     index_snp = if(length(object@index_snp) == length(object@snps)) { object@index_snp } else { rep(TRUE,          length(object@snps)) },
     group     = if(length(object@group)     == length(object@snps)) { object@group }     else { rep(NA_integer_,   length(object@snps)) },
     ld_info   = if(length(object@ld_info)   == length(object@snps)) { object@ld_info }   else { rep(NA_integer_,   length(object@snps)) },

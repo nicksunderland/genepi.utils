@@ -182,7 +182,7 @@ method(get_proxies, class_character) <- function(x,
   snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
 
   # report
-  message(paste0("[i] ", nrow(snps_exist), "/", length(snps), " (", sprintf("%.1f", 100*(nrow(snps_exist)/length(snps))), "%) input SNPs found in plink reference file"))
+  message(paste0("[i] ", nrow(snps_exist), "/", length(x), " (", sprintf("%.1f", 100*(nrow(snps_exist)/length(x))), "%) input SNPs found in plink reference file"))
 
   # rewrite the found snps
   snps_found <- tempfile()
@@ -209,16 +209,16 @@ method(get_proxies, class_character) <- function(x,
 
   # read in the extracted variants file
   cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
-  proxies <- data.table::fread(paste0(proxy_file,".vcor"), skip = paste(cols, collapse = "\t"), select = cols)
+  proxies <- data.table::fread(paste0(proxy_file,".vcor"), skip = paste(cols, collapse = "\t"), select = cols, encoding="Latin-1")
   proxies <- proxies[, list(rsid           = as.character(ID_A),
                             chr            = as.character(`#CHROM_A`),
-                            bp             = as.integer(POS_A),
+                            bp             = as.integer(sub(".*?([0-9]+).*", "\\1", POS_A)), # plink sometimes write random "<FF>317417841" strings for bp
                             ref            = as.character(MAJ_A),
                             alt            = as.character(NONMAJ_A),
                             freq_alt       = as.numeric(NONMAJ_FREQ_A),
                             proxy_rsid     = as.character(ID_B),
                             proxy_chr      = as.character(CHROM_B),
-                            proxy_bp       = as.integer(POS_B),
+                            proxy_bp       = as.integer(sub(".*?([0-9]+).*", "\\1", POS_B)),
                             proxy_ref      = as.character(MAJ_B),
                             proxy_alt      = as.character(NONMAJ_B),
                             proxy_freq_alt = as.numeric(NONMAJ_FREQ_B),
