@@ -921,7 +921,7 @@ method(get_proxies, GWAS) <- function(x,
       message(paste0("[i] ", nrow(proxies), "/", length(missing), " (", sprintf("%.2f", 100*(nrow(proxies)/length(missing))), "%) proxies found for missing variants"))
 
       # if valid proxies found, add to the GWAS object
-      x <- valid_eventually(x, function(object) {
+      x <- S7::valid_eventually(x, function(object) {
 
         orig_len <- length(x@rsid)
 

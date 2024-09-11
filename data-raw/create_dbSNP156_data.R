@@ -15,13 +15,14 @@
 # extract just the columns we want: (on the HPC load modules bcftools and samtools)
 #     bcftools query -f '%ID %CHROM %POS %REF %ALT\n' GCF_000001405.25.gz | gzip -c > snp156_extracted.vcf.gz (add FREQ=%INFO/FREQ if you want frequency info column)
 # rename to: snp156_extracted.vcf.gz.Z so that it works with zcat.... (?)
-# split into smaller files of 25M rows each
+# split into smaller files of 25M rows each for easier processing
 #     gunzip -c snp156_extracted.vcf.gz | split -l 25000000 - split_file_
 # then run this r script to create binary fst files for each chromosome.
 
-# list the split files.
+# list the split files created above (change the directory path below)
 snp_files <- list.files("/Users/xx20081/Documents/local_data/genome_reference/dbsnp_raw", pattern = "split_file_*", full.names=TRUE)[38:47]
 
+# cycle the file and extract the data to create the .fst files.
 chrom_data <- data.table::data.table()
 for(file in snp_files) {
   cat("Reading file:", basename(file), "\n")
@@ -98,3 +99,9 @@ for(file in snp_files) {
     chrom_data <- left_over
   }
 }
+
+# Output-->
+# at the end you should have a directory called 'dbsnp' with subfolder
+# 'b37_dbsnp156' and/or 'b38_dbsnp156' depending on which build you downloaded above
+# you should then provide the path to the `dbsnp` directory to the chrpos_to_rsid function
+# for rsid annotation.
