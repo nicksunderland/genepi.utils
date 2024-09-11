@@ -390,11 +390,12 @@ method(standardise_columns, new_S3_class('data.table')) <- function(gwas, verbos
 
     if ("or" %in% names(gwas) && (all(c("or_ub", "or_lb") %in% names(gwas)) | "or_se" %in% names(gwas))) {
       gwas[, beta := log(or)]
-      if (all(c("or_ub", "or_lb") %in% names(gwas)) && !"or_se" %in% names(gwas)) {
+      if (!all(c("or_ub", "or_lb") %in% names(gwas)) && "or_se" %in% names(gwas)) {
         gwas[, or_ub := or + or_se * 1.96]
         gwas[, or_lb := or - or_se * 1.96]
       }
       gwas[, se := (or_ub - or_lb) / (2 * 1.95996)]
+
     } else {
       stop("problem standardising/creating `beta` and `se` columns. No `beta` `se` columns provided and no `or` `or_lb` `or_ub` or `or` `or_se` columns provided to compute them.")
     }
