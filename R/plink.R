@@ -181,6 +181,9 @@ method(get_proxies, class_character) <- function(x,
   # read the found SNPs
   snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
 
+  # clean up
+  unlink(paste0(exists_file,".pvar"))
+
   # report
   message(paste0("[i] ", nrow(snps_exist), "/", length(x), " (", sprintf("%.1f", 100*(nrow(snps_exist)/length(x))), "%) input SNPs found in plink reference file"))
 
@@ -203,8 +206,7 @@ method(get_proxies, class_character) <- function(x,
   system(cmd)
 
   if (!file.exists(paste0(proxy_file,".vcor"))) {
-    warning("No variants found, or plink failed")
-    return(NULL)
+    stop(paste0("Plink `", paste0("--", stat), "` failed"))
   }
 
   # read in the extracted variants file
@@ -224,6 +226,10 @@ method(get_proxies, class_character) <- function(x,
                             proxy_freq_alt = as.numeric(NONMAJ_FREQ_B),
                             rstat          = as.numeric(get(names(which(stats == stat)))))]
 
+  # clean up
+  unlink(paste0(proxy_file,".vcor"))
+  unlink(snps_found)
+
   # filter on eaf
   if (!is.null(proxy_eaf)) {
     nproxies <- nrow(proxies)
@@ -232,10 +238,6 @@ method(get_proxies, class_character) <- function(x,
       warning(paste0("No variants found at `proxy_eaf<", proxy_eaf, "` (", nproxies, " removed due to frequency filtering)"))
     }
   }
-
-  # clean up
-  unlink(paste0(exists_file,".pvar"))
-  unlink(paste0(proxy_file,".vcor"))
 
   return(proxies)
 }

@@ -892,7 +892,6 @@ method(get_proxies, GWAS) <- function(x,
   } else {
     message(paste0("[i] ", length(missing), "/", length(snps), " (", sprintf("%.2f", 100*(length(missing)/length(snps))), "%) missing variants"))
 
-    tryCatch({
 
       # search for proxies for the missing SNPs
       proxies <- get_proxies(missing,
@@ -954,11 +953,6 @@ method(get_proxies, GWAS) <- function(x,
 
         return(object)
       })
-    },
-    error = function(e) {
-      warning("Getting proxies failed, returning original GWAS object")
-      return(x)
-    })
 
   }
 
