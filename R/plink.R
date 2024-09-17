@@ -151,6 +151,21 @@ method(get_proxies, class_character) <- function(x,
   stopifnot("`win_r2` must be length 1" = length(win_r2) == 1)
   stopifnot("`win_ninter` must be length 1" = length(win_ninter) == 1)
 
+  # empty return
+  proxies <- data.table::data.table(rsid           = character(),
+                                    chr            = character(),
+                                    bp             = integer(),
+                                    ref            = character(),
+                                    alt            = character(),
+                                    freq_alt       = numeric(),
+                                    proxy_rsid     = character(),
+                                    proxy_chr      = character(),
+                                    proxy_bp       = integer(),
+                                    proxy_ref      = character(),
+                                    proxy_alt      = character(),
+                                    proxy_freq_alt = numeric(),
+                                    rstat          = numeric())
+
   # see if using compressed files
   if(file.exists(paste0(pfile,".pvar.zst"))) {
     compressed_plink = TRUE
@@ -171,12 +186,13 @@ method(get_proxies, class_character) <- function(x,
                "--extract", snp_file,
                "--make-just-pvar",
                "--out", exists_file)
-  system(cmd)
 
-  # exit if no SNPs in reference
-  if (!file.exists(paste0(exists_file,".pvar"))) {
-    stop("No variants found in the reference file")
-  }
+  tryCatch({
+    system(cmd)
+  }, error = function(x) {
+    warning(x)
+    return(proxies)
+  })
 
   # read the found SNPs
   snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
@@ -203,11 +219,13 @@ method(get_proxies, class_character) <- function(x,
                "--ld-window-r2", win_r2,
                ifelse(is.finite(win_ninter), paste("--ld-window", win_ninter), ""),
                "--out", proxy_file)
-  system(cmd)
 
-  if (!file.exists(paste0(proxy_file,".vcor"))) {
-    stop(paste0("Plink `", paste0("--", stat), "` failed"))
-  }
+  tryCatch({
+    system(cmd)
+  }, error = function(x) {
+    warning(x)
+    return(proxies)
+  })
 
   # read in the extracted variants file
   cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
