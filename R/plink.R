@@ -186,13 +186,13 @@ method(get_proxies, class_character) <- function(x,
                "--extract", snp_file,
                "--make-just-pvar",
                "--out", exists_file)
+  system(cmd)
 
-  tryCatch({
-    system(cmd)
-  }, error = function(x) {
-    warning(x)
+  # exit if no SNPs in reference
+  if (!file.exists(paste0(exists_file,".pvar"))) {
+    warning("No variants found in the reference file")
     return(proxies)
-  })
+  }
 
   # read the found SNPs
   snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
@@ -219,13 +219,11 @@ method(get_proxies, class_character) <- function(x,
                "--ld-window-r2", win_r2,
                ifelse(is.finite(win_ninter), paste("--ld-window", win_ninter), ""),
                "--out", proxy_file)
+  system(cmd)
 
-  tryCatch({
-    system(cmd)
-  }, error = function(x) {
-    warning(x)
-    return(proxies)
-  })
+  if (!file.exists(paste0(proxy_file,".vcor"))) {
+    stop(paste0("Plink `", paste0("--", stat), "` failed"))
+  }
 
   # read in the extracted variants file
   cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
