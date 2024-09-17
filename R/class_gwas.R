@@ -907,7 +907,6 @@ method(get_proxies, GWAS) <- function(x,
       # do any of the proxies exist in the GWAS object
       nproxies <- length(unique(proxies$proxy_rsid))
       proxies <- proxies[proxy_rsid %in% x@rsid][, .SD[which.max(rstat)], by=rsid]
-      if (nrow(proxies) == 0) stop(paste0(nproxies, " found however none present in the GWAS object"))
 
       # find if the found effect allele matches the allele in the proxies, if not we need to flip the effect
       idx_orig <- match(proxies$proxy_rsid, x@rsid)
