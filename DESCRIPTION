@@ -55,6 +55,7 @@ Collate:
     'eaf_plot.R'
     'genepi.utils-package.R'
     'harmonise.R'
+    'harmonise_gwas.R'	
     'ld_matrix.R'
     'lift.R'
     'manhattan.R'
