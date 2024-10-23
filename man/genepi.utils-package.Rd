@@ -8,6 +8,13 @@
 \description{
 The genepi.utils package is a collection of utility functions for working with genetic epidemiology data.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://nicksunderland.github.io/genepi.utils/}
+}
+
+}
 \author{
 \strong{Maintainer}: Nicholas Sunderland \email{nicholas.sunderland@bristol.ac.uk} (\href{https://orcid.org/0000-0003-3625-630X}{ORCID})
 

@@ -1,3 +1,4 @@
+url: https://nicksunderland.github.io/genepi.utils/
 reference:
 - title: "GWAS standardisation"
   desc: >
@@ -21,7 +22,7 @@ reference:
     Functions for prosessing GWAS data
   contents:
   - clump
-  - harmonise
+  - harmonise_gwas
   - ld_matrix
   - get_pfile_variants
   - get_proxies

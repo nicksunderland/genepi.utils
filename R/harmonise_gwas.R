@@ -1,26 +1,21 @@
 # Silence R CMD check
-globalVariables(c(),
+globalVariables(c("OK","ea_ref","flipped","ii","keep","oa_ref","palindromic","strand_flip","tmp","to_swap"),
                 package = "genepi.utils")
 
 
-
-
-
-# need to test if index beta are flipping
-
-
-
-
-
 #' @title Harmonise GWAS
-#' @param gwas
-#' @param ref
-#' @param action
-#' @return harmonised GWAS
+#' @param gwas a GWAS object, data.table, or file path
+#' @param ref a GWAS object, data.table, or file path
+#' @param action an integer, 1-, 2-, or 3-
+#' @param join a character, either 'chr:pos'(default) or 'rsid', the columns to perform the join on
+#' @param ... additional parameters below
+#' @return a data.table, harmonised GWAS data
+#' @importFrom stats complete.cases
 #' @export
 #'
 harmonise_gwas <- new_generic('harmonise', c('gwas','ref'), function(gwas, ref, join = "chr:bp", action = 2, ...) { S7_dispatch() })
 
+#' @name harmonise_gwas
 method(harmonise_gwas, list(GWAS,GWAS)) <- function(gwas, ref, join = "chr:bp", action = 2) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   r <- as.data.table(ref)
@@ -28,6 +23,8 @@ method(harmonise_gwas, list(GWAS,GWAS)) <- function(gwas, ref, join = "chr:bp", 
   h <- harmonise_internal(g, r, join, action)
 }
 
+#' @name harmonise_gwas
+#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(GWAS,new_S3_class('data.table'))) <- function(gwas, ref, join = "chr:bp", action = 2, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   g <- as.data.table(gwas)
@@ -35,6 +32,8 @@ method(harmonise_gwas, list(GWAS,new_S3_class('data.table'))) <- function(gwas, 
   h <- harmonise_internal(g, r, join, action)
 }
 
+#' @name harmonise_gwas
+#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(GWAS,class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
@@ -45,6 +44,9 @@ method(harmonise_gwas, list(GWAS,class_character)) <- function(gwas, ref, join =
   h <- harmonise_internal(g, r, join, action)
 }
 
+#' @name harmonise_gwas
+#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
+#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(new_S3_class('data.table'),new_S3_class('data.table'))) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   r <- validate_ref(ref, rmap, join)
@@ -52,6 +54,9 @@ method(harmonise_gwas, list(new_S3_class('data.table'),new_S3_class('data.table'
   h <- harmonise_internal(g, r, join, action)
 }
 
+#' @name harmonise_gwas
+#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
+#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(new_S3_class('data.table'),class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
@@ -63,6 +68,9 @@ method(harmonise_gwas, list(new_S3_class('data.table'),class_character)) <- func
   h <- harmonise_internal(g, r, join, action)
 }
 
+#' @name harmonise_gwas
+#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
+#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(class_character,class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
@@ -94,8 +102,8 @@ harmonise_internal <- function(x, y, join, action) {
   # remove rows without join keys
   pre_nx <- nrow(x)
   pre_ny <- nrow(y)
-  x <- x[complete.cases(x[, mget(join_key)])]
-  y <- y[complete.cases(y[, mget(join_key)])]
+  x <- x[stats::complete.cases(x[, mget(join_key)])]
+  y <- y[stats::complete.cases(y[, mget(join_key)])]
   if (pre_nx != nrow(x)) cli::cli_alert_warning("{pre_nx - nrow(x)} variants in dataset 1 have no key data - removed")
   if (pre_ny != nrow(y)) cli::cli_alert_warning("{pre_ny - nrow(y)} variants in dataset 2 have no key data - removed")
 

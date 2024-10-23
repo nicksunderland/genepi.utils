@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.31</span>
       </span>
     </div>
 
@@ -249,7 +249,7 @@ and validation process built in.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">CodeClinicSession</span><span class="op">(</span><span class="st">"nick sunderland"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; CodeClinicSession</span></span>
 <span><span class="co">#&gt;  Presenter: nick sunderland </span></span>
-<span><span class="co">#&gt;  Date: 25-07-2024</span></span></code></pre></div>
+<span><span class="co">#&gt;  Date: 07-10-2024</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="s7-constructor">S7 constructor<a class="anchor" aria-label="anchor" href="#s7-constructor"></a>
@@ -489,7 +489,7 @@ and validation process built in.</p>
 <h2 id="load-a-gwas">Load a GWAS<a class="anchor" aria-label="anchor" href="#load-a-gwas"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nicksunderland.github.io/genepi.utils/">genepi.utils</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># the datafile </span></span>
 <span><span class="va">filepath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span></span>
@@ -679,12 +679,14 @@ as well as functions to run the clumping.</p>
 <div class="section level3">
 <h3 id="mungesumstats">MungeSumstats<a class="anchor" aria-label="anchor" href="#mungesumstats"></a>
 </h3>
-<p>MungeSumstats is quite a comprehensive GWAS formatting package with
-many control options. It uses the <code>SNPlocs.Hsapiens</code>
-Bioconductor packages for RSID mapping. Unfortunately the
-<code>SNPlocs</code> packages are routinely updated with the latest
-dbSNP releases and do no include all of the indels present in dbSNP
-which can be limiting if you are interested in indels.</p>
+<p><code>MungeSumstats</code> is quite a comprehensive GWAS formatting
+package with many control options. It uses the
+<code>SNPlocs.Hsapiens</code> Bioconductor packages for RSID mapping.
+Unfortunately the <code>SNPlocs</code> packages are routinely updated
+with the latest dbSNP releases and do no include all of the indels
+present in dbSNP which can be limiting if you are interested in indels.
+The microbenchmarking below is slightly unfair as
+<code>MungeSumstats</code> does more checks.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/neurogenomics/MungeSumstats" class="external-link">MungeSumstats</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/joshuaulrich/microbenchmark/" class="external-link">microbenchmark</a></span><span class="op">)</span></span>

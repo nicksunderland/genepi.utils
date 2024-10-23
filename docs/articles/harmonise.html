@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">genepi.utils</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.31</span>
       </span>
     </div>
 
@@ -101,233 +101,59 @@
 
     
     
-<div class="section level2">
-<h2 id="run">Run<a class="anchor" aria-label="anchor" href="#run"></a>
-</h2>
-<p>Harmonise two datasets. Ensure that both GWAS inputs are standardised
-with <code>standardise_gwas()</code> and that the appropriate columns to
-join on are specified in the <code>merge</code> argument - usually
-either <code>c("CHR"="CHR","BP"="BP")</code> or
-<code>c("RSID"="RSID")</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">genepi.utils</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># the gwas data</span></span>
-<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading GWAS ...</span></span>
-<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
-<span><span class="co">#&gt; [i] applying column mapping</span></span>
-<span><span class="co">#&gt; [i] enforcing column types</span></span>
-<span><span class="co">#&gt; [i] standardising columns</span></span>
-<span><span class="co">#&gt; [i] standardising allele coding</span></span>
-<span><span class="co">#&gt; [i] applying filters</span></span>
-<span><span class="co">#&gt; [i] checking rsid coding</span></span>
-<span><span class="co">#&gt;  [?] 10 rsids could not be parsed, setting to chr:bp</span></span>
-<span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example2_gwas_sumstats.tsv"</span>, package<span class="op">=</span><span class="st">"genepi.utils"</span><span class="op">)</span>, map<span class="op">=</span><span class="st">"ns_map"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading GWAS ...</span></span>
-<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
-<span><span class="co">#&gt; [i] applying column mapping</span></span>
-<span><span class="co">#&gt; [i] enforcing column types</span></span>
-<span><span class="co">#&gt; [i] standardising columns</span></span>
-<span><span class="co">#&gt; [i] standardising allele coding</span></span>
-<span><span class="co">#&gt; [i] applying filters</span></span>
-<span><span class="co">#&gt; [i] checking rsid coding</span></span>
-<span><span class="co">#&gt;  [?] 10 rsids could not be parsed, setting to chr:bp</span></span>
-<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas1</span><span class="op">)</span></span>
-<span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># mess with some alleles</span></span>
-<span><span class="va">gwas1</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ea"</span>,<span class="st">"oa"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"T"</span>,<span class="st">"I"</span>,<span class="st">"I"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"D"</span>,<span class="st">"D"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">gwas2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ea"</span>,<span class="st">"oa"</span><span class="op">)</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"D"</span>,<span class="st">"ACC"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"T"</span>,<span class="st">"A"</span>,<span class="st">"I"</span>,<span class="st">"A"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span></span>
-<span><span class="co"># view</span></span>
-<span><span class="va">gwas2</span></span>
-<span><span class="co">#&gt;             rsid    chr        bp     ea     oa      eaf   beta    se     p</span></span>
-<span><span class="co">#&gt;           &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1: 10:100000625     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781</span></span>
-<span><span class="co">#&gt;  2: 10:100000645     10 100000645      C      A 1.21e-01  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt;  3: 10:100003242     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480</span></span>
-<span><span class="co">#&gt;  4: 10:100003785     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  5: 10:100004360     10 100004360      A      T 8.38e-01  0.045 0.134 0.961</span></span>
-<span><span class="co">#&gt;  6: 10:100004906     10 100004906      A      A 7.40e-01 -0.037 0.173 0.781</span></span>
-<span><span class="co">#&gt;  7: 10:100004996     10 100004996      D      I 3.23e-10 -0.008 0.137 0.743</span></span>
-<span><span class="co">#&gt;  8: 10:100005282     10 100005282    ACC      A 9.30e-04 -0.147 0.134 0.781</span></span>
-<span><span class="co">#&gt;  9: 10:100007362     10 100007362      C      G 8.16e-05  0.045 0.173 0.961</span></span>
-<span><span class="co">#&gt; 10: 10:100008436     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743</span></span>
-<span><span class="co">#&gt;         n ncase  trait     id strand imputed  info     q   q_p    i2</span></span>
-<span><span class="co">#&gt;     &lt;int&gt; &lt;int&gt; &lt;char&gt; &lt;char&gt; &lt;char&gt;  &lt;lgcl&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
-<span><span class="co">#&gt;  2:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
-<span><span class="co">#&gt;  3:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.480    NA    NA</span></span>
-<span><span class="co">#&gt;  4:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
-<span><span class="co">#&gt;  5:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
-<span><span class="co">#&gt;  6:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
-<span><span class="co">#&gt;  7:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
-<span><span class="co">#&gt;  8:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.781    NA    NA</span></span>
-<span><span class="co">#&gt;  9:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.961    NA    NA</span></span>
-<span><span class="co">#&gt; 10:    NA    NA  trait     id   &lt;NA&gt;      NA    NA 0.743    NA    NA</span></span>
-<span></span>
-<span><span class="co"># harmonise</span></span>
-<span><span class="va">harmonised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span>, merge<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chr"</span><span class="op">=</span><span class="st">"chr"</span>,<span class="st">"bp"</span><span class="op">=</span><span class="st">"bp"</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">]</span></span>
-<span></span>
-<span><span class="co"># view </span></span>
-<span><span class="va">harmonised</span></span>
-<span><span class="co">#&gt; Key: &lt;chr_incidence, bp_incidence&gt;</span></span>
-<span><span class="co">#&gt;     rsid_incidence rsid_progression chr_incidence chr_progression bp_incidence</span></span>
-<span><span class="co">#&gt;             &lt;char&gt;           &lt;char&gt;        &lt;char&gt;          &lt;char&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:   10:100000625     10:100000625            10              10    100000625</span></span>
-<span><span class="co">#&gt;  2:   10:100000645     10:100000645            10              10    100000645</span></span>
-<span><span class="co">#&gt;  3:   10:100003242     10:100003242            10              10    100003242</span></span>
-<span><span class="co">#&gt;  4:   10:100003785     10:100003785            10              10    100003785</span></span>
-<span><span class="co">#&gt;  5:   10:100004360     10:100004360            10              10    100004360</span></span>
-<span><span class="co">#&gt;  6:   10:100004906     10:100004906            10              10    100004906</span></span>
-<span><span class="co">#&gt;  7:   10:100004996     10:100004996            10              10    100004996</span></span>
-<span><span class="co">#&gt;  8:   10:100005282     10:100005282            10              10    100005282</span></span>
-<span><span class="co">#&gt;  9:   10:100007362     10:100007362            10              10    100007362</span></span>
-<span><span class="co">#&gt; 10:   10:100008436     10:100008436            10              10    100008436</span></span>
-<span><span class="co">#&gt;     bp_progression ea_incidence ea_progression oa_incidence oa_progression</span></span>
-<span><span class="co">#&gt;              &lt;int&gt;       &lt;char&gt;         &lt;char&gt;       &lt;char&gt;         &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:      100000625            G              G            A              A</span></span>
-<span><span class="co">#&gt;  2:      100000645            C              C            A              A</span></span>
-<span><span class="co">#&gt;  3:      100003242            G              G            T              T</span></span>
-<span><span class="co">#&gt;  4:      100003785            C              C            T              T</span></span>
-<span><span class="co">#&gt;  5:      100004360            T              T            A              A</span></span>
-<span><span class="co">#&gt;  6:      100004906            A              A            C              A</span></span>
-<span><span class="co">#&gt;  7:      100004996            I              I            D              D</span></span>
-<span><span class="co">#&gt;  8:      100005282          ACC            ACC            A              A</span></span>
-<span><span class="co">#&gt;  9:      100007362            C              C            G              G</span></span>
-<span><span class="co">#&gt; 10:      100008436            A              A            G              G</span></span>
-<span><span class="co">#&gt;     eaf_incidence eaf_progression beta_incidence beta_progression p_incidence</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;           &lt;num&gt;          &lt;num&gt;            &lt;num&gt;       &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:      7.10e-05        7.10e-05         -0.037           -0.037       0.781</span></span>
-<span><span class="co">#&gt;  2:      1.21e-01        1.21e-01          0.045            0.045       0.961</span></span>
-<span><span class="co">#&gt;  3:      5.04e-07        5.04e-07         -0.037           -0.037       0.480</span></span>
-<span><span class="co">#&gt;  4:      1.55e-01        1.55e-01         -0.008           -0.008       0.743</span></span>
-<span><span class="co">#&gt;  5:      8.38e-01        1.62e-01          0.045           -0.045       0.961</span></span>
-<span><span class="co">#&gt;  6:      7.40e-01        7.40e-01         -0.037           -0.037       0.781</span></span>
-<span><span class="co">#&gt;  7:      3.23e-10        1.00e+00         -0.008            0.008       0.743</span></span>
-<span><span class="co">#&gt;  8:      9.30e-04        9.30e-04         -0.147           -0.147       0.781</span></span>
-<span><span class="co">#&gt;  9:      8.16e-05        8.16e-05          0.045            0.045       0.961</span></span>
-<span><span class="co">#&gt; 10:      9.46e-04        9.46e-04         -0.008           -0.008       0.743</span></span>
-<span><span class="co">#&gt;     p_progression palindromic   keep se_incidence n_incidence ncase_incidence</span></span>
-<span><span class="co">#&gt;             &lt;num&gt;      &lt;lgcl&gt; &lt;lgcl&gt;        &lt;num&gt;       &lt;int&gt;           &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:         0.781       FALSE   TRUE        0.137          NA              NA</span></span>
-<span><span class="co">#&gt;  2:         0.961       FALSE   TRUE        0.173          NA              NA</span></span>
-<span><span class="co">#&gt;  3:         0.480       FALSE   TRUE        0.134          NA              NA</span></span>
-<span><span class="co">#&gt;  4:         0.743       FALSE   TRUE        0.137          NA              NA</span></span>
-<span><span class="co">#&gt;  5:         0.961        TRUE   TRUE        0.134          NA              NA</span></span>
-<span><span class="co">#&gt;  6:         0.781       FALSE  FALSE        0.173          NA              NA</span></span>
-<span><span class="co">#&gt;  7:         0.743       FALSE   TRUE        0.137          NA              NA</span></span>
-<span><span class="co">#&gt;  8:         0.781       FALSE   TRUE        0.134          NA              NA</span></span>
-<span><span class="co">#&gt;  9:         0.961        TRUE   TRUE        0.173          NA              NA</span></span>
-<span><span class="co">#&gt; 10:         0.743       FALSE   TRUE        0.208          NA              NA</span></span>
-<span><span class="co">#&gt;     trait_incidence id_incidence strand_incidence imputed_incidence</span></span>
-<span><span class="co">#&gt;              &lt;char&gt;       &lt;char&gt;           &lt;char&gt;            &lt;lgcl&gt;</span></span>
-<span><span class="co">#&gt;  1:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  2:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  3:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  4:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  5:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  6:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  7:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  8:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;  9:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt; 10:           trait           id             &lt;NA&gt;                NA</span></span>
-<span><span class="co">#&gt;     info_incidence q_incidence q_p_incidence i2_incidence se_progression</span></span>
-<span><span class="co">#&gt;              &lt;num&gt;       &lt;num&gt;         &lt;num&gt;        &lt;num&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:             NA       0.781            NA           NA          0.137</span></span>
-<span><span class="co">#&gt;  2:             NA       0.961            NA           NA          0.173</span></span>
-<span><span class="co">#&gt;  3:             NA       0.480            NA           NA          0.134</span></span>
-<span><span class="co">#&gt;  4:             NA       0.743            NA           NA          0.137</span></span>
-<span><span class="co">#&gt;  5:             NA       0.961            NA           NA          0.134</span></span>
-<span><span class="co">#&gt;  6:             NA       0.781            NA           NA          0.173</span></span>
-<span><span class="co">#&gt;  7:             NA       0.743            NA           NA          0.137</span></span>
-<span><span class="co">#&gt;  8:             NA       0.781            NA           NA          0.134</span></span>
-<span><span class="co">#&gt;  9:             NA       0.961            NA           NA          0.173</span></span>
-<span><span class="co">#&gt; 10:             NA       0.743            NA           NA          0.208</span></span>
-<span><span class="co">#&gt;     n_progression ncase_progression trait_progression id_progression</span></span>
-<span><span class="co">#&gt;             &lt;int&gt;             &lt;int&gt;            &lt;char&gt;         &lt;char&gt;</span></span>
-<span><span class="co">#&gt;  1:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  2:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  3:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  4:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  5:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  6:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  7:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  8:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;  9:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt; 10:            NA                NA             trait             id</span></span>
-<span><span class="co">#&gt;     strand_progression imputed_progression info_progression q_progression</span></span>
-<span><span class="co">#&gt;                 &lt;char&gt;              &lt;lgcl&gt;            &lt;num&gt;         &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:               &lt;NA&gt;                  NA               NA         0.781</span></span>
-<span><span class="co">#&gt;  2:               &lt;NA&gt;                  NA               NA         0.961</span></span>
-<span><span class="co">#&gt;  3:               &lt;NA&gt;                  NA               NA         0.480</span></span>
-<span><span class="co">#&gt;  4:               &lt;NA&gt;                  NA               NA         0.743</span></span>
-<span><span class="co">#&gt;  5:               &lt;NA&gt;                  NA               NA         0.961</span></span>
-<span><span class="co">#&gt;  6:               &lt;NA&gt;                  NA               NA         0.781</span></span>
-<span><span class="co">#&gt;  7:               &lt;NA&gt;                  NA               NA         0.743</span></span>
-<span><span class="co">#&gt;  8:               &lt;NA&gt;                  NA               NA         0.781</span></span>
-<span><span class="co">#&gt;  9:               &lt;NA&gt;                  NA               NA         0.961</span></span>
-<span><span class="co">#&gt; 10:               &lt;NA&gt;                  NA               NA         0.743</span></span>
-<span><span class="co">#&gt;     q_p_progression i2_progression</span></span>
-<span><span class="co">#&gt;               &lt;num&gt;          &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:              NA             NA</span></span>
-<span><span class="co">#&gt;  2:              NA             NA</span></span>
-<span><span class="co">#&gt;  3:              NA             NA</span></span>
-<span><span class="co">#&gt;  4:              NA             NA</span></span>
-<span><span class="co">#&gt;  5:              NA             NA</span></span>
-<span><span class="co">#&gt;  6:              NA             NA</span></span>
-<span><span class="co">#&gt;  7:              NA             NA</span></span>
-<span><span class="co">#&gt;  8:              NA             NA</span></span>
-<span><span class="co">#&gt;  9:              NA             NA</span></span>
-<span><span class="co">#&gt; 10:              NA             NA</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="evaluation-speed">Evaluation speed<a class="anchor" aria-label="anchor" href="#evaluation-speed"></a>
-</h2>
-<p>The number of variants for evaluation speed analysis was downsampled
-to 100,000, as otherwise it takes a very long time.</p>
-<div class="figure" style="text-align: center">
-<img src="figures/microbenchmark_harmonise.png" alt="Analysis with downsampled GWAS of 100,000 variants" width="80%"><p class="caption">
-Analysis with downsampled GWAS of 100,000 variants
-</p>
-</div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/joshuaulrich/microbenchmark/" class="external-link">microbenchmark</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">gwas_progression_path</span> <span class="op">&lt;-</span> <span class="st">"/Users/xx20081/Documents/local_data/hermes_progression/biostat_disc/post_qc/biostat_disc.allcause_death.autosomes.gz"</span></span>
-<span><span class="va">gwas_incidence_path</span>   <span class="op">&lt;-</span> <span class="st">"/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz"</span></span>
-<span></span>
-<span><span class="co"># some GWAS data</span></span>
-<span><span class="va">gwas1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">gwas_incidence_path</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
-<span><span class="va">gwas2</span> <span class="op">&lt;-</span> <span class="va">gwas1</span></span>
-<span></span>
-<span><span class="co"># Slopehunter read in </span></span>
-<span><span class="va">gwas1_sh</span> <span class="op">&lt;-</span> <span class="fu">SlopeHunter</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SlopeHunter/man/read_incidence.html" class="external-link">read_incidence</a></span><span class="op">(</span><span class="va">gwas_incidence_path</span>, snp_col<span class="op">=</span><span class="st">"SNP"</span>, beta_col<span class="op">=</span><span class="st">"BETA"</span>, se_col<span class="op">=</span><span class="st">"SE"</span>, pval_col<span class="op">=</span><span class="st">"P"</span>, eaf_col<span class="op">=</span><span class="st">"EAF"</span>, effect_allele_col<span class="op">=</span><span class="st">"EA"</span>, other_allele_col<span class="op">=</span><span class="st">"OA"</span>, chr_col <span class="op">=</span> <span class="st">"CHR"</span>, pos_col<span class="op">=</span><span class="st">"POS"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
-<span><span class="va">gwas2_sh</span> <span class="op">&lt;-</span> <span class="fu">SlopeHunter</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SlopeHunter/man/read_prognosis.html" class="external-link">read_prognosis</a></span><span class="op">(</span><span class="va">gwas_incidence_path</span>, snp_col<span class="op">=</span><span class="st">"SNP"</span>, beta_col<span class="op">=</span><span class="st">"BETA"</span>, se_col<span class="op">=</span><span class="st">"SE"</span>, pval_col<span class="op">=</span><span class="st">"P"</span>, eaf_col<span class="op">=</span><span class="st">"EAF"</span>, effect_allele_col<span class="op">=</span><span class="st">"EA"</span>, other_allele_col<span class="op">=</span><span class="st">"OA"</span>, chr_col <span class="op">=</span> <span class="st">"CHR"</span>, pos_col<span class="op">=</span><span class="st">"POS"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
-<span></span>
-<span><span class="co"># TwoSampleMR read in </span></span>
-<span><span class="va">gwas1_2smr</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/format_data.html" class="external-link">format_data</a></span><span class="op">(</span><span class="va">gwas1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>, type<span class="op">=</span><span class="st">"exposure"</span>, snp_col<span class="op">=</span><span class="st">"SNP"</span>, beta_col<span class="op">=</span><span class="st">"BETA"</span>, se_col<span class="op">=</span><span class="st">"SE"</span>, pval_col<span class="op">=</span><span class="st">"P"</span>, eaf_col<span class="op">=</span><span class="st">"EAF"</span>, effect_allele_col<span class="op">=</span><span class="st">"EA"</span>, other_allele_col<span class="op">=</span><span class="st">"OA"</span>, chr_col <span class="op">=</span> <span class="st">"CHR"</span>, pos_col<span class="op">=</span><span class="st">"POS"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
-<span><span class="va">gwas2_2smr</span> <span class="op">&lt;-</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/format_data.html" class="external-link">format_data</a></span><span class="op">(</span><span class="va">gwas1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>, type<span class="op">=</span><span class="st">"outcome"</span>, snp_col<span class="op">=</span><span class="st">"SNP"</span>, beta_col<span class="op">=</span><span class="st">"BETA"</span>, se_col<span class="op">=</span><span class="st">"SE"</span>, pval_col<span class="op">=</span><span class="st">"P"</span>, eaf_col<span class="op">=</span><span class="st">"EAF"</span>, effect_allele_col<span class="op">=</span><span class="st">"EA"</span>, other_allele_col<span class="op">=</span><span class="st">"OA"</span>, chr_col <span class="op">=</span> <span class="st">"CHR"</span>, pos_col<span class="op">=</span><span class="st">"POS"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100000</span>, <span class="op">]</span></span>
-<span></span>
-<span><span class="co"># benchmarking harmonisation</span></span>
-<span><span class="va">mbm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html" class="external-link">microbenchmark</a></span><span class="op">(</span><span class="st">"genepi.utils::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">genepi.utils</span><span class="fu">::</span><span class="fu"><a href="../reference/harmonise.html">harmonise</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span>, merge<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CHR"</span><span class="op">=</span><span class="st">"CHR"</span>,<span class="st">"BP"</span><span class="op">=</span><span class="st">"BP"</span><span class="op">)</span><span class="op">)</span> <span class="op">}</span>,</span>
-<span>                      <span class="st">"Slopehunter::harmonise_effects()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">SlopeHunter</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SlopeHunter/man/harmonise_effects.html" class="external-link">harmonise_effects</a></span><span class="op">(</span><span class="va">gwas1</span>, <span class="va">gwas2</span><span class="op">)</span> <span class="op">}</span>,</span>
-<span>                      <span class="st">"TwoSampleMR::harmonise()"</span> <span class="op">=</span> <span class="op">{</span> <span class="fu">TwoSampleMR</span><span class="fu">::</span><span class="fu"><a href="https://mrcieu.github.io/TwoSampleMR/reference/harmonise_data.html" class="external-link">harmonise_data</a></span><span class="op">(</span><span class="va">gwas1_2smr</span>, <span class="va">gwas2_2smr</span><span class="op">)</span> <span class="op">}</span>,</span>
-<span>                      times <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 2SMR issue fixed in recent commit</span></span>
-<span><span class="co"># mbm &lt;- microbenchmark("TwoSampleMR::harmonise() - updated" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) },</span></span>
-<span><span class="co">#                       times = 10L)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">mbm</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># save</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png</a></span><span class="op">(</span><span class="st">"figures/microbenchmark_harmonise.png"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">mbm</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
+<!-- ## Run -->
+<!-- Harmonise two datasets. Ensure that both GWAS inputs are standardised with `standardise_gwas()` and that the appropriate columns to join on -->
+<!-- are specified in the `merge` argument - usually either `c("CHR"="CHR","BP"="BP")` or `c("RSID"="RSID")`. -->
+<!-- ```{r setup} -->
+<!-- library(genepi.utils) -->
+<!-- # the gwas data -->
+<!-- gwas1 <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map") -->
+<!-- gwas2 <- GWAS(dat=system.file("extdata", "example2_gwas_sumstats.tsv", package="genepi.utils"), map="ns_map") -->
+<!-- gwas1 <- as.data.table(gwas1) -->
+<!-- gwas2 <- as.data.table(gwas2) -->
+<!-- # mess with some alleles -->
+<!-- gwas1[c(5,7,8), c("ea","oa") := list(c("T","I","I"),c("A","D","D"))] -->
+<!-- gwas2[c(5,6,7,8), c("ea","oa") := list(c("A","A","D","ACC"),c("T","A","I","A"))] -->
+<!-- # view -->
+<!-- gwas2 -->
+<!-- # harmonise -->
+<!-- harmonised <- harmonise(gwas1, gwas2, merge=c("chr"="chr","bp"="bp"))[] -->
+<!-- # view  -->
+<!-- harmonised -->
+<!-- ``` -->
+<!-- ## Evaluation speed -->
+<!-- The number of variants for evaluation speed analysis was downsampled to 100,000, as otherwise it takes a very long time.  -->
+<!-- ```{r speed, echo=FALSE, out.width="80%", fig.align='center', fig.cap="Analysis with downsampled GWAS of 100,000 variants"} -->
+<!-- knitr::include_graphics("figures/microbenchmark_harmonise.png") -->
+<!-- ``` -->
+<!-- ```{r benchmarck, eval=FALSE} -->
+<!-- library(microbenchmark) -->
+<!-- library(ggplot2) -->
+<!-- gwas_progression_path <- "/Users/xx20081/Documents/local_data/hermes_progression/biostat_disc/post_qc/biostat_disc.allcause_death.autosomes.gz" -->
+<!-- gwas_incidence_path   <- "/Users/xx20081/Documents/local_data/hermes_incidence/standardised/hf_incidence_pheno1_eur.tsv.gz" -->
+<!-- # some GWAS data -->
+<!-- gwas1 <- data.table::fread(gwas_incidence_path)[1:100000, ] -->
+<!-- gwas2 <- gwas1 -->
+<!-- # Slopehunter read in  -->
+<!-- gwas1_sh <- SlopeHunter::read_incidence(gwas_incidence_path, snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ] -->
+<!-- gwas2_sh <- SlopeHunter::read_prognosis(gwas_incidence_path, snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ] -->
+<!-- # TwoSampleMR read in  -->
+<!-- gwas1_2smr <- TwoSampleMR::format_data(gwas1 |> as.data.frame(), type="exposure", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ] -->
+<!-- gwas2_2smr <- TwoSampleMR::format_data(gwas1 |> as.data.frame(), type="outcome", snp_col="SNP", beta_col="BETA", se_col="SE", pval_col="P", eaf_col="EAF", effect_allele_col="EA", other_allele_col="OA", chr_col = "CHR", pos_col="POS")[1:100000, ] -->
+<!-- # benchmarking harmonisation -->
+<!-- mbm <- microbenchmark("genepi.utils::harmonise()" = { genepi.utils::harmonise(gwas1, gwas2, merge=c("CHR"="CHR","BP"="BP")) }, -->
+<!--                       "Slopehunter::harmonise_effects()" = { SlopeHunter::harmonise_effects(gwas1, gwas2) }, -->
+<!--                       "TwoSampleMR::harmonise()" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) }, -->
+<!--                       times = 10L) -->
+<!-- # 2SMR issue fixed in recent commit -->
+<!-- # mbm <- microbenchmark("TwoSampleMR::harmonise() - updated" = { TwoSampleMR::harmonise_data(gwas1_2smr, gwas2_2smr) }, -->
+<!-- #                       times = 10L) -->
+<!-- autoplot(mbm) -->
+<!-- # save -->
+<!-- png("figures/microbenchmark_harmonise.png") -->
+<!-- print(autoplot(mbm)) -->
+<!-- dev.off() -->
+<!-- ``` -->
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
