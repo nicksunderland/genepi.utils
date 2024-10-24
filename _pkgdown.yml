@@ -1,4 +1,8 @@
 url: https://nicksunderland.github.io/genepi.utils/
+template:
+  bootstrap: 5
+  light-switch: true
+
 reference:
 - title: "GWAS standardisation"
   desc: >
