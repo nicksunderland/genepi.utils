@@ -82,41 +82,6 @@ dev.off()
 knitr::include_graphics("figures/miami.png")
 ```
 
-## QQ plot
-```{r setup_qq, eval=FALSE}
-library(genepi.utils)
-
-gwas <- generate_random_gwas_data(100000)
-
-p <- pz_plot(gwas,
-              ...)
-```
-```{r save_qq, eval=FALSE, include=FALSE}
-png("figures/qq_plot.png", width=600, height=600, units="px")
-p
-dev.off()
-```
-```{r show_qq, echo=FALSE, out.width="98%"}
-# knitr::include_graphics("figures/qq_plot.png")
-```
-
-## PZ plot
-```{r setup_pz, eval=FALSE}
-library(genepi.utils)
-
-gwas <- generate_random_gwas_data(100000)
-
-p <- pz_plot(gwas,
-              ...)
-```
-```{r save_pz, eval=FALSE, include=FALSE}
-png("figures/pz_plot.png", width=600, height=600, units="px")
-p
-dev.off()
-```
-```{r show_pz, echo=FALSE, out.width="98%"}
-# knitr::include_graphics("figures/pz_plot.png")
-```
 
 ## EAF plot
 ```{r setup_eaf, eval=FALSE}

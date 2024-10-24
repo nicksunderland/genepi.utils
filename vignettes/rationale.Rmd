@@ -183,8 +183,8 @@ session
 ### GWAS class
 Putting this all together I created a GWAS class. 
 
-```{r s7_gwas, eval = FALSE}
-GWAS <- new_class(
+```{r s7_gwas}
+GWAS_ <- new_class(
   #==============================
   # GWAS class name
   #==============================
@@ -198,7 +198,7 @@ GWAS <- new_class(
     #----------------------------
     # column name mapping
     #----------------------------
-    map     = ColumnMap,
+    map     = genepi.utils::ColumnMap,
     #----------------------------
     # qc procedures
     #----------------------------
@@ -380,7 +380,7 @@ GWAS <- new_class(
 ```
 
 ## Load a GWAS
-```{r load_gwas, eval = FALSE}
+```{r load_gwas}
 library(genepi.utils)
 
 # the datafile 

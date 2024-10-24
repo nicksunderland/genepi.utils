@@ -1,17 +1,15 @@
 pandoc: '3.2'
-pkgdown: 2.1.0
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   chrpos_to_rsid: chrpos_to_rsid.html
   clumping: clumping.html
   collider_bias: collider_bias.html
-  drug_target_proxy: drug_target_proxy.html
-  harmonise: harmonise.html
   ld_matrix: ld_matrix.html
   plotting: plotting.html
   rationale: rationale.html
   standardise_gwas: standardise_gwas.html
-last_built: 2024-10-07T11:44Z
+last_built: 2024-10-24T11:02Z
 urls:
   reference: https://nicksunderland.github.io/genepi.utils/reference
   article: https://nicksunderland.github.io/genepi.utils/articles
