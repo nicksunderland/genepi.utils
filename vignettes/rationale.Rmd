@@ -380,7 +380,7 @@ GWAS_ <- new_class(
 ```
 
 ## Load a GWAS
-```{r load_gwas}
+```{r load_gwas, eval = FALSE}
 library(genepi.utils)
 
 # the datafile 
