@@ -2,7 +2,9 @@ genepi.utils
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The `genepi.utils` package is a collection of utility functions for
@@ -36,7 +38,7 @@ runtime as standard. I recommend following the instructions on the
 `data.table` GitHub
 [link](https://github.com/Rdatatable/data.table/wiki/Installation). Key
 for successful installation on my Macbook M2 Max was creating a Makevars
-file in the root directory `~.R/Makevars`, which is a simple text file,
+file in the root directory `~/.R/Makevars`, which is a simple text file,
 containing the compilation flags below, and then re-installing from
 source.
 
