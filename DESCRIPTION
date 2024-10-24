@@ -1,7 +1,7 @@
 Package: genepi.utils
 URL: https://nicksunderland.github.io/genepi.utils/
 Title: GenEpi Utility Functions
-Version: 0.0.31
+Version: 0.0.32
 Authors@R: c(person("Nicholas", "Sunderland", , "nicholas.sunderland@bristol.ac.uk", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-3625-630X")))
 Description: The genepi.utils package is a collection of utility functions for working with genetic epidemiology data.
 License: MIT + file LICENSE
