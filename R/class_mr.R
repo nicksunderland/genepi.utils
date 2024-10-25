@@ -221,7 +221,10 @@ MR <- new_class(
 
     # harmonise the (pre-harmonised) exposure data with the outcome data
     if(verbose) message("[i] harmonising GWASs")
+    cat("starting TwoSampleMR::harmonise_data\n")
     h <- TwoSampleMR::harmonise_data(e, o[SNP %in% e$SNP, ] , action = harmonise_strictness) |> data.table::as.data.table()
+    cat("finished TwoSampleMR::harmonise_data and printing `h`\n")
+    print(h)
     h <- h[mr_keep == TRUE, ]
 
     # rename SNPs now harmonised
@@ -234,6 +237,7 @@ MR <- new_class(
     info[type=="outcome", nsnps_proxy := sum(!is.na(h[id.exposure==id.exposure[1], outcome.proxy_rsid]))]
 
     # exposure matrices - wide format
+    cat("wide_matrices\n")
     wide_matrices  <- data.table::dcast(h, SNP + chr.exposure + pos.exposure + effect_allele.exposure + other_allele.exposure + beta.outcome + pval.outcome + se.outcome + eaf.outcome + samplesize.outcome + ncase.outcome ~ id.exposure,
                                         value.var = c("beta.exposure", "pval.exposure", "se.exposure", "eaf.exposure", "samplesize.exposure", "ncase.exposure"),
                                         sep = "_")
@@ -270,6 +274,7 @@ MR <- new_class(
     }
 
     # assign to the class object
+    cat("new_object(S7::S7_object()\n")
     object <- new_object(S7::S7_object(),
                          snps        = wide_matrices$SNP,
                          chr         = wide_matrices$chr.exposure,
