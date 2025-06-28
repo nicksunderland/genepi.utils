@@ -10,7 +10,8 @@ ld_matrix(
   method = "r",
   plink2 = genepi.utils::which_plink2(),
   plink_ref = genepi.utils::which_1000G_reference(build = "GRCh37"),
-  ukbb_ref = NULL
+  ukbb_ref = NULL,
+  force_all = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ inappropriately removed.}
 \item{plink_ref}{a string, path to the pfile genome reference}
 
 \item{ukbb_ref}{path to a UKBB reference file}
+
+\item{force_all}{logical, if TRUE assumes all variants will be found in the reference (e.g. non rsid coded chr:pos_ref_alt)}
 }
 \value{
 an LD matrix if only variants provided, else if alleles provided a list(dat=harmonised data, ld_mat=ld_matrix)

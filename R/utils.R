@@ -217,10 +217,11 @@ generate_random_gwas_data <- function(n, seed=2023) {
 #' is converted to a data.table and an attribute `orig_type` is added
 #' with the original data type.
 #' @param dt a string (file path) or data.frame-like object
+#' @param cores integer, number of cores to use if reading table with data.table::fread()
 #' @return a data.table
 #' @noRd
 #'
-import_table <- function(dt) {
+import_table <- function(dt, cores = parallel::detectCores()) {
 
   # if the input is a character try as a path
   if(is.character(dt)) {
@@ -228,7 +229,7 @@ import_table <- function(dt) {
     # if valid path try to read in as data.table
     if(file.exists(dt)) {
 
-      dt <- data.table::fread(dt, nThread=parallel::detectCores())
+      dt <- data.table::fread(dt, nThread=cores)
 
     } else {
 

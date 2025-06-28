@@ -4,7 +4,7 @@
 \alias{Column}
 \title{Column object}
 \usage{
-Column(name = class_missing, alias = class_missing, type = class_missing)
+Column(name = character(0), alias = character(0), type = character(0))
 }
 \arguments{
 \item{name}{the standard column name}

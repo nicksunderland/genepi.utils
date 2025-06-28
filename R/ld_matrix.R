@@ -12,6 +12,7 @@ globalVariables(c("RSID", "rsid_allele", "i.rsid_allele", "LD_rsid_allele"),
 #' @param colmap a list, mapping to columns list(rsid=?,ea=?,oa=?,beta=?,eaf=?) where ? can be a character vector in the case of harmonised datasets.
 #' Warning - it is assumed that harmonised datasets are indeed harmonised, if not, any unharmonised variants will be
 #' inappropriately removed.
+#' @param force_all logical, if TRUE assumes all variants will be found in the reference (e.g. non rsid coded chr:pos_ref_alt)
 #' @inheritParams clump
 #' @param ukbb_ref path to a UKBB reference file
 #' @return an LD matrix if only variants provided, else if alleles provided a list(dat=harmonised data, ld_mat=ld_matrix)
@@ -22,7 +23,8 @@ ld_matrix <- function(dat,
                       method    = "r",
                       plink2    = genepi.utils::which_plink2(),
                       plink_ref = genepi.utils::which_1000G_reference(build="GRCh37"),
-                      ukbb_ref  = NULL) {
+                      ukbb_ref  = NULL,
+                      force_all = FALSE) {
 
 #
 #   # testing
@@ -58,7 +60,7 @@ ld_matrix <- function(dat,
 
   # remove variants with problematic rsid coding
   correct_rsid <- rowSums(dat[, lapply(.SD, function(sd) !grepl("^rs[0-9]+$", trimws(sd))), .SDcols=colmap[['rsid']]]) == 0
-  if(sum(!correct_rsid) > 0) {
+  if(sum(!correct_rsid) > 0 & force_all == FALSE) {
     warning("[-] ", sum(!correct_rsid), " data rows removed due to incorrect RSIDs coding")
     dat <- dat[correct_rsid, ]
   }
@@ -66,7 +68,7 @@ ld_matrix <- function(dat,
   # extract the variants and allele information from the reference file
   if(!is.null(plink_ref)) {
 
-    alleles <- get_ref_allele_info(dat[[colmap[['rsid']][[1]]]], plink2, plink_ref)
+    alleles <- get_ref_allele_info(variants = dat[[colmap[['rsid']][[1]]]], plink2, plink_ref)
     ld_mat  <- get_ld_matrix_values(dat[[colmap[['rsid']][[1]]]], method, plink2, plink_ref)
 
     # the extracted alleles may contain multi-allelic variants in plink, so index from the matrix to match all the variants
@@ -186,7 +188,7 @@ get_ref_allele_info <- function(variants,
 
   # checks
   stopifnot("variants must be a character vector" = is.character(variants))
-  stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
+  #stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
 
   # write out the variants file
   variants_file <- tempfile()
@@ -222,7 +224,7 @@ get_ref_allele_info <- function(variants,
   # some reference files give the ALT allele as comma separated alternate allele options - expand to extra rows
   alleles <- alleles[, list(rsid,chr,bp,ref,alt=unlist(strsplit(alt, ",", fixed=TRUE))), by=seq_len(nrow(alleles))]
   alleles[, seq_len := NULL]
-  alleles[, rsid_allele := paste0(rsid,"_",ref,"_",alt)]
+  alleles[, rsid_allele := ifelse(grepl("^rs", rsid), paste0(rsid,"_",ref,"_",alt), rsid)]
 
   # return alleles data.table
   return(alleles)
@@ -247,7 +249,7 @@ get_ld_matrix_values <- function(variants,
   # checks
   method <- match.arg(method, choices=c("r","r2"))
   stopifnot("variants must be a character vector" = is.character(variants))
-  stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
+  #stopifnot("variants must be of the form `rs[0-9]+`" = all(grepl("^rs[0-9]+$", variants)))
 
   # write out the variants file
   variants_file <- tempfile()
