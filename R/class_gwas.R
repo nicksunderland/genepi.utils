@@ -285,7 +285,7 @@ GWAS <- new_class(
 )
 
 
-method(print, GWAS) <- function(x) {
+method(print, GWAS) <- function(x, ...) {
 
   cat("genepi.utils::GWAS object\n")
   cat("- trait:", x@trait, "\n")
@@ -849,10 +849,9 @@ method(subset_gwas, GWAS) <- function(x, snps) {
   })
 }
 
-#' @name get_proxies
-#' @param snps a character vector (available if `x` is a `GWAS` object), a vector of rsids to ensure exist, or else try and find proxies for
-#' @param then a string (available if `x` is a `GWAS` object), either `add` (adds proxies to current GWAS) or `subset`
-#' (subsets GWAS to variants and potential proxies for variants in `x`)
+#' @title Get proxies for variants from plink binary (GWAS object)
+#' @name get_proxies.
+#' @description Subsets GWAS to variants and potential proxies for variants in `x`
 #' @include plink.R
 method(get_proxies, GWAS) <- function(x,
                                       snps,

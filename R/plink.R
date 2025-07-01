@@ -120,11 +120,12 @@ method(get_pfile_variants, list(class_missing,
 #' @param proxy_eaf numeric, the minimal effect allele frequency for proxy variants. NULL = eaf filtering off.
 #' @param plink2 character / path, the plink2 executable
 #' @param pfile character / path, the plink pfile set
-#' @param ... other arguments (see below)
-#' @return a data.table of variants and their proxies (if `x` is a `character` vector) or a `GWAS` object if
-#' `x` is a `GWAS` object.
+#' @param ... Additional arguments passed to methods. When `x` is a `GWAS` object, use:
+#' \describe{
+#'   \item{`snps`}{(character) A vector of rsids to ensure exist or find proxies for.}
+#'   \item{`then`}{(character) Either `"add"` (adds proxies to the GWAS) or `"subset"` (restricts to selected variants and proxies).}
+#' }
 #' @export
-#'
 get_proxies <- new_generic('get_proxies', "x", function(x,
                                                         stat       = "r2-unphased",
                                                         win_kb     = 125,

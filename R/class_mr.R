@@ -333,7 +333,7 @@ MR <- new_class(
 )
 
 
-method(print, MR) <- function(x) {
+method(print, MR) <- function(x, ...) {
 
   cat("genepi.utils::MR object\n")
   print(tibble::as_tibble(x@info))

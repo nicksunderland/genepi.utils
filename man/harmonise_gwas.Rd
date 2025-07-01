@@ -15,11 +15,11 @@ harmonise_gwas(gwas, ref, join = "chr:bp", action = 2, ...)
 
 \item{action}{an integer, 1-, 2-, or 3-}
 
-\item{...}{additional parameters below}
-
-\item{rmap}{a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)}
-
-\item{gmap}{a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)}
+\item{...}{Additional arguments passed to methods. When \code{x} is a \code{GWAS} object, use:
+\describe{
+\item{\code{rmap}}{a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)}
+\item{\code{gmap}}{a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)}
+}}
 }
 \value{
 a data.table, harmonised GWAS data

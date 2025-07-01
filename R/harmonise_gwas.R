@@ -8,7 +8,11 @@ globalVariables(c("OK","ea_ref","flipped","ii","keep","oa_ref","palindromic","st
 #' @param ref a GWAS object, data.table, or file path
 #' @param action an integer, 1-, 2-, or 3-
 #' @param join a character, either 'chr:pos'(default) or 'rsid', the columns to perform the join on
-#' @param ... additional parameters below
+#' @param ... Additional arguments passed to methods. When `x` is a `GWAS` object, use:
+#' \describe{
+#'   \item{`rmap`}{a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)}
+#'   \item{`gmap`}{a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)}
+#' }
 #' @return a data.table, harmonised GWAS data
 #' @importFrom stats complete.cases
 #' @export
@@ -24,7 +28,6 @@ method(harmonise_gwas, list(GWAS,GWAS)) <- function(gwas, ref, join = "chr:bp", 
 }
 
 #' @name harmonise_gwas
-#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(GWAS,new_S3_class('data.table'))) <- function(gwas, ref, join = "chr:bp", action = 2, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   g <- as.data.table(gwas)
@@ -33,7 +36,6 @@ method(harmonise_gwas, list(GWAS,new_S3_class('data.table'))) <- function(gwas, 
 }
 
 #' @name harmonise_gwas
-#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(GWAS,class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
@@ -45,8 +47,6 @@ method(harmonise_gwas, list(GWAS,class_character)) <- function(gwas, ref, join =
 }
 
 #' @name harmonise_gwas
-#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
-#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(new_S3_class('data.table'),new_S3_class('data.table'))) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   r <- validate_ref(ref, rmap, join)
@@ -55,8 +55,6 @@ method(harmonise_gwas, list(new_S3_class('data.table'),new_S3_class('data.table'
 }
 
 #' @name harmonise_gwas
-#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
-#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(new_S3_class('data.table'),class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
@@ -69,8 +67,6 @@ method(harmonise_gwas, list(new_S3_class('data.table'),class_character)) <- func
 }
 
 #' @name harmonise_gwas
-#' @param rmap a named vector or list, mapping reference input, standard name = old name (active if using data.table or file path inputs)
-#' @param gmap a named vector or list, mapping gwas input, standard name = old name (active if using data.table or file path inputs)
 method(harmonise_gwas, list(class_character,class_character)) <- function(gwas, ref, join = "chr:bp", action = 2, gmap = NULL, rmap = NULL) {
   cli::cli_h1("genepi.utils::harmonise_gwas")
   stopifnot("ref must be a valid file path" = file.exists(ref))
