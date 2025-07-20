@@ -224,7 +224,10 @@ get_ref_allele_info <- function(variants,
   # some reference files give the ALT allele as comma separated alternate allele options - expand to extra rows
   alleles <- alleles[, list(rsid,chr,bp,ref,alt=unlist(strsplit(alt, ",", fixed=TRUE))), by=seq_len(nrow(alleles))]
   alleles[, seq_len := NULL]
-  alleles[, rsid_allele := ifelse(grepl("^rs", rsid), paste0(rsid,"_",ref,"_",alt), rsid)]
+  #alleles[, rsid_allele := ifelse(grepl("^rs", rsid), paste0(rsid,"_",ref,"_",alt), rsid)]
+  alleles[, rsid_allele := ifelse(!grepl("_[ACGT]+_[ACGT]+$", rsid),
+                                  paste0(rsid, "_", ref, "_", alt),
+                                  rsid)]
 
   # return alleles data.table
   return(alleles)

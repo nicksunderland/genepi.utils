@@ -156,6 +156,9 @@ chrpos_to_rsid <- function(dt,
 # for the details: https://furrr.futureverse.org/articles/gotchas.html#function-environments-and-large-objects
 process_chromosome <- function(chrom_dt, chr_col, pos_col, build, dbsnp_dir, flip, alt_rsids, p, nea_col=NULL, ea_col=NULL) {
 
+  # parallel processing (multisession) handled by parallel_cores argument, so don't grab all cores again within each spawned session
+  fst::threads_fst(nr_of_threads = 1)
+
   # silence RMDcheck warning
   RSID = i.RSID = baseRSID = rsid_flip_match = REF = ALT = NULL
 
