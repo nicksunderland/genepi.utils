@@ -63,7 +63,7 @@ method(collider_bias, MR) <- function(x,
 
   # params: check method; multivariable not supported
   bias_method <- match.arg(bias_method, choices = c("dudbridge", "cwls", "slopehunter", "mr_ivw", "mr_egger", "mr_weighted_median", "mr_weighted_mode"), several.ok = TRUE)
-  method <- match.arg(method, choices = c("Hedges-Olkin", "Simex"))
+  method <- match.arg(method, choices = c("Hedges-Olkin", "Simex", "CWLS"))
   if (is_multivariable(x)) {
     stop("collider bias assessment only supported between one incidence and one progression GWAS, MR object is multivariable (multiple exposures)")
   }
