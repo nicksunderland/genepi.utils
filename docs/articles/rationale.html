@@ -8,8 +8,8 @@
 <title>Rationale and key points • genepi.utils</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Rationale and key points">
 </head>
 <body>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">genepi.utils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -161,7 +161,7 @@ and validation process built in.</p>
 <h3 id="simple-s7-class">Simple S7 class<a class="anchor" aria-label="anchor" href="#simple-s7-class"></a>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/S7/" class="external-link">S7</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rconsortium.github.io/S7/" class="external-link">S7</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># define a new class</span></span>
 <span><span class="va">CodeClinicSession</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rconsortium.github.io/S7/reference/new_class.html" class="external-link">new_class</a></span><span class="op">(</span></span>
@@ -225,7 +225,7 @@ and validation process built in.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">CodeClinicSession</span><span class="op">(</span><span class="st">"nick sunderland"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; CodeClinicSession</span></span>
 <span><span class="co">#&gt;  Presenter: nick sunderland </span></span>
-<span><span class="co">#&gt;  Date: 24-10-2024</span></span></code></pre></div>
+<span><span class="co">#&gt;  Date: 17-09-2025</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="s7-constructor">S7 constructor<a class="anchor" aria-label="anchor" href="#s7-constructor"></a>
@@ -476,33 +476,9 @@ and validation process built in.</p>
 <span></span>
 <span><span class="co"># load</span></span>
 <span><span class="va">gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GWAS.html">GWAS</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">filepath</span>, map <span class="op">=</span> <span class="va">map</span>, fill_rsid <span class="op">=</span> <span class="st">"b37_dbsnp156"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading GWAS ...</span></span>
-<span><span class="co">#&gt; [i] loading data from: example2_gwas_sumstats.tsv</span></span>
-<span><span class="co">#&gt; [i] applying column mapping</span></span>
-<span><span class="co">#&gt; [i] enforcing column types</span></span>
-<span><span class="co">#&gt; [i] standardising columns</span></span>
-<span><span class="co">#&gt; [i] standardising allele coding</span></span>
-<span><span class="co">#&gt; [i] applying filters</span></span>
-<span><span class="co">#&gt; [i] checking rsid coding</span></span>
-<span><span class="co">#&gt;  [?] 10 RSIDs could not be parsed, attempting to fetch from dbSNP.</span></span>
-<span><span class="co">#&gt; RSID mapping...</span></span>
-<span><span class="co">#&gt; Chromosomes to process:  10</span></span>
-<span><span class="co">#&gt; RSID coverage 100% (10/10), of which 0% (0/10) where found flipping alleles</span></span>
 <span></span>
 <span><span class="co"># view as table</span></span>
-<span><span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
-<span><span class="co">#&gt;           rsid    chr        bp     ea     oa      eaf   beta    se     p     n</span></span>
-<span><span class="co">#&gt;         &lt;char&gt; &lt;char&gt;     &lt;int&gt; &lt;char&gt; &lt;char&gt;    &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1:  rs7899632     10 100000625      G      A 7.10e-05 -0.037 0.137 0.781    NA</span></span>
-<span><span class="co">#&gt;  2: rs61875309     10 100000645      C      A 1.21e-01  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt;  3: rs12258651     10 100003242      G      T 5.04e-07 -0.037 0.134 0.480    NA</span></span>
-<span><span class="co">#&gt;  4:  rs1359508     10 100003785      C      T 1.55e-01 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  5:  rs1048754     10 100004360      A      G 8.38e-01  0.045 0.134 0.961    NA</span></span>
-<span><span class="co">#&gt;  6:  rs3750595     10 100004906      A      C 7.40e-01 -0.037 0.173 0.781    NA</span></span>
-<span><span class="co">#&gt;  7:  rs2025625     10 100004996      A      G 3.23e-10 -0.008 0.137 0.743    NA</span></span>
-<span><span class="co">#&gt;  8: rs10786405     10 100005282      T      C 9.30e-04 -0.147 0.134 0.781    NA</span></span>
-<span><span class="co">#&gt;  9: rs11816998     10 100007362      C      G 8.16e-05  0.045 0.173 0.961    NA</span></span>
-<span><span class="co">#&gt; 10:  rs3793692     10 100008436      A      G 9.46e-04 -0.008 0.208 0.743    NA</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/as.data.table.html">as.data.table</a></span><span class="op">(</span><span class="va">gwas</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="run-an-analysis">Run an analysis<a class="anchor" aria-label="anchor" href="#run-an-analysis"></a>

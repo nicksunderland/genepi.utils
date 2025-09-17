@@ -65,7 +65,6 @@ reference:
     Functions for analysing collider / index event bias and adjust GWAS data for this bias.
   contents:
   - collider_bias
-  - cwls
   - slopehunter
   - dudbridge
 

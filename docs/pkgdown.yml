@@ -1,4 +1,4 @@
-pandoc: '3.2'
+pandoc: 3.6.3
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
@@ -9,7 +9,7 @@ articles:
   plotting: plotting.html
   rationale: rationale.html
   standardise_gwas: standardise_gwas.html
-last_built: 2024-10-24T11:02Z
+last_built: 2025-09-17T08:12Z
 urls:
   reference: https://nicksunderland.github.io/genepi.utils/reference
   article: https://nicksunderland.github.io/genepi.utils/articles

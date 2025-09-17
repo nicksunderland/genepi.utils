@@ -10,8 +10,7 @@ slopehunter(
   pi0 = 0.6,
   sxy1 = 1e-05,
   bootstraps = 100,
-  seed = 777,
-  ...
+  seed = 777
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ slopehunter(
 \item{bootstraps}{see \code{M} SlopeHunter::hunt()}
 
 \item{seed}{see \code{seed} SlopeHunter::hunt()}
-
-\item{...}{parameter sink, additional ignored parameters}
 }
 \value{
 an object of class MRResult

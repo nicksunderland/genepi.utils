@@ -11,8 +11,7 @@ dudbridge(
   method = "Simex",
   B = 1000,
   lambda = seq(0.25, 5, 0.25),
-  seed = 2018,
-  ...
+  seed = 2018
 )
 }
 \arguments{
@@ -29,8 +28,6 @@ dudbridge(
 \item{lambda}{see indexevent::indexevent()}
 
 \item{seed}{see indexevent::indexevent()}
-
-\item{...}{parameter sink, additional ignored parameters}
 }
 \value{
 an object of class MRResult

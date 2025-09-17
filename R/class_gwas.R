@@ -850,7 +850,7 @@ method(subset_gwas, GWAS) <- function(x, snps) {
 }
 
 #' @title Get proxies for variants from plink binary (GWAS object)
-#' @name get_proxies.
+#' @name get_proxies
 #' @description Subsets GWAS to variants and potential proxies for variants in `x`
 #' @include plink.R
 method(get_proxies, GWAS) <- function(x,
