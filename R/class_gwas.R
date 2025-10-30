@@ -586,7 +586,7 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
   if(length(invalid) > 0 && fill_rsid!=FALSE) {
 
     # only able to annotate valid chr/bp/ea/oa rows
-    able_to_annotate <- which(!is.na(chr) & !is.na(bp) & !is.na(ea) & !is.na(oa))
+    able_to_annotate <- which(!is.na(gwas$chr) & !is.na(gwas$bp) & !is.na(gwas$ea) & !is.na(gwas$oa))
     able_to_annotate <- intersect(able_to_annotate, invalid)
 
     if(verbose) {
