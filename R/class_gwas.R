@@ -585,12 +585,17 @@ method(populate_rsid, new_S3_class('data.table')) <- function(gwas, fill_rsid, m
   # some invalid RSIDs and want to populate from dbSNP
   if(length(invalid) > 0 && fill_rsid!=FALSE) {
 
+    # only able to annotate valid chr/bp/ea/oa rows
+    able_to_annotate <- which(!is.na(chr) & !is.na(bp) & !is.na(ea) & !is.na(oa))
+    able_to_annotate <- intersect(able_to_annotate, invalid)
+
     if(verbose) {
-      message("\t[?] ", length(invalid), " RSIDs could not be parsed, attempting to fetch from dbSNP.")
+      message("\t[?] ", length(invalid), " RSIDs could not be parsed , attempting to fetch ",
+              length(able_to_annotate), " with chr:pos:ea:oa data from dbSNP.")
     }
 
     # get the RSIDs
-    rsid_dat <- chrpos_to_rsid(gwas[invalid, list(chr,bp,ea,oa)],
+    rsid_dat <- chrpos_to_rsid(gwas[able_to_annotate, list(chr,bp,ea,oa)],
                                chr_col   = "chr",
                                pos_col   = "bp",
                                ea_col    = "ea",
