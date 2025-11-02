@@ -406,8 +406,14 @@ method(standardise_columns, new_S3_class('data.table')) <- function(gwas, verbos
     if("z" %in% names(gwas)) {
 
       if(verbose) message("\t[i] coverting `z` column to `p` column")
-
       gwas[, p := 2 * stats::pnorm(-abs(z))]
+
+    } else if (all(c("beta","se") %in% names(gwas))) {
+
+      if(verbose) message("\t[i] coverting `beta/se` columns to `p` column")
+      gwas[ z := beta / se]
+      gwas[, p := 2 * stats::pnorm(-abs(z))]
+
     } else {
       stop("problem standardising/creating `p` value column. No `p` value column found and no `z` column provided to compute it.")
     }
