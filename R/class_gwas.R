@@ -879,7 +879,9 @@ method(get_proxies, GWAS) <- function(x,
   if (FALSE) {
     x <- GWAS("/Users/xx20081/Documents/local_data/giant_2018/bmi.giant-ukbb.meta-analysis.combined.23May2018.gz",
               map = list(rsid="SNP", chr="CHR", bp="POS", ea="Tested_Allele", oa="Other_Allele", eaf="Freq_Tested_Allele", beta="BETA", se="SE", p="P", n="N", info="INFO"))
-    snps       = c("rs140052487", "rs558796213", "rs561234294", "rs2462492", "rs548455890", "rs3107975", "rs531766459", "rs372455836", "rs193242050", "rs143342222")
+    x = readRDS("~/Desktop/bmi_gwas.RDS")
+    snps       = readRDS("~/Desktop/snps.RDS") #c("rs10753280") #
+    #  missing rs10753280_1:33774752:A_C.  gives  - >.  rs7591078_2:239005014_G_C
     then       = "subset"
     stat       = "r2-unphased"
     win_kb     = 125
@@ -921,6 +923,8 @@ method(get_proxies, GWAS) <- function(x,
       # find if the found effect allele matches the allele in the proxies, if not we need to flip the effect
       idx_orig <- match(proxies$proxy_rsid, x@rsid)
       orig_alleles <- data.table::data.table(rsid = x@rsid[idx_orig],
+                                             chr  = x@chr[idx_orig],
+                                             bp   = x@bp[idx_orig],
                                              ea   = x@ea[idx_orig],
                                              oa   = x@oa[idx_orig])
       proxies[orig_alleles, flipped := FALSE, on=c("proxy_rsid"="rsid", "proxy_ref"="oa", "proxy_alt"="ea")]

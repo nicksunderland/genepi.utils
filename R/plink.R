@@ -196,7 +196,10 @@ method(get_proxies, class_character) <- function(x,
   }
 
   # read the found SNPs
-  snps_exist <- data.table::fread(paste0(exists_file,".pvar"), skip="#CHROM	POS	ID	REF	ALT", select=c("ID"))
+  snps_exist <- data.table::fread(paste0(exists_file,".pvar"),
+                                  skip="#CHROM	POS	ID	REF	ALT",
+                                  select=c("#CHROM", "POS",	"ID"),
+                                  col.names = c("chr", "bp", "rsid"))
 
   # clean up
   unlink(paste0(exists_file,".pvar"))
@@ -204,48 +207,58 @@ method(get_proxies, class_character) <- function(x,
   # report
   message(paste0("[i] ", nrow(snps_exist), "/", length(x), " (", sprintf("%.1f", 100*(nrow(snps_exist)/length(x))), "%) input SNPs found in plink reference file"))
 
-  # rewrite the found snps
-  snps_found <- tempfile()
-  data.table::fwrite(snps_exist, snps_found, sep="\t", col.names = FALSE)
+  # process by chromosome
+  all_proxies <- list()
+  for (chrom in sort(unique(snps_exist$chr))) {
 
-  # output file
-  proxy_file <- tempfile()
+    # rewrite the found snps
+    snps_found <- tempfile()
+    data.table::fwrite(snps_exist[chr == chrom, "rsid"], snps_found, sep="\t", col.names = FALSE)
 
-  # build command line command and run
-  cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
-               "--pfile", ifelse(compressed_plink, paste(pfile, "vzs"), pfile),
-               paste0("--", stat), "cols=+maj,+nonmaj,+freq",
-               "--ld-snp-list", snps_found,
-               "--ld-window-kb", win_kb,
-               "--ld-window-r2", win_r2,
-               ifelse(is.finite(win_ninter), paste("--ld-window", win_ninter), ""),
-               "--out", proxy_file)
-  system(cmd)
+    # output file
+    proxy_file <- tempfile()
 
-  if (!file.exists(paste0(proxy_file,".vcor"))) {
-    stop(paste0("Plink `", paste0("--", stat), "` failed"))
+    # build command line command and run
+    cmd <- paste(ifelse(is.null(plink2), "plink2", plink2),
+                 "--pfile", ifelse(compressed_plink, paste(pfile, "vzs"), pfile),
+                 "--chr", as.character(chrom),
+                 paste0("--", stat), "cols=+maj,+nonmaj,+freq",
+                 "--ld-snp-list", snps_found,
+                 "--ld-window-kb", win_kb,
+                 "--ld-window-r2", win_r2,
+                 ifelse(is.finite(win_ninter), paste("--ld-window", win_ninter), ""),
+                 "--out", proxy_file)
+    system(cmd)
+
+    if (!file.exists(paste0(proxy_file,".vcor"))) {
+      stop(paste0("Plink `", paste0("--", stat), "` failed"))
+    }
+
+    # read in the extracted variants file
+    cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
+    proxies <- data.table::fread(paste0(proxy_file,".vcor"), skip = paste(cols, collapse = "\t"), select = cols, encoding="Latin-1")
+    proxies <- proxies[, list(rsid           = as.character(ID_A),
+                              chr            = as.character(`#CHROM_A`),
+                              bp             = as.integer(sub(".*?([0-9]+).*", "\\1", POS_A)), # plink sometimes write random "<FF>317417841" strings for bp
+                              ref            = as.character(MAJ_A),
+                              alt            = as.character(NONMAJ_A),
+                              freq_alt       = as.numeric(NONMAJ_FREQ_A),
+                              proxy_rsid     = as.character(ID_B),
+                              proxy_chr      = as.character(CHROM_B),
+                              proxy_bp       = as.integer(sub(".*?([0-9]+).*", "\\1", POS_B)),
+                              proxy_ref      = as.character(MAJ_B),
+                              proxy_alt      = as.character(NONMAJ_B),
+                              proxy_freq_alt = as.numeric(NONMAJ_FREQ_B),
+                              rstat          = as.numeric(get(names(which(stats == stat)))))]
+
+    all_proxies[[chrom]] <- proxies
+
+    # clean up
+    unlink(paste0(proxy_file,".vcor"))
+    unlink(snps_found)
+
   }
-
-  # read in the extracted variants file
-  cols <- c("#CHROM_A", "POS_A", "ID_A", "MAJ_A", "NONMAJ_A", "NONMAJ_FREQ_A", "CHROM_B", "POS_B", "ID_B", "MAJ_B", "NONMAJ_B", "NONMAJ_FREQ_B", names(which(stats == stat)))
-  proxies <- data.table::fread(paste0(proxy_file,".vcor"), skip = paste(cols, collapse = "\t"), select = cols, encoding="Latin-1")
-  proxies <- proxies[, list(rsid           = as.character(ID_A),
-                            chr            = as.character(`#CHROM_A`),
-                            bp             = as.integer(sub(".*?([0-9]+).*", "\\1", POS_A)), # plink sometimes write random "<FF>317417841" strings for bp
-                            ref            = as.character(MAJ_A),
-                            alt            = as.character(NONMAJ_A),
-                            freq_alt       = as.numeric(NONMAJ_FREQ_A),
-                            proxy_rsid     = as.character(ID_B),
-                            proxy_chr      = as.character(CHROM_B),
-                            proxy_bp       = as.integer(sub(".*?([0-9]+).*", "\\1", POS_B)),
-                            proxy_ref      = as.character(MAJ_B),
-                            proxy_alt      = as.character(NONMAJ_B),
-                            proxy_freq_alt = as.numeric(NONMAJ_FREQ_B),
-                            rstat          = as.numeric(get(names(which(stats == stat)))))]
-
-  # clean up
-  unlink(paste0(proxy_file,".vcor"))
-  unlink(snps_found)
+  all_proxies <- data.table::rbindlist(all_proxies)
 
   # filter on eaf
   if (!is.null(proxy_eaf)) {
@@ -256,7 +269,7 @@ method(get_proxies, class_character) <- function(x,
     }
   }
 
-  return(proxies)
+  return(all_proxies)
 }
 
 
